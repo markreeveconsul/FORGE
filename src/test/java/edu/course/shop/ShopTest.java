@@ -150,6 +150,28 @@ class ShopTest {
         assertThrows(ValidationException.class, () -> orders.history(admin));
     }
 
+    @Test void reviewsRequireACompletedPurchaseAndAreVisibleInTheCatalog() {
+        ProductReviewService reviewService = new ProductReviewService(database, new ProductReviewRepository());
+        assertFalse(reviewService.canReview(customer, product.getId()));
+        assertThrows(ValidationException.class, () -> reviewService.submit(customer, product.getId(), 5, "Great product"));
+        carts.add(customer, cart, product.getId(), 1);
+        checkout.checkout(customer, cart, "123 Sample Street", new CashOnDeliveryPayment());
+        assertTrue(reviewService.canReview(customer, product.getId()));
+        reviewService.submit(customer, product.getId(), 4, "Works well and feels sturdy.");
+        assertEquals(1, reviewService.list(product.getId()).size());
+        assertEquals(4, reviewService.list(product.getId()).getFirst().rating());
+        assertEquals("Works well and feels sturdy.", reviewService.list(product.getId()).getFirst().text());
+        assertThrows(ValidationException.class, () -> reviewService.submit(admin, product.getId(), 5, "Admin should not review"));
+        assertThrows(ValidationException.class, () -> reviewService.submit(customer, product.getId(), 6, "Invalid rating"));
+    }
+
+    @Test void adminLowStockReportListsProductsAndRequiresAdminRole() {
+        products.save(admin, product.getId(), product.getName(), product.getCategory(), product.getPrice(), 2, true);
+        AdminService reports = new AdminService(database, new AdminRepository());
+        assertTrue(reports.lowStock(admin).stream().anyMatch(row -> row.id() == product.getId() && row.stock() == 2));
+        assertThrows(ValidationException.class, () -> reports.lowStock(customer));
+    }
+
     private byte[] testPhoto(String format, int width, int height) throws Exception {
         var output = new java.io.ByteArrayOutputStream();
         javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(width,height,java.awt.image.BufferedImage.TYPE_INT_RGB),format,output);

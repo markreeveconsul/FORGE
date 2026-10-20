@@ -16,7 +16,7 @@ class CatalogAssistantTest {
     Services services; CatalogAssistant assistant; User admin;
     @BeforeEach void setup(){
         var db=new DatabaseManager(temp.resolve("chat.db"));db.initialize();var pr=new ProductRepository();var or=new OrderRepository();
-        services=new Services(new AuthService(db,new UserRepository()),new ProductService(db,pr),new CheckoutService(db,pr,or),new OrderService(db,or),new AdminService(db,new AdminRepository()));
+        services=new Services(new AuthService(db,new UserRepository()),new ProductService(db,pr),new CheckoutService(db,pr,or),new OrderService(db,or),new AdminService(db,new AdminRepository()),new ProductReviewService(db,new ProductReviewRepository()));
         admin=services.auth().login("admin","admin123");
         // Remove seed products from this fixture's searchable inventory.
         for(Product p:services.products().search(admin,"",null))services.products().save(admin,p.getId(),p.getName(),p.getCategory(),p.getPrice(),p.getStock(),false);

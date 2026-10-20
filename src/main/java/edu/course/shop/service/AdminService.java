@@ -29,6 +29,12 @@ public final class AdminService {
         catch (SQLException e) { throw new StorageException(e); }
     }
 
+    public List<AdminRepository.LowStockRow> lowStock(User actor) {
+        requireAdmin(actor);
+        try (Connection c = database.open()) { return reports.lowStock(c); }
+        catch (SQLException e) { throw new StorageException(e); }
+    }
+
     public List<AdminRepository.OrderRow> orders(User actor) {
         requireAdmin(actor);
         try (Connection c = database.open()) { return reports.orders(c); }

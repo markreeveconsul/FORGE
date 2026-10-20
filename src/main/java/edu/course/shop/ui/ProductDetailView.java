@@ -14,6 +14,11 @@ public final class ProductDetailView extends VBox {
     }
     public ProductDetailView(Product product,User user,Cart cart,CartService carts,ProductService products,
                              Runnable changed,Runnable back,Runnable openCart,Consumer<Product> openProduct,SavedItems saved,Consumer<String> toast) {
+        this(product,user,cart,carts,products,changed,back,openCart,openProduct,saved,toast,null,null);
+    }
+    public ProductDetailView(Product product,User user,Cart cart,CartService carts,ProductService products,
+                             Runnable changed,Runnable back,Runnable openCart,Consumer<Product> openProduct,SavedItems saved,Consumer<String> toast,
+                             ProductReviewService reviews,GeminiAssistant gemini) {
         setId("product-detail");getStyleClass().add("page");setSpacing(18);
         Label feedback=Ui.feedback("detail-feedback");
         QuantityControl quantity=new QuantityControl(product.getStock());quantity.setId("detail-quantity");
@@ -57,6 +62,7 @@ public final class ProductDetailView extends VBox {
         FlowPane suggestions=new FlowPane(20,20);suggestions.setId("related-products");
         VBox related=new VBox(14,Ui.label("More from this category","section-title"),suggestions);related.setVisible(false);related.managedProperty().bind(related.visibleProperty());
         VBox content=new VBox(32,columns,related);
+        if(reviews!=null&&gemini!=null)content.getChildren().add(new ProductReviewsView(product.getId(),product.getName(),user,reviews,gemini));
         Button backButton=Ui.link("← Back to results",back);backButton.setMaxWidth(Region.USE_PREF_SIZE);
         FlowPane navigation=new FlowPane(18,8,backButton,Ui.label("Shop / "+Ui.category(product.getCategory()),"breadcrumb"));navigation.setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(navigation,Ui.scroll(content));

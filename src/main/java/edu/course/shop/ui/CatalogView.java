@@ -12,6 +12,7 @@ import edu.course.shop.model.Product;
 import edu.course.shop.model.User;
 import edu.course.shop.service.CartService;
 import edu.course.shop.service.ProductService;
+import edu.course.shop.service.VisualProductSearch;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -20,6 +21,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.stage.FileChooser;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -31,6 +33,7 @@ public final class CatalogView extends VBox {
     private boolean clearing, restoring;
     private final javafx.beans.property.BooleanProperty rangeApplied=new javafx.beans.property.SimpleBooleanProperty();
     private final Button toggle=Ui.button("Filters +",()->{});
+    private final VisualProductSearch visualSearch=new VisualProductSearch();
     private final FlowPane filters=new FlowPane(20,18);
     private final TilePane grid=new TilePane(20,24);
     private final TextField search;
@@ -122,7 +125,8 @@ public final class CatalogView extends VBox {
         sort.getStyleClass().add("catalog-outline-control");
         sort.setButtonCell(new javafx.scene.control.ListCell<>(){ @Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:"Sort by");} });
         sort.setPrefWidth(105);
-        HBox tools=new HBox(12,toggle,sort);tools.setAlignment(Pos.BOTTOM_RIGHT);
+        Button imageSearch=Ui.button("Find by image",this::chooseImage);imageSearch.setId("catalog-image-search");imageSearch.setAccessibleText("Find visually similar products using an image on this device");imageSearch.getStyleClass().addAll("catalog-outline-control","catalog-image-search");
+        HBox tools=new HBox(12,imageSearch,toggle,sort);tools.setAlignment(Pos.BOTTOM_RIGHT);
         HBox toolbar=new HBox(20,collectionTitle,spacer,tools);toolbar.setAlignment(Pos.BOTTOM_LEFT);
         toolbar.getStyleClass().add("catalog-toolbar");
         chips.setId("filter-chips");chips.managedProperty().bind(chips.visibleProperty());
@@ -308,6 +312,26 @@ public final class CatalogView extends VBox {
             chips.setVisible(!chips.getChildren().isEmpty());
             Platform.runLater(()->{scroll.setVvalue(previousScroll);restoring=false;});
         },error->{loadingDelay.stop();results.getChildren().setAll(Ui.empty("Could not load products","Your search is kept. Try again.","Retry",this::refresh));Ui.failure(feedback,error);});
+    }
+    private void chooseImage() {
+        if (getScene()==null || getScene().getWindow()==null) return;
+        FileChooser chooser=new FileChooser();chooser.setTitle("Find similar products from an image");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images (PNG, JPEG)","*.png","*.jpg","*.jpeg"));
+        java.io.File file=chooser.showOpenDialog(getScene().getWindow());
+        if(file==null)return;
+        suggestions.dismiss();clearing=true;search.clear();category.getSelectionModel().selectFirst();budget.getSelectionModel().selectFirst();available.setSelected(false);minimum.clear();maximum.clear();state.setPriceRange("","");rangeApplied.set(false);clearing=false;state.setCategoryIndex(0);state.setBudgetIndex(0);state.setInStockOnly(false);syncToggle();if(navSync!=null)navSync.run();
+        Ui.async(this,"Finding visually similar products on this device…",()->{
+            byte[] image=edu.course.shop.service.ProductPhotos.read(file.toPath());
+            List<Product> catalog=products.search(user,"",null);
+            return visualSearch.rank(image,catalog);
+        },matches->{
+            state.setScrollPosition(0);grid.getChildren().clear();
+            for(Product product:matches){ProductCard card=new ProductCard(product,()->add(product),()->details.accept(product));if(saved!=null)card.enableSavedItems(saved);grid.getChildren().add(card);}
+            title.setText("Similar-looking gear");result.setText(matches.size()+" products with photos · matched on this device");
+            Button imageChip=Ui.button("Image search · kept on this device  ×",this::refresh);imageChip.getStyleClass().add("filter-chip");chips.getChildren().setAll(imageChip);chips.setVisible(true);
+            feedback.setText("");results.getChildren().setAll(matches.isEmpty()?Ui.empty("No catalog photos to compare","Products without photos are skipped. Try another image.","Show all products",this::refresh):grid);
+            scroll.setVvalue(0);
+        },error->Ui.failure(feedback,error));
     }
     private void chip(String text,Runnable remove) { Button b=Ui.button(text+"  ×",remove);b.getStyleClass().add("filter-chip");b.setAccessibleText("Remove "+text+" filter");chips.getChildren().add(b); }
     private void add(Product product) {

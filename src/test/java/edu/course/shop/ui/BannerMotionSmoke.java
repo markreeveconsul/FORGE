@@ -115,7 +115,8 @@ public final class BannerMotionSmoke {
             var services=new edu.course.shop.Services(new edu.course.shop.service.AuthService(db,new edu.course.shop.persistence.UserRepository()),
                 new edu.course.shop.service.ProductService(db,products),new edu.course.shop.service.CheckoutService(db,products,orders),
                 new edu.course.shop.service.OrderService(db,orders),
-                new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()));
+                new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()),
+                new edu.course.shop.service.ProductReviewService(db,new edu.course.shop.persistence.ProductReviewRepository()));
             fx(()->{
                 var scene=new Scene(new StackPane(),1280,860);scene.getStylesheets().add(BannerMotionSmoke.class.getResource("/shop.css").toExternalForm());
                 stage.setScene(scene);stage.setHeight(860);new ShopWindow(stage,services).showStorefront();return null;

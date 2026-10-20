@@ -36,6 +36,12 @@ public final class AssistantPreferences {
     public synchronized void forgetGeminiConsent(long userId){
         Properties values=read();values.remove("user."+Math.max(0,userId)+".geminiConsent");write(values);
     }
+    public synchronized boolean hasReviewSummaryConsent(long userId){
+        return Boolean.parseBoolean(read().getProperty("user."+Math.max(0,userId)+".reviewSummaryConsent","false"));
+    }
+    public synchronized void rememberReviewSummaryConsent(long userId){
+        Properties values=read();values.setProperty("user."+Math.max(0,userId)+".reviewSummaryConsent","true");write(values);
+    }
     public synchronized Profile parseAndSave(long userId,String request){
         String q=request.toLowerCase(Locale.ROOT);
         if(!q.matches("(?s).*\\b(remember|save|keep)\\b.*\\b(prefer|preference|budget|looking for)\\b.*"))return null;

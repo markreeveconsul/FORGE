@@ -288,7 +288,7 @@ public final class ShopWindow {
     private void showDetails(Product product){
         dismissDrawer();Ui.async(shell,"Opening product…",()->services.products().get(product.getId()),latest->{
             if(!latest.isActive()){showCatalog();return;}
-            show(new ProductDetailView(latest,user,cart,new CartService(services.products()),services.products(),this::updateCart,this::showCatalog,this::showCartDrawer,this::showDetails,saved,this::showToast));
+            show(new ProductDetailView(latest,user,cart,new CartService(services.products()),services.products(),this::updateCart,this::showCatalog,this::showCartDrawer,this::showDetails,saved,this::showToast,services.reviews(),assistant));
             assistantProduct=latest;if(assistantPanel!=null)assistantPanel.refreshContext();
         },Ui::error);
     }
@@ -365,7 +365,7 @@ public final class ShopWindow {
     }
     public void showOrders(){show(new OrdersView(user,services.orders(),services.products(),this::showCatalog,this::repeatOrder));}
     public void showAdmin(){show(new AdminView(user,services.products()));markAdminTab("nav-inventory");}
-    private void showAdminOverview(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.OVERVIEW,this::showAdminOrders));markAdminTab("admin-nav-overview");}
+    private void showAdminOverview(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.OVERVIEW,this::showAdminOrders,this::showAdmin));markAdminTab("admin-nav-overview");}
     private void showAdminOrders(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.ORDERS,this::showAdminOrders));markAdminTab("admin-nav-orders");}
     private void showAdminCustomers(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.CUSTOMERS,this::showAdminOrders));markAdminTab("admin-nav-customers");}
     private void markAdminTab(String selected){

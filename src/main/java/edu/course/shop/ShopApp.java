@@ -14,7 +14,8 @@ public final class ShopApp extends Application {
         OrderRepository orders = new OrderRepository();
         Services services = new Services(new AuthService(database, new UserRepository()),
             new ProductService(database, products), new CheckoutService(database, products, orders),
-            new OrderService(database, orders), new AdminService(database, new AdminRepository()));
+            new OrderService(database, orders), new AdminService(database, new AdminRepository()),
+            new ProductReviewService(database, new ProductReviewRepository()));
         stage.setTitle("FORGE / Java OOP Store");
         // Visual bounds exclude the taskbar and use JavaFX's display-scaled coordinates.
         var desktop = javafx.stage.Screen.getPrimary().getVisualBounds();

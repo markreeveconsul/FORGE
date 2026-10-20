@@ -22,7 +22,7 @@ class TechCategoriesTest {
     }
     private Services services(DatabaseManager db) {
         ProductRepository products=new ProductRepository();OrderRepository orders=new OrderRepository();
-        return new Services(new AuthService(db,new UserRepository()),new ProductService(db,products),new CheckoutService(db,products,orders),new OrderService(db,orders),new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()));
+        return new Services(new AuthService(db,new UserRepository()),new ProductService(db,products),new CheckoutService(db,products,orders),new OrderService(db,orders),new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()),new edu.course.shop.service.ProductReviewService(db,new edu.course.shop.persistence.ProductReviewRepository()));
     }
     @Test void migrationRetainsLegacyContentSavedLinksAndHistoricalReceiptsUntilReplacement() throws Exception {
         DatabaseManager db=new DatabaseManager(temp.resolve("legacy.db"));db.initialize();Services s=services(db);
