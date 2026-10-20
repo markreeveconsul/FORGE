@@ -66,12 +66,15 @@ public final class GeminiAssistant {
     public GeminiAssistant() { this(Config.environment(), productionSender()); }
     GeminiAssistant(Config config, Sender sender) { this.config = config; this.sender = sender; }
     private static Sender productionSender() {
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NEVER).build();
         return request -> {
-            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = HttpClientHolder.CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             return new Reply(response.statusCode(), response.body());
         };
+    }
+    /** Avoid creating networking resources until a user actually sends a Gemini request. */
+    private static final class HttpClientHolder {
+        private static final HttpClient CLIENT = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
+            .followRedirects(HttpClient.Redirect.NEVER).build();
     }
     public String configurationProblem() { return config.problem(); }
     public String model() { return config.model(); }

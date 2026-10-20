@@ -42,17 +42,25 @@ public final class CatalogAssistant {
                 String number = id.group(1);
                 orders = orders.stream().filter(o -> Long.toString(o.id()).equals(number)).toList();
             }
-            JsonArray rows = new JsonArray(); orders.stream().limit(5).forEach(o -> rows.add(AssistantContext.order(user, o)));
-            facts.add("yourOrders", rows);
             boolean asksTracking = q.matches(".*\\b(where|track|tracking|delivery|deliver|shipment|shipped|shipping|arrive|status)\\b.*");
+            boolean asksRefund = q.matches(".*\\b(refund|return|exchange)\\b.*");
+            boolean asksReceipt = q.matches(".*\\b(receipt|invoice)\\b.*");
             String answer;
             if (orders.isEmpty()) answer = "I couldn't find a matching order in your account. Open My orders to check the order list.";
-            else if (asksTracking) {
+            else {
                 String records = orders.stream().limit(5).map(o -> "#" + o.id() + " · " + o.createdAt() + " · "
                     + Money.format(o.total()) + " · " + o.items().stream().mapToInt(OrderItem::quantity).sum()
-                    + " item(s) · payment " + o.paymentStatus()).reduce((a,b) -> a + "\\n" + b).orElse("");
-                answer = "FORGE is a course demo, so it has no real shipping or live tracking. Here are your order records; payment status is simulated and does not show delivery:\\n" + records + "\\nOpen My orders for the full order details.";
-            } else answer = null;
+                    + " item(s) · payment " + o.paymentStatus()).reduce((a,b) -> a + "\n" + b).orElse("");
+                String purpose = asksTracking
+                    ? "FORGE is a course demo, so it has no real shipping or live tracking. Payment status is simulated and does not show delivery."
+                    : asksRefund
+                        ? "FORGE cannot start or verify a return or refund. Here are your local order records; payment status is simulated."
+                        : asksReceipt
+                            ? "Open My orders to view or print the saved receipt. Here are your recent order records; payment status is simulated."
+                            : "Here are your recent order records. Payment status is simulated.";
+                answer = purpose + "\n" + records + "\nOpen My orders for full details.";
+            }
+            // Order records are rendered locally after explicit access approval; they never enter Gemini facts.
             return new Plan(List.of(), facts, answer, "Your order summaries · up to 5", null, null, true);
         }
         if (q.matches(".*\\b(cart|basket|checkout)\\b.*")) {
@@ -111,28 +119,38 @@ public final class CatalogAssistant {
         if (!named && !terms.isEmpty() && selectedCategory == null && !followUp && page == null && maxPrice == null)
             selected = List.of();
         if (q.contains("cheap") || maxPrice != null) selected = selected.stream().sorted(Comparator.comparing(Product::getPrice)).toList();
-        int count = selected.size(); selected = selected.stream().limit(6).toList();
-        JsonArray products = new JsonArray(); selected.forEach(p -> products.add(AssistantContext.product(p)));
+        List<Product> allSelected = List.copyOf(selected);
+        int count = allSelected.size();
+        List<Product> visible = allSelected.stream().limit(6).toList();
+        JsonArray products = new JsonArray(); allSelected.stream().limit(20).forEach(p -> products.add(AssistantContext.product(p)));
         facts.add("matchingCatalogRecords", products); facts.addProperty("totalMatches", count);
-        facts.addProperty("shownMatches", selected.size());
+        facts.addProperty("shownMatches", Math.min(count, 20));
         facts.addProperty("queryInterpretation", (category == null ? "All categories" : category.label()) + (budget == null ? "" : " · up to " + Money.format(budget)));
         facts.addProperty("buildWarning", "These are search results, not a verified compatible or complete PC build.");
         boolean listing = q.matches(".*\\b(list|listed|show|find|available|have|looking|browse)\\b.*")
             && !q.matches(".*\\b(compare|why|explain|better|best|fit|compatible|performance)\\b.*");
         String local;
-        if (locationFollowUp && !selected.isEmpty()) {
-            local = "The product" + (selected.size() == 1 ? " is" : "s are")
+        boolean asksCompatibility = q.matches(".*\\b(compatible|compatibility|fit together|work together|fit in|clearance)\\b.*");
+        if (asksCompatibility && !named && memory.ids().isEmpty() && page == null) {
+            local = "Which parts should I check? Name at least two listed components, or ask me to review the parts in your cart.";
+            allSelected = List.of();
+        } else if (asksCompatibility && allSelected.size() >= 2) {
+            local = CompatibilityAdvisor.report(allSelected);
+        } else if (asksCompatibility && allSelected.size() < 2) {
+            local = "I need at least two listed products to check compatibility. Ask me to compare or check specific parts, such as a CPU and motherboard.";
+        } else if (locationFollowUp && !visible.isEmpty()) {
+            local = "The product" + (visible.size() == 1 ? " is" : "s are")
                 + " listed here in FORGE under " + (selectedCategory == null ? "the catalog" : selectedCategory.label())
                 + ". Open the product card below to view details. This demo doesn't have physical store or aisle locations.";
         } else if (count == 0) {
             local = "I couldn't find a match in the current catalog. Try a product name or category such as laptops, GPUs or keyboards, or increase your budget.";
         } else if (listing) {
-            String rows = selected.stream().map(p -> p.getName() + " · " + Money.format(p.getPrice()) + " · "
+            String rows = visible.stream().map(p -> p.getName() + " · " + Money.format(p.getPrice()) + " · "
                 + (p.getStock() == 0 ? "Out of stock" : "In stock" + (p.getStock() <= 3 ? " (" + p.getStock() + " left)" : "")))
-                .reduce((a, b) -> a + "\\n" + b).orElse("");
-            local = "I found " + count + " matching product" + (count == 1 ? "" : "s") + ":\\n" + rows
-                + (count > 6 ? "\\nShowing the first 6. Narrow your budget or name a brand to refine the list." : "")
-                + (category == Category.LAPTOPS && q.contains("gaming") ? "\\nCheck the listed GPU and specifications before choosing one for gaming." : "");
+                .reduce((a, b) -> a + "\n" + b).orElse("");
+            local = "I found " + count + " matching product" + (count == 1 ? "" : "s") + ":\n" + rows
+                + (count > 6 ? "\nShowing the first 6; use Load more below to see the rest." : "")
+                + (category == Category.LAPTOPS && q.contains("gaming") ? "\nCheck the listed GPU and specifications before choosing one for gaming." : "");
         } else {
             local = null;
         }
@@ -140,7 +158,7 @@ public final class CatalogAssistant {
             local = "Which products would you like to compare? Tell me their names, or first ask me to show a category such as gaming laptops.";
             selected = List.of();
         }
-        return new Plan(selected, facts, local, "Catalog · " + count + " matches", category, budget, false);
+        return new Plan(allSelected, facts, local, "Catalog · " + count + (count == 1 ? " match" : " matches"), category, budget, false);
     }
     public static Memory remember(Memory old, Plan plan, String question, String answer) {
         List<Turn> turns = new ArrayList<>(old.turns());

@@ -22,6 +22,9 @@ public final class AssistantPanel extends BorderPane {
     private final Supplier<Product> page;
     private final GeminiAssistant gemini;
     private final CatalogAssistant retrieval;
+    private final SavedItems savedItems;
+    private final AssistantPreferences preferenceStore=new AssistantPreferences();
+    private AssistantPreferences.Profile savedPreferences;
     private final Consumer<Product> viewProduct;
     private final Runnable cartChanged;
     private final VBox messages = new VBox(12);
@@ -41,9 +44,11 @@ public final class AssistantPanel extends BorderPane {
     private record Result(CatalogAssistant.Plan plan, String text) { }
 
     public AssistantPanel(Services services, User user, Supplier<Cart> cart, Supplier<Product> page,
-                          GeminiAssistant gemini, Consumer<Product> viewProduct, Runnable cartChanged, Runnable close) {
+                          GeminiAssistant gemini, Consumer<Product> viewProduct, Runnable cartChanged,
+                          SavedItems savedItems, Runnable close) {
         this.services=services;this.user=user;this.cart=cart;this.page=page;this.gemini=gemini;
-        this.retrieval=new CatalogAssistant(services);this.viewProduct=viewProduct;this.cartChanged=cartChanged;
+        this.savedPreferences=preferenceStore.load(user.getId());this.consent=preferenceStore.hasGeminiConsent(user.getId());
+        this.retrieval=new CatalogAssistant(services);this.viewProduct=viewProduct;this.cartChanged=cartChanged;this.savedItems=savedItems;
         setId("assistant-panel");getStyleClass().add("forge-chat");setMinSize(0,0);setPrefWidth(420);setMaxWidth(420);
         Label spark=Ui.label("✦","chat-spark");
         Label subtitle=Ui.label(gemini.configurationProblem().isBlank()?"AI BUILD HELPER":"AI OFFLINE · CATALOG SEARCH STILL WORKS","chat-subtitle");subtitle.setId("assistant-status");
@@ -66,14 +71,30 @@ public final class AssistantPanel extends BorderPane {
         send.setId("assistant-send");send.setAccessibleText("Send message");send.getStyleClass().add("chat-send");
         HBox composer=new HBox(8,input,send);HBox.setHgrow(input,Priority.ALWAYS);composer.setAlignment(Pos.CENTER_LEFT);composer.getStyleClass().add("chat-composer");
         Label disclaimer=Ui.label("AI can make mistakes. Check specs before you buy.","chat-disclaimer");disclaimer.setWrapText(true);
-        Button privacy=Ui.button("Privacy",()->bot("Questions and relevant catalog/cart records go to Google when an AI explanation is needed. Free-tier content may improve Google's products. Don't enter sensitive information. Order summaries require separate approval and exclude addresses, usernames and payment methods. Chat history stays in memory until New chat or sign-out."));privacy.getStyleClass().add("chat-link");
+        Button privacy=Ui.button("Privacy",this::showPrivacy);privacy.getStyleClass().add("chat-link");
         HBox footer=new HBox(4,disclaimer,privacy);HBox.setHgrow(disclaimer,Priority.ALWAYS);footer.setAlignment(Pos.CENTER_LEFT);footer.getStyleClass().add("chat-disclaimer-row");
         setBottom(new VBox(composer,footer));
         newChat();
     }
     public void refreshContext() {
         Product p=page.get();
-        context.setText(p!=null?"Viewing · "+p.getName():"Browsing the catalog · Cart: "+cart.get().getItems().size()+" products");
+        context.setText(p!=null?"Viewing · "+p.getName():"Browsing the catalog · Cart: "+cart.get().getItems().size()+" products"+preferenceSuffix());
+    }
+    private String preferenceSuffix(){
+        if(savedPreferences==null||savedPreferences.empty())return "";
+        List<String> parts=new ArrayList<>();if(savedPreferences.category()!=null)parts.add(savedPreferences.category().label());
+        if(savedPreferences.budget()!=null)parts.add("up to "+Money.format(savedPreferences.budget()));
+        return " · Saved preference: "+String.join(" / ",parts);
+    }
+    private static List<String> preferenceLabels(AssistantPreferences.Profile profile){
+        List<String> parts=new ArrayList<>();if(profile.category()!=null)parts.add(profile.category().label());
+        if(profile.budget()!=null)parts.add("budget up to "+Money.format(profile.budget()));return parts;
+    }
+    private String personalize(String question){
+        if(savedPreferences==null||savedPreferences.empty())return question;
+        String q=question.toLowerCase(Locale.ROOT);
+        boolean recommendation=q.matches("(?s).*(\\brecommend\\b|\\bsuggest\\b|what should i buy|help me choose|show me options|find me (?:something|products?)|looking for (?:something|products?)).*");
+        return recommendation?AssistantPreferences.apply(question,savedPreferences):question;
     }
     private void newChat() {
         stop();memory=CatalogAssistant.Memory.empty();messages.getChildren().clear();lastFailed=null;input.clear();refreshContext();
@@ -81,14 +102,35 @@ public final class AssistantPanel extends BorderPane {
         VBox welcome=new VBox(12,spark,wrap("What are we forging?","chat-welcome-title"),
             wrap("Tell me what you want to play or build. I'll find listed products and explain what to check.","chat-muted"));
         welcome.setId("assistant-welcome");welcome.getStyleClass().add("chat-welcome");
+        welcome.getChildren().add(wrap("Save a shopping preference by saying ‘Remember I prefer laptops under $1,500’. Say ‘forget my preferences’ to clear it.","chat-muted"));
+        welcome.getChildren().add(wrap("You can also ask ‘remove [product] from my cart’ or ‘change quantity of [product] to 2’. FORGE asks before changing anything.","chat-muted"));
         for(String text:List.of("Show gaming laptops under $1,000","Review my cart","Compare these products","Where is my order?")) {
             Button prompt=Ui.button(text+"  →",()->{input.setText(text);submit();});prompt.setMaxWidth(Double.MAX_VALUE);prompt.setWrapText(true);prompt.getStyleClass().add("chat-prompt");welcome.getChildren().add(prompt);
         }
         messages.getChildren().add(welcome);
     }
+    private void showPrivacy(){
+        VBox notice=bot("Questions and relevant catalog/cart records go to Google when an AI explanation is needed. Free-tier content may improve Google's products. Don't enter sensitive information. Order summaries require separate approval and exclude addresses, usernames and payment methods. Chat history stays in memory until New chat or sign-out. Shopping preferences and your Gemini approval are stored locally on this device.");
+        if(consent){Button revoke=Ui.button("Forget Gemini approval",()->{});
+            revoke.setOnAction(event->{
+            try{preferenceStore.forgetGeminiConsent(user.getId());consent=false;notice.getChildren().add(Ui.label("Gemini approval cleared. FORGE will ask again before the next request sent to Google.","chat-muted"));revoke.setDisable(true);}
+            catch(RuntimeException error){notice.getChildren().add(Ui.label(friendly(error),"chat-error"));}
+            });revoke.getStyleClass().add("chat-prompt");notice.getChildren().add(revoke);}
+    }
     private void submit() { submit(input.getText().trim(),false,false); }
     private void submit(String question, boolean orderApproved, boolean retry) {
         if(busy||question.isBlank())return;
+        Optional<AssistantCart.Edit> edit=AssistantCart.prepareEdit(question,cart.get().getItems());
+        if(edit.isPresent()){confirmCartEdit(edit.get());return;}
+        if(question.toLowerCase(Locale.ROOT).matches(".*\\bforget my preferences\\b.*")) {
+            try{preferenceStore.clear(user.getId());savedPreferences=preferenceStore.load(user.getId());refreshContext();bot("Your saved shopping preferences were cleared from this device.");}
+            catch(RuntimeException error){bot(friendly(error));}return;
+        }
+        try {
+            AssistantPreferences.Profile saved=preferenceStore.parseAndSave(user.getId(),question);
+            if(saved!=null){savedPreferences=saved;refreshContext();bot("Saved on this device: "+String.join(" / ",preferenceLabels(saved))+". Say ‘forget my preferences’ to clear it.");return;}
+        } catch(RuntimeException error){bot(friendly(error));return;}
+        String effectiveQuestion=personalize(question);
         if(CatalogAssistant.asksOrders(question)&&user instanceof Customer&&!orderApproved) {
             VBox notice=bot("May I let FORGE look up your own recent order records? If your question needs a Gemini explanation, I'll ask separately before sending a summary to Google.");
             HBox choices=new HBox(8);Button allow=Ui.button("View my orders",()->{choices.getChildren().clear();choices.getChildren().add(Ui.label("Approved · checking your order records","chat-muted"));submit(question,true,retry);});allow.getStyleClass().add("chat-orange");
@@ -98,14 +140,15 @@ public final class AssistantPanel extends BorderPane {
         List<CartItem> snapshot=cart.get().getItems();Product currentPage=page.get();var previous=memory;
         int ticket=++generation;setBusy(true);showThinking();
         Task<CatalogAssistant.Plan> task=new Task<>() {@Override protected CatalogAssistant.Plan call() {
-            return retrieval.prepare(user,snapshot,currentPage,previous,question,orderApproved);
+            return retrieval.prepare(user,snapshot,currentPage,previous,effectiveQuestion,orderApproved);
         }};
         pending=task;
         task.setOnSucceeded(e->{if(ticket!=generation)return;finish();
             CatalogAssistant.Plan plan=task.getValue();
-            if(plan.localAnswer()!=null) {renderAnswer(plan,previous,question,plan.localAnswer());return;}
-            if(!consent) {awaitingConsent=plan;awaitingQuestion=question;showAiConsent(question,orderApproved,previous);return;}
-            startGemini(plan,question,previous);
+            if(plan.localAnswer()!=null) {renderAnswer(plan,previous,effectiveQuestion,plan.localAnswer(),false);return;}
+            showMatchedProducts(plan);
+            if(!consent) {awaitingConsent=plan;awaitingQuestion=effectiveQuestion;showAiConsent(effectiveQuestion,orderApproved,previous);return;}
+            startGemini(plan,effectiveQuestion,previous);
         });
         task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
             VBox error=bot(friendly(task.getException()));error.setId("assistant-error");error.getStyleClass().add("chat-error");
@@ -114,11 +157,26 @@ public final class AssistantPanel extends BorderPane {
         });
         start(task);
     }
+    private void confirmCartEdit(AssistantCart.Edit edit) {
+        VBox card=bot(edit.removes()?"Remove "+edit.productName()+" from your cart?":"Change "+edit.productName()+" to quantity "+edit.quantity()+"?");
+        Button apply=Ui.button(edit.removes()?"Confirm remove":"Confirm quantity",()->{
+            if(busy)return;int ticket=++generation;card.setDisable(true);setBusy(true);
+            Task<Boolean> task=new Task<>() {@Override protected Boolean call(){AssistantCart.applyEdit(user,cart.get(),edit,services.products());return true;}};
+            pending=task;
+            task.setOnSucceeded(e->{if(ticket!=generation)return;finish();cartChanged.run();refreshContext();bot(edit.removes()?edit.productName()+" was removed from your cart.":"Updated "+edit.productName()+" to quantity "+edit.quantity()+".");});
+            task.setOnFailed(e->{if(ticket!=generation)return;finish();bot(friendly(task.getException()));});
+            start(task);
+        });
+        Button cancel=Ui.button("Keep my cart",()->{card.setDisable(true);bot("No cart changes were made.");});
+        apply.getStyleClass().add("chat-orange");cancel.getStyleClass().add("chat-prompt");card.getChildren().addAll(apply,cancel,wrap("Nothing changes until you confirm.","chat-muted"));
+    }
     private void showAiConsent(String question, boolean orderApproved, CatalogAssistant.Memory previous) {
         VBox notice=bot("To answer this, I need to send your question and the relevant product, cart or approved order records to Google Gemini. Free-tier content may be used to improve Google's products. Don't include sensitive information.");
         HBox choices=new HBox(8);
         Button allow=Ui.button("Continue to Gemini",()->{
             CatalogAssistant.Plan plan=awaitingConsent;String pendingQuestion=awaitingQuestion;
+            try{preferenceStore.rememberGeminiConsent(user.getId());}
+            catch(RuntimeException error){choices.getChildren().clear();choices.getChildren().add(Ui.label(friendly(error),"chat-error"));return;}
             awaitingConsent=null;awaitingQuestion=null;consent=true;
             choices.getChildren().clear();choices.getChildren().add(Ui.label("Approved · this request is being sent to Gemini.","chat-muted"));
             if(plan!=null)startGemini(plan,pendingQuestion,previous);
@@ -129,7 +187,7 @@ public final class AssistantPanel extends BorderPane {
     private void startGemini(CatalogAssistant.Plan plan, String question, CatalogAssistant.Memory previous) {
         int ticket=++generation;setBusy(true);showThinking();
         Task<String> task=new Task<>() {@Override protected String call(){return gemini.answer(question,plan.facts());}};pending=task;
-        task.setOnSucceeded(e->{if(ticket!=generation)return;finish();renderAnswer(plan,previous,question,task.getValue());});
+        task.setOnSucceeded(e->{if(ticket!=generation)return;finish();renderAnswer(plan,previous,question,task.getValue(),true);});
         task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
             VBox error=bot(friendly(task.getException()));error.setId("assistant-error");error.getStyleClass().add("chat-error");
             error.getChildren().add(wrap("Your message is saved in this chat. Browsing and checkout still work.","chat-muted"));
@@ -138,27 +196,70 @@ public final class AssistantPanel extends BorderPane {
             }
         });start(task);
     }
-    private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text) {
+    private void showMatchedProducts(CatalogAssistant.Plan plan) {
+        if(plan.products().isEmpty())return;
+        VBox cards=bot("I found these products in FORGE. Product cards are shown even when the catalog has no specifications recorded.");
+        appendProductCards(cards,plan);
+    }
+    private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text, boolean cardsAlreadyShown) {
         memory=CatalogAssistant.remember(previous,plan,question,text);context.setText(plan.context());VBox bubble=bot(text);
-        for(Product p:plan.products())bubble.getChildren().add(productCard(p));
+        if(!cardsAlreadyShown)appendProductCards(bubble,plan);
+        scrollDown();
+    }
+    private void appendProductCards(VBox bubble,CatalogAssistant.Plan plan) {
+        int firstPage=Math.min(6,plan.products().size());
+        boolean recommendation=plan.ceiling()!=null;
+        for(int i=0;i<firstPage;i++)bubble.getChildren().add(productCard(plan.products().get(i),recommendation&&i==0,plan));
         if(plan.products().size()>1) {
-            List<Product> available=plan.products().stream().filter(p->p.getStock()>0).toList();
+            List<Product> available=plan.products().subList(0,firstPage).stream().filter(p->p.getStock()>0).toList();
             if(!available.isEmpty()) {Button all=Ui.button("Review adding these "+available.size()+" items",()->confirmAdd(available));all.setWrapText(true);all.getStyleClass().add("chat-orange");bubble.getChildren().add(all);}
         }
         if(!plan.products().isEmpty()) {
             Button cheaper=Ui.button("Show cheaper alternatives",()->submit("Show cheaper alternatives",false,false));cheaper.getStyleClass().add("chat-prompt");bubble.getChildren().add(cheaper);
         }
-        scrollDown();
+        if(plan.products().size()>firstPage)addLoadMore(bubble,plan,firstPage);
     }
-    private Node productCard(Product p) {
-        ProductArtwork photo=new ProductArtwork(p,54,true);photo.setMinSize(54,54);photo.setPrefSize(54,54);photo.setMaxSize(54,54);
+    private void addLoadMore(VBox bubble,CatalogAssistant.Plan plan,int offset) {
+        int nextCount=Math.min(6,plan.products().size()-offset);
+        Button more=Ui.button("Load more products · "+(plan.products().size()-offset)+" remaining",()->{});
+        // Replace the action with the next page, then leave a fresh action if more results remain.
+        more.setOnAction(e->{bubble.getChildren().remove(more);int end=Math.min(offset+6,plan.products().size());
+            for(int i=offset;i<end;i++)bubble.getChildren().add(productCard(plan.products().get(i),false,plan));
+            if(end<plan.products().size())addLoadMore(bubble,plan,end);scrollDown();});
+        more.setWrapText(true);more.getStyleClass().add("chat-prompt");more.setAccessibleText("Load the next "+nextCount+" matching products");
+        bubble.getChildren().add(more);
+    }
+    private Node productCard(Product p,boolean bestMatch,CatalogAssistant.Plan plan) {
+        ProductArtwork photo=new ProductArtwork(p,76,true);
+        // ProductArtwork binds its square height properties to its width; set only width here.
+        photo.setMinWidth(76);photo.setPrefWidth(76);photo.setMaxWidth(76);
+        Label category=Ui.label(p.getCategory().label().toUpperCase(Locale.ROOT),"chat-product-category");
         Label name=wrap(p.getName(),"chat-product-name");Label price=Ui.label(Money.format(p.getPrice()),"chat-price");
         Label stock=Ui.label(p.getStock()==0?"Out of stock":p.getStock()<=3?"Only "+p.getStock()+" left":"In stock",p.getStock()==0?"chat-stock-out":p.getStock()<=3?"chat-stock-low":"chat-stock");
-        Button view=Ui.button("View product",()->viewProduct.accept(p));view.getStyleClass().add("chat-link");
+        HBox priceRow=new HBox(8,price,stock);priceRow.setAlignment(Pos.CENTER_LEFT);priceRow.setMinWidth(0);
+        VBox details=new VBox(4,category,name,priceRow);details.setMinWidth(0);HBox.setHgrow(details,Priority.ALWAYS);
+        HBox summary=new HBox(12,photo,details);summary.setAlignment(Pos.CENTER_LEFT);
+        Label note=wrap(productNote(p,plan),"chat-product-note");
+        Button view=Ui.button("View",()->viewProduct.accept(p));view.getStyleClass().add("chat-link");
+        Button heart=savedItems.heart(p);heart.getStyleClass().add("chat-product-heart");
         Button add=Ui.button("+ Add",()->confirmAdd(List.of(p)));add.setDisable(p.getStock()==0);add.getStyleClass().add("chat-dark-button");
-        HBox actions=new HBox(6,view,add);actions.setAlignment(Pos.CENTER_LEFT);
-        VBox details=new VBox(4,name,price,stock,actions);details.setMinWidth(0);HBox.setHgrow(details,Priority.ALWAYS);
-        HBox card=new HBox(10,photo,details);card.setAlignment(Pos.TOP_LEFT);card.getStyleClass().add("chat-product-card");card.setId("assistant-product-"+p.getId());return card;
+        Region spacer=new Region();HBox.setHgrow(spacer,Priority.ALWAYS);
+        HBox actions=new HBox(8,view,spacer,heart,add);actions.setAlignment(Pos.CENTER_LEFT);
+        VBox card=new VBox(9);
+        if(bestMatch){Label badge=Ui.label("BEST MATCH","chat-best-match");badge.setMaxWidth(Double.MAX_VALUE);card.getChildren().add(badge);}
+        card.getChildren().addAll(summary,note,productEvidence(p),actions);
+        card.getStyleClass().add("chat-product-card");card.setId("assistant-product-"+p.getId());return card;
+    }
+    private static String productNote(Product p,CatalogAssistant.Plan plan) {
+        if(plan.ceiling()!=null)return "Within your stated budget.";
+        if(p.getStock()==1)return "Only one left; stock can change.";
+        if(p.getSpecifications().isBlank())return "Specifications aren’t recorded, so I can’t verify product fit.";
+        return "Product details are based on the current catalog record.";
+    }
+    private static Node productEvidence(Product p) {
+        String specs=p.getSpecifications().lines().filter(line->!line.isBlank()).limit(2).reduce((a,b)->a+" · "+b).orElse("");
+        if(specs.isBlank())return Ui.label("No specifications recorded","chat-evidence-missing");
+        return wrap("Catalog specs: "+specs,"chat-evidence");
     }
     private void confirmAdd(List<Product> products) {
         if(busy)return;

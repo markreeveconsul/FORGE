@@ -107,6 +107,20 @@ public final class GuiSmoke {
             // Reset the offscreen fixture after explicit snapshot resizing before the original suite.
             fx(()->{new ShopWindow((Stage)scene.getWindow(),services).showStorefront();return null;});catalog();
             check(fx(()->((Button)scene.lookup("#account")).getText()).equals("Sign in"),"Guests browse without login");
+            press("assistant-launcher");waitFor(()->scene.lookup("#assistant-panel").isVisible());
+            text("assistant-question","show me USB-C cable");press("assistant-send");
+            waitFor(()->!scene.lookup("#assistant-panel").lookupAll(".chat-product-card").isEmpty());
+            check(fx(()->scene.lookup("#assistant-product-3")!=null),
+                "Assistant renders the matched local catalog product as a card");
+            check(fx(()->scene.lookup("#assistant-product-3").lookup(".chat-product-name")!=null),
+                "Assistant card contains the matched product name");
+            check(fx(()->scene.lookup("#assistant-product-3").lookup(".chat-product-category")!=null&&
+                scene.lookup("#assistant-product-3").lookup(".chat-product-note")!=null),
+                "Assistant card shows category and catalog-grounded fit note");
+            check(fx(()->scene.lookup("#assistant-product-3").lookup(".chat-product-heart")!=null&&
+                scene.lookup("#assistant-product-3").lookup(".chat-dark-button")!=null),
+                "Assistant card offers save and add actions");
+            press("assistant-close");waitFor(()->!scene.lookup("#assistant-panel").isVisible());
             check(fx(()->scene.lookup("#search").isVisible()&&scene.lookup("#catalog-search")!=null),"Catalog search is reachable");
             check(fx(()->((Button)scene.lookup("#hero-electronics")).getGraphic().getLayoutBounds().getHeight())>=270,"Campaign artwork fills the area below integrated navigation");
             check(fx(()->{

@@ -38,7 +38,7 @@ public final class AssistantContext {
         }
         result.add("items", lines); result.add("verifiedWarnings", warnings);
         result.addProperty("cartSnapshotTotalUSD", total);
-        result.addProperty("compatibility", "Not certified. Missing technical specifications must be checked.");
+        result.addProperty("compatibility", CompatibilityAdvisor.report(items.stream().map(CartItem::getProduct).toList()));
         return result;
     }
     public static JsonObject order(User user, Order order) {

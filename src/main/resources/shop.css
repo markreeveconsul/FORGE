@@ -656,8 +656,14 @@
 .forge-chat .chat-bubble { -fx-background-color: #F5F5F3; -fx-background-radius: 4 16 16 16; -fx-padding: 12 14; }
 .forge-chat .chat-message-text { -fx-font-size: 13px; -fx-text-fill: #171719; -fx-line-spacing: 3; }
 .forge-chat .chat-user-text { -fx-background-color: #171719; -fx-text-fill: white; -fx-background-radius: 16 4 16 16; -fx-padding: 12 14; -fx-font-size: 13px; }
-.forge-chat .chat-product-card { -fx-background-color: white; -fx-border-color: #E4E4E4; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10; }
-.forge-chat .chat-product-name { -fx-font-size: 13px; -fx-font-weight: bold; }
+.forge-chat .chat-product-card { -fx-background-color: white; -fx-border-color: #E4E4E4; -fx-border-radius: 14; -fx-background-radius: 14; -fx-padding: 11; }
+.forge-chat .chat-product-category { -fx-font-family: "Consolas"; -fx-font-size: 9px; -fx-text-fill: #646467; -fx-letter-spacing: 1px; }
+.forge-chat .chat-product-name { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #171719; }
+.forge-chat .chat-product-note { -fx-background-color: #FFF2EE; -fx-background-radius: 8; -fx-padding: 7 9; -fx-font-size: 11px; -fx-text-fill: #292522; }
+.forge-chat .chat-best-match { -fx-background-color: #E65436; -fx-background-radius: 5; -fx-padding: 4 8; -fx-font-family: "Consolas"; -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #171719; }
+.forge-chat .button.chat-product-heart { -fx-min-width: 36; -fx-pref-width: 36; -fx-max-width: 36; -fx-min-height: 36; -fx-pref-height: 36; -fx-max-height: 36; -fx-font-size: 20px; }
+.forge-chat .chat-evidence { -fx-font-size: 11px; -fx-text-fill: #646467; }
+.forge-chat .chat-evidence-missing { -fx-font-size: 11px; -fx-text-fill: #89898C; -fx-font-style: italic; }
 .forge-chat .chat-price { -fx-font-size: 15px; -fx-font-weight: bold; }
 .forge-chat .chat-stock, .forge-chat .chat-stock-low, .forge-chat .chat-stock-out { -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 6; -fx-background-radius: 3; }
 .forge-chat .chat-stock { -fx-text-fill: #2E6744; -fx-background-color: #ECF3EC; }
