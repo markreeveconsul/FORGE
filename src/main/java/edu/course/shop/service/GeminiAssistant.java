@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import edu.course.shop.model.ProductReview;
 
 /** Optional, read-only Gemini client. No tools, writes, retries, or model fallback. */
 public final class GeminiAssistant {
@@ -105,6 +106,19 @@ public final class GeminiAssistant {
         } catch (IOException e) {
             throw new IllegalStateException("Gemini could not be reached. Check your connection and try again later.");
         } finally { busy.set(false); }
+    }
+
+    /** Summarizes public review text without sending reviewer names or account data. */
+    public String summarizeReviews(String productName, List<ProductReview> reviews) {
+        if (reviews == null || reviews.isEmpty()) throw new IllegalArgumentException("There are no customer reviews to summarize yet.");
+        JsonObject context = new JsonObject();
+        context.addProperty("product", productName == null ? "Product" : productName);
+        var records = new JsonArray();
+        for (ProductReview review : reviews.stream().limit(30).toList()) {
+            JsonObject item = new JsonObject(); item.addProperty("rating", review.rating()); item.addProperty("review", review.text()); records.add(item);
+        }
+        context.add("public_reviews", records);
+        return answer("Summarize the customer review themes for this product in at most 70 words. Include the average rating only if computed from the supplied ratings, two concise pros, and one caveat if supported. Do not invent consensus or details. If evidence is limited, say so.", context);
     }
     static String parse(Reply reply) {
         if (reply.status() == 429) throw new IllegalStateException("Gemini's quota or rate limit was reached. Wait, then check your free-tier limits in AI Studio. No automatic retry was made.");

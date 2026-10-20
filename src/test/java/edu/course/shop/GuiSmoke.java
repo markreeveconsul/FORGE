@@ -59,7 +59,7 @@ public final class GuiSmoke {
         DatabaseManager db=new DatabaseManager(Path.of(args[1]));db.initialize();
         ProductRepository pr=new ProductRepository();OrderRepository or=new OrderRepository();
         Services services=new Services(new AuthService(db,new UserRepository()),new ProductService(db,pr),
-            new CheckoutService(db,pr,or),new OrderService(db,or),new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()));
+            new CheckoutService(db,pr,or),new OrderService(db,or),new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()),new edu.course.shop.service.ProductReviewService(db,new edu.course.shop.persistence.ProductReviewRepository()));
         User admin=services.auth().login("admin","admin123");
         TechTestCatalog.prepare(services.products(),admin);
         Product lamp=services.products().get(6);

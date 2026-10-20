@@ -25,12 +25,18 @@ public final class AdminReportsView extends VBox {
     private final User admin;
     private final AdminService reports;
     private final Runnable viewOrders;
+    private final Runnable viewInventory;
     private final Label feedback = Ui.feedback("admin-report-feedback");
 
     public AdminReportsView(User admin, AdminService reports, Section section, Runnable viewOrders) {
+        this(admin, reports, section, viewOrders, viewOrders);
+    }
+
+    public AdminReportsView(User admin, AdminService reports, Section section, Runnable viewOrders, Runnable viewInventory) {
         this.admin = admin;
         this.reports = reports;
         this.viewOrders = viewOrders;
+        this.viewInventory = viewInventory;
         setId("admin-report-" + section.name().toLowerCase(Locale.ROOT));
         getStyleClass().add("page");
         setSpacing(16);
@@ -48,6 +54,13 @@ public final class AdminReportsView extends VBox {
         stats.getStyleClass().add("admin-report-stats");
         stats.setId("admin-report-stats");
         getChildren().add(stats);
+        TableView<AdminRepository.LowStockRow> lowStock = lowStockTable();
+        HBox stockHeader = new HBox(Ui.label("Restock attention", "section-title"), new javafx.scene.layout.Region(), Ui.link("Manage inventory →", viewInventory));
+        HBox.setHgrow(stockHeader.getChildren().get(1), Priority.ALWAYS);
+        stockHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        VBox stockCard = new VBox(12, stockHeader, lowStock);
+        stockCard.getStyleClass().add("card");
+        getChildren().add(stockCard);
         TableView<AdminRepository.OrderRow> recent = orderTable("admin-recent-orders");
         recent.setPrefHeight(130);
         Label title = Ui.label("Recent orders", "section-title");
@@ -58,7 +71,7 @@ public final class AdminReportsView extends VBox {
         VBox card = new VBox(14, header, recent);
         card.getStyleClass().add("card");
         getChildren().add(card);
-        Ui.async(this, "Loading store overview…", () -> new OverviewData(reports.summary(admin), reports.orders(admin)), data -> {
+        Ui.async(this, "Loading store overview…", () -> new OverviewData(reports.summary(admin), reports.orders(admin), reports.lowStock(admin)), data -> {
             var s = data.summary();
             stats.getChildren().setAll(
                 metric("ACTIVE PRODUCTS", Integer.toString(s.activeProducts())),
@@ -70,7 +83,24 @@ public final class AdminReportsView extends VBox {
             recent.setItems(FXCollections.observableArrayList(latest));
             fitTable(recent, latest.size());
             recent.setPlaceholder(Ui.label("No orders yet. New purchases will appear here.", "muted"));
+            lowStock.setItems(FXCollections.observableArrayList(data.lowStock()));
+            fitTable(lowStock, data.lowStock().size());
+            lowStock.setPlaceholder(Ui.label("All active products have more than five units in stock.", "muted"));
         }, error -> Ui.failure(feedback, error));
+    }
+
+    private TableView<AdminRepository.LowStockRow> lowStockTable() {
+        TableView<AdminRepository.LowStockRow> table = Ui.table();
+        table.setId("admin-low-stock-table");
+        table.getStyleClass().add("admin-report-table");
+        table.setPlaceholder(Ui.label("Loading inventory alerts…", "muted"));
+        table.getColumns().setAll(List.of(
+            Ui.column("PRODUCT", AdminRepository.LowStockRow::name),
+            Ui.column("CATEGORY", row -> row.category().replace('_', ' ')),
+            Ui.column("UNITS LEFT", row -> Integer.toString(row.stock()))));
+        table.setMinHeight(130);
+        table.setPrefHeight(130);
+        return table;
     }
 
     private VBox metric(String label, String value) {
@@ -171,5 +201,6 @@ public final class AdminReportsView extends VBox {
         table.setMaxHeight(Math.min(420, height));
     }
 
-    private record OverviewData(AdminRepository.Summary summary, List<AdminRepository.OrderRow> orders) { }
+    private record OverviewData(AdminRepository.Summary summary, List<AdminRepository.OrderRow> orders,
+                                List<AdminRepository.LowStockRow> lowStock) { }
 }

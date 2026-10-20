@@ -44,7 +44,7 @@ public final class TechCatalogSmoke {
     public static void main(String[] args)throws Exception {
         evidence=Path.of(args[0]);Files.createDirectories(evidence);DatabaseManager db=new DatabaseManager(Path.of(args[1]));db.initialize();
         ProductRepository pr=new ProductRepository();OrderRepository or=new OrderRepository();
-        Services services=new Services(new AuthService(db,new UserRepository()),new ProductService(db,pr),new CheckoutService(db,pr,or),new OrderService(db,or),new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()));
+        Services services=new Services(new AuthService(db,new UserRepository()),new ProductService(db,pr),new CheckoutService(db,pr,or),new OrderService(db,or),new edu.course.shop.service.AdminService(db,new edu.course.shop.persistence.AdminRepository()),new edu.course.shop.service.ProductReviewService(db,new edu.course.shop.persistence.ProductReviewRepository()));
         CountDownLatch ready=new CountDownLatch(1);Platform.startup(ready::countDown);ready.await();Platform.setImplicitExit(false);
         try {
             fx(()->{Motion.reducedProperty().set(true);stage=new Stage();scene=new Scene(new StackPane(),1280,860);scene.getStylesheets().add(TechCatalogSmoke.class.getResource("/shop.css").toExternalForm());stage.setScene(scene);stage.show();new ShopWindow(stage,services).showStorefront();return null;});catalog();

@@ -13,6 +13,7 @@ public final class AdminRepository {
     public record OrderRow(long id, String customer, String createdAt, String paymentMethod,
                            String paymentStatus, int itemCount, long totalCents) { }
     public record CustomerRow(long id, String username, String displayName, int orderCount, long orderCents) { }
+    public record LowStockRow(long id, String name, String category, int stock) { }
 
     public Summary summary(Connection c) throws SQLException {
         try (PreparedStatement p = c.prepareStatement("""
@@ -27,6 +28,15 @@ public final class AdminRepository {
             return new Summary(r.getInt("active_products"), r.getInt("low_stock"), r.getInt("orders"),
                 r.getInt("customers"), r.getLong("order_cents"));
         }
+    }
+
+    public List<LowStockRow> lowStock(Connection c) throws SQLException {
+        List<LowStockRow> rows = new ArrayList<>();
+        try (PreparedStatement p = c.prepareStatement("SELECT id,name,category,stock FROM products WHERE active=1 AND stock<=5 ORDER BY stock,name");
+             ResultSet r = p.executeQuery()) {
+            while (r.next()) rows.add(new LowStockRow(r.getLong("id"), r.getString("name"), r.getString("category"), r.getInt("stock")));
+        }
+        return List.copyOf(rows);
     }
 
     public List<OrderRow> orders(Connection c) throws SQLException {
