@@ -1,5 +1,7 @@
 target/
 data/
 .tools/
+.forge-gemini-key.xml
+.forge-ai-free-tier-confirmed
 .idea/
 *.iml
