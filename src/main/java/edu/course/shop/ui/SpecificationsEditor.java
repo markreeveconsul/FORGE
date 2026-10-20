@@ -12,7 +12,9 @@ public final class SpecificationsEditor extends VBox {
         raw.textProperty().addListener((o,a,b)->{if(!syncing)render();});
         Button add=Ui.button("+ Add specification",()->{addRow("","");});add.setId("add-specification");
         TitledPane advanced=new TitledPane("Edit as text",raw);advanced.setExpanded(false);advanced.setAnimated(false);
-        getChildren().addAll(rows,add,advanced);render();
+        Label guidance=Ui.label("Use manufacturer-confirmed values. Helpful keys: CPU and motherboard—Socket; RAM and motherboard—Memory type; GPU—Length and Recommended PSU; case—Maximum GPU length; PSU—Wattage. Missing facts stay unverified by FORGE.","muted");
+        guidance.setWrapText(true);
+        getChildren().addAll(rows,add,guidance,advanced);render();
     }
     public String getText(){return raw.getText();}
     public void setText(String value){raw.setText(value);}

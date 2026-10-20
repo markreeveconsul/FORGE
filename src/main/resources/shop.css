@@ -639,3 +639,45 @@
 .glass-image-viewer .viewer-columns { -fx-spacing: 14; }
 
 .glass-image-viewer .viewer-info-scroll, .glass-image-viewer .viewer-info-scroll > .viewport { -fx-background-color: transparent; -fx-padding: 0; -fx-border-width: 0; }
+
+/* Forge Assistant: scoped to the side panel; based on the supplied chat mockups. */
+.forge-chat { -fx-background-color: white; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.20),24,0,-6,0); -fx-font-size: 13px; }
+.forge-chat .chat-header { -fx-background-color: #171719; -fx-padding: 14 16; }
+.forge-chat .chat-title { -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 17px; }
+.forge-chat .chat-subtitle { -fx-text-fill: #C9C8C2; -fx-font-size: 10px; }
+.forge-chat .chat-spark, .forge-chat .chat-welcome-spark { -fx-background-color: #E65436; -fx-background-radius: 10; -fx-padding: 7 10; -fx-font-size: 20px; -fx-text-fill: #171719; }
+.forge-chat .chat-welcome-spark { -fx-padding: 10 15; -fx-font-size: 26px; }
+.forge-chat .button.chat-header-button { -fx-background-color: transparent; -fx-border-color: #4A4A4D; -fx-text-fill: white; -fx-min-height: 30; -fx-padding: 5 9; -fx-font-size: 11px; -fx-background-radius: 16; -fx-border-radius: 16; }
+.forge-chat .chat-context { -fx-background-color: #F5F5F3; -fx-padding: 7 16; -fx-border-color: transparent transparent #E4E4E4 transparent; }
+.forge-chat .chat-context-text, .forge-chat .chat-muted { -fx-font-size: 12px; -fx-text-fill: #646467; }
+.forge-chat .chat-messages { -fx-padding: 18 16; -fx-background-color: white; }
+.forge-chat .chat-welcome { -fx-padding: 10 2 20 2; }
+.forge-chat .chat-welcome-title { -fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #171719; }
+.forge-chat .chat-bubble { -fx-background-color: #F5F5F3; -fx-background-radius: 4 16 16 16; -fx-padding: 12 14; }
+.forge-chat .chat-message-text { -fx-font-size: 13px; -fx-text-fill: #171719; -fx-line-spacing: 3; }
+.forge-chat .chat-user-text { -fx-background-color: #171719; -fx-text-fill: white; -fx-background-radius: 16 4 16 16; -fx-padding: 12 14; -fx-font-size: 13px; }
+.forge-chat .chat-product-card { -fx-background-color: white; -fx-border-color: #E4E4E4; -fx-border-radius: 14; -fx-background-radius: 14; -fx-padding: 11; }
+.forge-chat .chat-product-category { -fx-font-family: "Consolas"; -fx-font-size: 9px; -fx-text-fill: #646467; -fx-letter-spacing: 1px; }
+.forge-chat .chat-product-name { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #171719; }
+.forge-chat .chat-product-note { -fx-background-color: #FFF2EE; -fx-background-radius: 8; -fx-padding: 7 9; -fx-font-size: 11px; -fx-text-fill: #292522; }
+.forge-chat .chat-best-match { -fx-background-color: #E65436; -fx-background-radius: 5; -fx-padding: 4 8; -fx-font-family: "Consolas"; -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #171719; }
+.forge-chat .button.chat-product-heart { -fx-min-width: 36; -fx-pref-width: 36; -fx-max-width: 36; -fx-min-height: 36; -fx-pref-height: 36; -fx-max-height: 36; -fx-font-size: 20px; }
+.forge-chat .chat-evidence { -fx-font-size: 11px; -fx-text-fill: #646467; }
+.forge-chat .chat-evidence-missing { -fx-font-size: 11px; -fx-text-fill: #89898C; -fx-font-style: italic; }
+.forge-chat .chat-price { -fx-font-size: 15px; -fx-font-weight: bold; }
+.forge-chat .chat-stock, .forge-chat .chat-stock-low, .forge-chat .chat-stock-out { -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 6; -fx-background-radius: 3; }
+.forge-chat .chat-stock { -fx-text-fill: #2E6744; -fx-background-color: #ECF3EC; }
+.forge-chat .chat-stock-low { -fx-text-fill: #92400E; -fx-background-color: #FEF3C7; }
+.forge-chat .chat-stock-out { -fx-text-fill: #A72820; -fx-background-color: #FBECE8; }
+.forge-chat .button.chat-dark-button { -fx-background-color: #171719; -fx-border-color: #171719; -fx-text-fill: white; -fx-padding: 6 12; -fx-min-height: 32; -fx-font-size: 12px; }
+.forge-chat .button.chat-orange, .assistant-launcher { -fx-background-color: #E65436; -fx-border-color: #E65436; -fx-text-fill: #171719; -fx-font-weight: bold; }
+.assistant-launcher { -fx-padding: 12 20; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.25),16,0,0,5); }
+.forge-chat .button.chat-prompt { -fx-background-color: white; -fx-border-color: #CFCEC8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12; -fx-font-size: 12px; -fx-alignment: center-left; }
+.forge-chat .button.chat-link { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #171719; -fx-underline: true; -fx-padding: 3 2; -fx-min-height: 26; -fx-font-size: 11px; }
+.forge-chat .chat-composer { -fx-padding: 12 16 8 16; -fx-border-color: #E4E4E4 transparent transparent transparent; -fx-background-color: white; }
+.forge-chat .chat-composer .text-field { -fx-background-radius: 23; -fx-border-radius: 23; -fx-padding: 12 14; -fx-font-size: 12px; }
+.forge-chat .button.chat-send { -fx-min-width: 44; -fx-pref-width: 44; -fx-max-width: 44; -fx-min-height: 44; -fx-pref-height: 44; -fx-padding: 0; -fx-background-color: #E65436; -fx-border-color: #E65436; -fx-text-fill: #171719; -fx-font-size: 23px; }
+.forge-chat .chat-disclaimer-row { -fx-padding: 0 16 10 16; -fx-background-color: white; }
+.forge-chat .chat-disclaimer { -fx-font-size: 10px; -fx-text-fill: #646467; }
+.forge-chat .chat-error { -fx-background-color: #FBECE8; }
+.forge-chat .chat-error .chat-message-text { -fx-text-fill: #A72820; }

@@ -58,10 +58,15 @@ public final class ShopWindow {
     private CartDrawer activeDrawer;
     private Region drawerScrim;
     private boolean drawerClosing;
+    private final edu.course.shop.service.GeminiAssistant assistant=new edu.course.shop.service.GeminiAssistant();
+    private AssistantPanel assistantPanel;
+    private Button assistantLauncher;
+    private Product assistantProduct;
 
     public ShopWindow(Stage stage,Services services){this.stage=stage;this.services=services;this.saved=new SavedItems(services.accounts());search.setId("search");}
     public void showStorefront(){buildShell();showCatalog();}
     public void showLogin(){
+        if(assistantPanel!=null)assistantPanel.stop();
         dismissDrawer();stopFeedbackAnimations();
         LoginView login=new LoginView(services.auth(),this::signedIn);
         Button browse=Ui.button("← Continue browsing",this::showStorefront);browse.getStyleClass().add("header-link");browse.getStyleClass().add("login-browse");
@@ -108,6 +113,7 @@ public final class ShopWindow {
     }
     private Button link(String text,Runnable action){Button b=Ui.button(text,action);b.getStyleClass().add("header-link");return b;}
     private void buildShell(){
+        if(assistantPanel!=null)assistantPanel.stop();assistantPanel=null;assistantProduct=null;
         dismissDrawer();stopFeedbackAnimations();
         shell=new BorderPane();shell.setMinSize(0,0);
         // The toast sits in the window stack, above the page and below the cart drawer.
@@ -205,15 +211,37 @@ public final class ShopWindow {
         CheckBox motion=new CheckBox("Reduce motion");motion.setId("reduce-motion");motion.getStyleClass().add("motion-control");
         motion.selectedProperty().bindBidirectional(Motion.reducedProperty());
         HBox footer=new HBox(16,Ui.label("FORGE · Good things, every day.","muted"),footerSpace,motion,link("About",this::showInfo),Ui.label("USD · Course demo · Simulated payments","muted"));
+        if(!user.canManageProducts()) {
+            Button ask=link("Ask FORGE",this::toggleAssistant);
+            ask.setId("ask-forge");footer.getChildren().add(2,ask);
+        }
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
         shell.setBottom(footer);stage.getScene().setRoot(window);
+        if(!user.canManageProducts()) {
+            assistantLauncher=Ui.button("✦  Ask Forge",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
+            assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,18,74,0));
+            assistantPanel=new AssistantPanel(services,user,()->cart,()->assistantProduct,assistant,this::showDetails,this::updateCart,saved,this::toggleAssistant);
+            assistantPanel.setVisible(false);assistantPanel.managedProperty().bind(assistantPanel.visibleProperty());
+            assistantPanel.prefWidthProperty().bind(javafx.beans.binding.Bindings.min(420,window.widthProperty()));
+            assistantPanel.maxWidthProperty().bind(assistantPanel.prefWidthProperty());
+            assistantPanel.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(()->Math.max(0,window.getHeight()-shell.getTop().getBoundsInParent().getHeight()),window.heightProperty(),shell.getTop().boundsInParentProperty()));
+            assistantPanel.maxHeightProperty().bind(assistantPanel.prefHeightProperty());StackPane.setAlignment(assistantPanel,Pos.BOTTOM_RIGHT);
+            assistantPanel.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED,e->{if(e.getCode()==KeyCode.ESCAPE){toggleAssistant();e.consume();}});
+            window.getChildren().addAll(assistantLauncher,assistantPanel);
+        }
+    }
+    private void toggleAssistant(){
+        if(assistantPanel==null)return;
+        boolean open=!assistantPanel.isVisible();assistantPanel.setVisible(open);assistantLauncher.setVisible(!open);
+        if(open){assistantPanel.refreshContext();assistantPanel.toFront();assistantPanel.setTranslateX(0);if(!Motion.isReduced()){TranslateTransition slide=new TranslateTransition(Duration.millis(210),assistantPanel);slide.setFromX(420);slide.setToX(0);slide.setInterpolator(Interpolator.EASE_OUT);slide.play();}}
+        else {assistantPanel.stop();assistantLauncher.requestFocus();}
     }
     private void showInfo(){
         Alert info=new Alert(Alert.AlertType.INFORMATION,"Browse without an account. Sign in as a customer to place a simulated order.\n\nShipping is free and taxes are omitted in this demo. No real money or delivery is involved.\n\nAdmins manage descriptions, photos and inventory. Your cart is temporary; completed orders are saved.",ButtonType.OK);
         info.initOwner(stage);info.setTitle("About FORGE");info.setHeaderText("A small shop. Good things.");info.showAndWait();
     }
     private void category(int index){catalogState.setCategoryIndex(index);catalogState.setScrollPosition(0);search.clear();showCatalog();}
-    private void show(Node page){if(shell.getCenter() instanceof CatalogView previous&&previous!=page)previous.stopSearchSuggestions();dismissDrawer();stopFeedbackAnimations();if(headerNavigation!=null&&!(page instanceof CatalogView)){headerNavigation.setVisible(false);headerNavigation.setManaged(false);}shell.setCenter(page);if(!(page instanceof CatalogView)){search.setOnAction(e->{catalogState.setScrollPosition(0);showCatalog();});Motion.reveal(page);}updateNav();}
+    private void show(Node page){assistantProduct=null;if(shell.getCenter() instanceof CatalogView previous&&previous!=page)previous.stopSearchSuggestions();dismissDrawer();stopFeedbackAnimations();if(headerNavigation!=null&&!(page instanceof CatalogView)){headerNavigation.setVisible(false);headerNavigation.setManaged(false);}shell.setCenter(page);if(!(page instanceof CatalogView)){search.setOnAction(e->{catalogState.setScrollPosition(0);showCatalog();});Motion.reveal(page);}updateNav();if(assistantPanel!=null)assistantPanel.refreshContext();}
 
     /** Highlights the header button for the current category, only while the storefront is showing. */
     private void updateNav(){
@@ -261,6 +289,7 @@ public final class ShopWindow {
         dismissDrawer();Ui.async(shell,"Opening product…",()->services.products().get(product.getId()),latest->{
             if(!latest.isActive()){showCatalog();return;}
             show(new ProductDetailView(latest,user,cart,new CartService(services.products()),services.products(),this::updateCart,this::showCatalog,this::showCartDrawer,this::showDetails,saved,this::showToast));
+            assistantProduct=latest;if(assistantPanel!=null)assistantPanel.refreshContext();
         },Ui::error);
     }
     public void showCartDrawer(){
