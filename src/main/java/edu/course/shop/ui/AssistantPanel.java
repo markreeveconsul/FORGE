@@ -195,7 +195,9 @@ public final class AssistantPanel extends BorderPane {
         task.setOnSucceeded(e->{if(ticket!=generation)return;finish();renderAnswer(plan,previous,question,task.getValue(),true);});
         task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
             VBox error=bot(friendly(task.getException()));error.setId("assistant-error");error.getStyleClass().add("chat-error");
-            error.getChildren().add(wrap("Your message is saved in this chat. Browsing and checkout still work.","chat-muted"));
+            error.getChildren().add(wrap(plan.products().isEmpty()
+                ? "Your message is saved in this chat. Browsing and checkout still work."
+                : "Your product matches are above. You can still view, save or add them to your cart.","chat-muted"));
             if(!isSetupFailure(task.getException())) {
                 Button again=Ui.button("Try again",()->{submit(question,plan.orderContext(),true);});again.getStyleClass().add("chat-dark-button");error.getChildren().add(again);
             }
@@ -203,7 +205,7 @@ public final class AssistantPanel extends BorderPane {
     }
     private void showMatchedProducts(CatalogAssistant.Plan plan) {
         if(plan.products().isEmpty())return;
-        VBox cards=bot("I found these products in FORGE. Product cards are shown even when the catalog has no specifications recorded.");
+        VBox cards=bot("Here's what I found.");
         appendProductCards(cards,plan);
     }
     private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text, boolean cardsAlreadyShown) {
@@ -244,7 +246,7 @@ public final class AssistantPanel extends BorderPane {
         HBox priceRow=new HBox(8,price,stock);priceRow.setAlignment(Pos.CENTER_LEFT);priceRow.setMinWidth(0);
         VBox details=new VBox(4,category,name,priceRow);details.setMinWidth(0);HBox.setHgrow(details,Priority.ALWAYS);
         HBox summary=new HBox(12,photo,details);summary.setAlignment(Pos.CENTER_LEFT);
-        Label note=wrap(productNote(p,plan),"chat-product-note");
+        String note=productNote(p,plan);
         Button view=Ui.button("View",()->viewProduct.accept(p));view.getStyleClass().add("chat-link");
         Button heart=savedItems.heart(p);heart.getStyleClass().add("chat-product-heart");
         Button add=Ui.button("+ Add",()->confirmAdd(List.of(p)));add.setDisable(p.getStock()==0);add.getStyleClass().add("chat-dark-button");
@@ -252,19 +254,23 @@ public final class AssistantPanel extends BorderPane {
         HBox actions=new HBox(8,view,spacer,heart,add);actions.setAlignment(Pos.CENTER_LEFT);
         VBox card=new VBox(9);
         if(bestMatch){Label badge=Ui.label("BEST MATCH","chat-best-match");badge.setMaxWidth(Double.MAX_VALUE);card.getChildren().add(badge);}
-        card.getChildren().addAll(summary,note,productEvidence(p),actions);
+        card.getChildren().add(summary);
+        if(!note.isBlank())card.getChildren().add(wrap(note,"chat-product-note"));
+        Node evidence=productEvidence(p);
+        if(evidence!=null)card.getChildren().add(evidence);
+        card.getChildren().add(actions);
         card.getStyleClass().add("chat-product-card");card.setId("assistant-product-"+p.getId());return card;
     }
     private static String productNote(Product p,CatalogAssistant.Plan plan) {
-        if(plan.ceiling()!=null)return "Within your stated budget.";
+        if(p.getStock()==0)return "Ask me for similar products that are available.";
+        if(plan.ceiling()!=null)return "Within your "+Money.format(plan.ceiling())+" budget.";
         if(p.getStock()==1)return "Only one left; stock can change.";
-        if(p.getSpecifications().isBlank())return "Specifications aren’t recorded, so I can’t verify product fit.";
-        return "Product details are based on the current catalog record.";
+        return "";
     }
     private static Node productEvidence(Product p) {
         String specs=p.getSpecifications().lines().filter(line->!line.isBlank()).limit(2).reduce((a,b)->a+" · "+b).orElse("");
-        if(specs.isBlank())return Ui.label("No specifications recorded","chat-evidence-missing");
-        return wrap("Catalog specs: "+specs,"chat-evidence");
+        if(specs.isBlank())return null;
+        return wrap("Key specifications: "+specs,"chat-evidence");
     }
     private void confirmAdd(List<Product> products) {
         if(busy)return;
@@ -300,12 +306,15 @@ public final class AssistantPanel extends BorderPane {
     private static Label wrap(String text,String style){Label label=Ui.label(text,style);label.setWrapText(true);label.setMinWidth(0);label.setMaxWidth(Double.MAX_VALUE);return label;}
     private void scrollDown(){javafx.application.Platform.runLater(()->{messages.applyCss();messages.layout();scroll.setVvalue(1);});}
     private static void start(Task<?> task){Thread thread=new Thread(task,"forge-chat");thread.setDaemon(true);thread.start();}
-    private static String friendly(Throwable error){
+    static String friendly(Throwable error){
         String msg=error.getMessage()==null?"":error.getMessage();
-        if(msg.contains("GEMINI_API_KEY")||msg.contains("FORGE_AI")||msg.contains("rejected access"))return "Gemini isn't configured for this launch. Restart with the FORGE launcher and enter your API key when prompted. Product listings by category and budget still work locally.";
-        if(msg.contains("quota")||msg.contains("rate limit"))return "The assistant has reached its usage limit. Please try again later. You can still browse and search the catalog.";
+        if(msg.contains("GEMINI_API_KEY")||msg.contains("FORGE_AI")||msg.contains("rejected access"))return "FORGE AI is unavailable right now. You can still browse products and use your cart.";
+        if(msg.contains("quota")||msg.contains("rate limit"))return "FORGE AI has reached its current usage limit. Please try again later. You can still browse and search the catalog.";
+        if(msg.matches("(?s).*\\bHTTP\\s+5\\d\\d\\b.*"))return "FORGE AI is temporarily unavailable. Please try again in a moment.";
+        if(msg.contains("could not be reached"))return "FORGE AI couldn't connect. Check your internet connection and try again.";
+        if(msg.startsWith("Gemini"))return "FORGE AI couldn't complete that answer. Please try again.";
         if(error instanceof IllegalArgumentException||error instanceof IllegalStateException||error instanceof edu.course.shop.exception.ValidationException)return msg;
-        return "I couldn't reach the assistant. Please try again.";
+        return "FORGE AI couldn't complete that request. Please try again.";
     }
     private static boolean isSetupFailure(Throwable error){String msg=error.getMessage()==null?"":error.getMessage();return msg.contains("GEMINI_API_KEY")||msg.contains("FORGE_AI")||msg.contains("rejected access");}
 }
