@@ -19,7 +19,7 @@ requires a separate confirmation in FORGE.
    To start from PowerShell without the launcher's prompts, use:
 
 ```powershell
-$forgeKey = Read-Host '' -AsSecureString
+$forgeKey = Read-Host 'YOUR_GEMINI_API_KEY' -AsSecureString
 $env:GEMINI_API_KEY = [System.Net.NetworkCredential]::new('', $forgeKey).Password
 $env:FORGE_AI_FREE_TIER_CONFIRMED = 'true'
 $env:FORGE_AI_MODEL = 'gemini-3.8-flash'

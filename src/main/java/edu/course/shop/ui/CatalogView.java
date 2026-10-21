@@ -12,13 +12,17 @@ import edu.course.shop.model.Product;
 import edu.course.shop.model.User;
 import edu.course.shop.service.CartService;
 import edu.course.shop.service.ProductService;
-import edu.course.shop.service.VisualProductSearch;
+import edu.course.shop.service.GeminiAssistant;
+import edu.course.shop.service.AssistantPreferences;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
@@ -30,10 +34,14 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
 public final class CatalogView extends VBox {
+    private record ImageSearchData(List<Product> catalog, GeminiAssistant.ImageSearchResult response) { }
     private boolean clearing, restoring;
     private final javafx.beans.property.BooleanProperty rangeApplied=new javafx.beans.property.SimpleBooleanProperty();
     private final Button toggle=Ui.button("Filters +",()->{});
-    private final VisualProductSearch visualSearch=new VisualProductSearch();
+    private Button imageSearch;
+    private Task<?> imageSearchTask;
+    private final GeminiAssistant gemini;
+    private final AssistantPreferences preferences;
     private final FlowPane filters=new FlowPane(20,18);
     private final TilePane grid=new TilePane(20,24);
     private final TextField search;
@@ -48,6 +56,7 @@ public final class CatalogView extends VBox {
     private final Label feedback=Ui.feedback("catalog-feedback"),result=Ui.label("","muted"),title=Ui.label("Fresh from the forge","collection-title");
     private final FlowPane chips=new FlowPane(8,8);
     private final VBox results=new VBox(16);
+    private VBox collectionSection;
     private final ScrollPane scroll;
     private final EditorialHeader hero;
     private final HBox searchBar;
@@ -72,13 +81,20 @@ public final class CatalogView extends VBox {
     /** Original signature kept, so any existing caller or test still compiles. */
     public CatalogView(User user,Cart cart,ProductService products,CartService carts,Runnable changed,Runnable openCart,
                        Consumer<Product> details,TextField search,CatalogState state) {
-        this(user,cart,products,carts,changed,openCart,details,search,state,null,null);
+        this(user,cart,products,carts,changed,openCart,details,search,state,null,null,new GeminiAssistant(),new AssistantPreferences());
     }
 
     public CatalogView(User user,Cart cart,ProductService products,CartService carts,Runnable changed,Runnable openCart,
                        Consumer<Product> details,TextField search,CatalogState state,Consumer<String> toast,Runnable navSync) {
+        this(user,cart,products,carts,changed,openCart,details,search,state,toast,navSync,new GeminiAssistant(),new AssistantPreferences());
+    }
+
+    public CatalogView(User user,Cart cart,ProductService products,CartService carts,Runnable changed,Runnable openCart,
+                       Consumer<Product> details,TextField search,CatalogState state,Consumer<String> toast,Runnable navSync,
+                       GeminiAssistant gemini,AssistantPreferences preferences) {
         this.user=user;this.cart=cart;this.products=products;this.carts=carts;this.changed=changed;
         this.details=details;this.search=search;this.state=state;this.toast=toast;this.navSync=navSync;
+        this.gemini=gemini;this.preferences=preferences;
         getStyleClass().add("page");setSpacing(16);
         category.getItems().add("All categories");for(Category c:Category.shopping())category.getItems().add(Ui.category(c));
         category.getSelectionModel().select(state.getCategoryIndex());category.setId("category");category.setAccessibleText("Filter by category");
@@ -125,14 +141,14 @@ public final class CatalogView extends VBox {
         sort.getStyleClass().add("catalog-outline-control");
         sort.setButtonCell(new javafx.scene.control.ListCell<>(){ @Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:"Sort by");} });
         sort.setPrefWidth(105);
-        Button imageSearch=Ui.button("Find by image",this::chooseImage);imageSearch.setId("catalog-image-search");imageSearch.setAccessibleText("Find visually similar products using an image on this device");imageSearch.getStyleClass().addAll("catalog-outline-control","catalog-image-search");
+        imageSearch=Ui.button("Find by image",this::chooseImage);imageSearch.setId("catalog-image-search");imageSearch.setAccessibleText("Find visually similar products using an image search");imageSearch.getStyleClass().addAll("catalog-outline-control","catalog-image-search");
         HBox tools=new HBox(12,imageSearch,toggle,sort);tools.setAlignment(Pos.BOTTOM_RIGHT);
         HBox toolbar=new HBox(20,collectionTitle,spacer,tools);toolbar.setAlignment(Pos.BOTTOM_LEFT);
         toolbar.getStyleClass().add("catalog-toolbar");
         chips.setId("filter-chips");chips.managedProperty().bind(chips.visibleProperty());
-        results.getChildren().add(grid);
+        results.getChildren().setAll(Ui.skeleton());
 
-        VBox collection=new VBox(16,toolbar,chips,feedback,results);collection.getStyleClass().add("collection-section");
+        VBox collection=new VBox(16,toolbar,chips,feedback,results);collectionSection=collection;collection.getStyleClass().add("collection-section");
         VBox content=new VBox(0);
         hero=new EditorialHeader(()->{
             content.applyCss();content.layout();
@@ -315,23 +331,84 @@ public final class CatalogView extends VBox {
     }
     private void chooseImage() {
         if (getScene()==null || getScene().getWindow()==null) return;
+        if(imageSearchTask!=null)return;
+        if(!gemini.configurationProblem().isBlank()){Ui.failure(feedback,new IllegalStateException(gemini.configurationProblem()));return;}
         FileChooser chooser=new FileChooser();chooser.setTitle("Find similar products from an image");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images (PNG, JPEG)","*.png","*.jpg","*.jpeg"));
         java.io.File file=chooser.showOpenDialog(getScene().getWindow());
         if(file==null)return;
+        if(!preferences.hasGeminiImageConsent(user.getId())&&!confirmImageSharing())return;
         suggestions.dismiss();clearing=true;search.clear();category.getSelectionModel().selectFirst();budget.getSelectionModel().selectFirst();available.setSelected(false);minimum.clear();maximum.clear();state.setPriceRange("","");rangeApplied.set(false);clearing=false;state.setCategoryIndex(0);state.setBudgetIndex(0);state.setInStockOnly(false);syncToggle();if(navSync!=null)navSync.run();
-        Ui.async(this,"Finding visually similar products on this device…",()->{
+        title.setText("Finding visual matches");result.setText("Comparing your image with the catalog…");feedback.setText("");chips.getChildren().clear();chips.setVisible(false);
+        results.setMinHeight(230);results.getChildren().setAll(imageSearchProgress());imageSearch.setDisable(true);
+        Task<ImageSearchData> task=new Task<>() {
+            @Override protected ImageSearchData call() {
             byte[] image=edu.course.shop.service.ProductPhotos.read(file.toPath());
             List<Product> catalog=products.search(user,"",null);
-            return visualSearch.rank(image,catalog);
-        },matches->{
+            return new ImageSearchData(catalog,gemini.searchByImage(image,catalog));
+            }
+        };
+        imageSearchTask=task;
+        task.setOnSucceeded(event->{
+            imageSearchTask=null;imageSearch.setDisable(false);results.setMinHeight(0);
+            ImageSearchData data=task.getValue();
             state.setScrollPosition(0);grid.getChildren().clear();
+            List<Product> matches=data.response().matches().stream().map(match->data.catalog().stream().filter(p->p.getId()==match.productId()).findFirst().orElse(null)).filter(java.util.Objects::nonNull).toList();
             for(Product product:matches){ProductCard card=new ProductCard(product,()->add(product),()->details.accept(product));if(saved!=null)card.enableSavedItems(saved);grid.getChildren().add(card);}
-            title.setText("Similar-looking gear");result.setText(matches.size()+" products with photos · matched on this device");
-            Button imageChip=Ui.button("Image search · kept on this device  ×",this::refresh);imageChip.getStyleClass().add("filter-chip");chips.getChildren().setAll(imageChip);chips.setVisible(true);
-            feedback.setText("");results.getChildren().setAll(matches.isEmpty()?Ui.empty("No catalog photos to compare","Products without photos are skipped. Try another image.","Show all products",this::refresh):grid);
-            scroll.setVvalue(0);
-        },error->Ui.failure(feedback,error));
+            title.setText("Visual matches for "+data.response().identifiedItem());result.setText(matches.size()+(matches.size()==1?" close match":" close matches")+" · matched by FORGE AI");
+            Button imageChip=Ui.button("FORGE AI image search  ×",this::refresh);imageChip.getStyleClass().add("filter-chip");chips.getChildren().setAll(imageChip);chips.setVisible(true);
+            feedback.setText("");results.getChildren().setAll(matches.isEmpty()?Ui.empty("No close catalog matches","Gemini recognized "+data.response().identifiedItem()+" but did not find a sufficiently similar listed product.","Show all products",this::refresh):grid);
+            Platform.runLater(this::scrollToCollection);
+        });
+        task.setOnFailed(event->{
+            imageSearchTask=null;imageSearch.setDisable(false);results.setMinHeight(0);
+            Ui.failure(feedback,new edu.course.shop.exception.ValidationException(imageSearchFailure(task.getException())));
+            title.setText("Image search failed");
+            result.setText("Try again or choose another photo.");
+            results.getChildren().setAll(Ui.empty("Image search couldn't finish","Check the error above. You can retry or search with a different photo.","Choose another image",this::chooseImage));
+            Platform.runLater(this::scrollToCollection);
+        });
+        Thread worker=new Thread(task,"forge-image-search");worker.setDaemon(true);worker.start();
+    }
+    private static String imageSearchFailure(Throwable error) {
+        Throwable cause=error;
+        while(cause!=null&&cause.getCause()!=null&&cause.getCause()!=cause)cause=cause.getCause();
+        String message=cause==null?"":cause.getMessage();
+        if(message!=null&&!message.isBlank()&&(cause instanceof IllegalStateException||cause instanceof IllegalArgumentException||cause instanceof edu.course.shop.exception.ValidationException)) {
+            message=message.replaceAll("[\\r\\n\\t]+"," ").trim();
+            return message.length()>280?message.substring(0,277).strip()+"…":message;
+        }
+        return "Visual search couldn't complete. Check your internet connection, Gemini model access and free-tier quota, then try again.";
+    }
+    private VBox imageSearchProgress() {
+        ProgressIndicator spinner=new ProgressIndicator();spinner.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);spinner.setPrefSize(48,48);spinner.setMaxSize(48,48);spinner.setAccessibleText("Searching product images");spinner.setStyle("-fx-accent: #ef502b;");
+        Label message=Ui.label("Comparing your image with FORGE products…","muted");message.setAccessibleText("Image search is in progress");
+        VBox loading=new VBox(12,spinner,message);loading.setAlignment(Pos.CENTER);loading.setMinHeight(210);loading.getStyleClass().add("image-search-loading");return loading;
+    }
+    private void scrollToCollection() {
+        if(scroll.getContent()==null)return;
+        scroll.getContent().applyCss();if(scroll.getContent() instanceof javafx.scene.Parent parent)parent.layout();
+        double range=scroll.getContent().getLayoutBounds().getHeight()-scroll.getViewportBounds().getHeight();
+        scrollTo(range<=0?0:collectionSection.getBoundsInParent().getMinY()/range);
+    }
+    private boolean confirmImageSharing() {
+        javafx.scene.control.CheckBox agree=new javafx.scene.control.CheckBox("I agree to send the selected image and FORGE catalog product photos to Google for visual matching.");
+        agree.setWrapText(true);agree.setId("image-search-google-consent");
+        javafx.scene.control.Alert dialog=new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        ButtonType send=new ButtonType("Agree and search",javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.setTitle("Image search privacy");dialog.setHeaderText("Compare images with Google Gemini?");
+        double dialogWidth=Math.min(560,Math.max(400,getScene().getWindow().getWidth()-48));
+        Label privacy=Ui.label("Gemini will receive the image you choose plus product photos, names, categories and specifications from FORGE. Google may use free-tier content to improve its products. Your photo is not saved by FORGE. This approval is stored on this device for this account and can be cleared from Assistant → Privacy.","muted");
+        privacy.setWrapText(true);privacy.setPrefWidth(dialogWidth-82);privacy.setMaxWidth(dialogWidth-82);
+        agree.setPrefWidth(dialogWidth-82);agree.setMaxWidth(dialogWidth-82);
+        VBox content=new VBox(14,privacy,agree);content.setPrefWidth(dialogWidth-56);content.setMaxWidth(dialogWidth-56);
+        dialog.initOwner(getScene().getWindow());dialog.setResizable(false);
+        dialog.getDialogPane().setPrefWidth(dialogWidth);dialog.getDialogPane().setMinWidth(dialogWidth);dialog.getDialogPane().setMaxWidth(dialogWidth);
+        dialog.getDialogPane().setContent(content);dialog.getButtonTypes().setAll(send,ButtonType.CANCEL);
+        dialog.setOnShown(event->{javafx.scene.Node button=dialog.getDialogPane().lookupButton(send);button.disableProperty().bind(agree.selectedProperty().not());});
+        if(dialog.showAndWait().orElse(ButtonType.CANCEL)!=send)return false;
+        try{preferences.rememberGeminiImageConsent(user.getId());return true;}
+        catch(RuntimeException error){Ui.failure(feedback,error);return false;}
     }
     private void chip(String text,Runnable remove) { Button b=Ui.button(text+"  ×",remove);b.getStyleClass().add("filter-chip");b.setAccessibleText("Remove "+text+" filter");chips.getChildren().add(b); }
     private void add(Product product) {

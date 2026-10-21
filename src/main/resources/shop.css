@@ -270,6 +270,8 @@
 .save-heart:selected { -fx-text-fill: #C43D25; -fx-border-color: #E65436; }
 .product-card { -fx-background-radius: 8; }
 .skeleton-block { -fx-background-color: #ECECE8; -fx-background-radius: 6; }
+.skeleton-card { -fx-padding: 16; -fx-background-color: -surface; -fx-background-radius: 10; -fx-border-color: -line; -fx-border-radius: 10; }
+.skeleton-row { -fx-padding: 20; -fx-background-color: -surface; -fx-background-radius: 10; -fx-border-color: -line; -fx-border-radius: 10; }
 .order-card, .address-card { -fx-background-color: -surface; -fx-padding: 22; -fx-border-color: -line; -fx-border-radius: 10; -fx-background-radius: 10; }
 .order-selected { -fx-border-color: #E65436; -fx-border-width: 2; }
 .address-card { -fx-background-color: -tint; -fx-padding: 16; }
@@ -543,9 +545,10 @@
 .category-banner-support { -fx-text-fill: #C0C0C2; -fx-font-size: 14px; }
 .category-banner-pending { -fx-text-fill: #969699; -fx-font-size: 14px; -fx-alignment: center; -fx-text-alignment: center; }
 
-/* Local image search and verified customer reviews. */
+/* Gemini Vision image search and verified customer reviews. */
 .catalog-image-search { -fx-background-color: #fff; -fx-border-color: #d7d7d9; -fx-border-radius: 18; -fx-background-radius: 18; }
 .catalog-image-search:hover { -fx-border-color: #ef502b; -fx-text-fill: #c83e22; }
+.image-search-loading { -fx-padding: 24; -fx-background-color: #F8F8F7; -fx-background-radius: 14; }
 .product-reviews .review-entry { -fx-padding: 12 0; -fx-border-color: transparent transparent #e5e5e7 transparent; }
 .product-reviews .review-stars { -fx-text-fill: #df4f2f; -fx-font-size: 14px; -fx-font-weight: bold; }
 .product-reviews .review-summary { -fx-padding: 14; -fx-background-color: #fff1ec; -fx-background-radius: 10; -fx-text-fill: #292929; }

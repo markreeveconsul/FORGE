@@ -19,7 +19,7 @@ public final class AccountView extends VBox {
         Label addressTitle=Ui.label("Add an address","section-title");addressTitle.setId("address-form-title");
         Label profileError=Ui.feedback("profile-error");name.textProperty().addListener((o,a,b)->{profileError.setText("");Ui.flag(name,false);});
         CheckBox preferred=new CheckBox("Use as my default address");preferred.setId("default-address");
-        VBox list=new VBox(12);list.setId("address-list");
+        VBox list=new VBox(12);list.setId("address-list");list.getChildren().setAll(Ui.skeletonRows(2));
         Runnable reset=()->{editing=0;recipient.clear();street.clear();city.clear();postal.clear();preferred.setSelected(false);addressTitle.setText("Add an address");for(int i=0;i<addressInputs.length;i++){addressErrors[i].setText("");Ui.flag(addressInputs[i],false);}};
         Runnable refresh=()->Ui.async(this,"Loading your account…",()->accounts.addresses(user),rows->{
             list.getChildren().clear();if(rows.isEmpty())list.getChildren().add(Ui.label("No addresses yet. Add one below.","muted"));
@@ -28,7 +28,7 @@ public final class AccountView extends VBox {
                 Button remove=Ui.link("Remove",()->Ui.async(this,"Removing address…",()->{accounts.removeAddress(user,row.id());return true;},done->{reset.run();reload();Ui.success(feedback,"Address removed.");},error->Ui.failure(feedback,error)));
                 VBox card=new VBox(8,Ui.label(row.address().formatted(),"summary-item"),Ui.label(row.preferred()?"Default address":"Saved address","eyebrow"),new HBox(16,edit,remove));card.getStyleClass().add("address-card");list.getChildren().add(card);
             }
-        },error->Ui.failure(feedback,error));
+        },error->{list.getChildren().setAll(Ui.label("Could not load saved addresses. Reopen your profile to try again.","muted"));Ui.failure(feedback,error);});
         // Reload through the existing refresh action after a mutation.
         Button reload=new Button();reload.setOnAction(e->refresh.run());getProperties().put("market.reload",reload);
         Button saveName=Ui.primary("Save profile",()->{String value=name.getText();Ui.async(this,"Saving profile…",()->{accounts.saveName(user,value);return true;},done->Ui.success(feedback,"Profile saved."),error->{Ui.failure(profileError,error);Ui.flag(name,true);name.requestFocus();});});saveName.setId("save-profile");saveName.getStyleClass().add("purchase-action");

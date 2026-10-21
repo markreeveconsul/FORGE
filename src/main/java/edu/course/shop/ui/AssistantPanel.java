@@ -52,7 +52,7 @@ public final class AssistantPanel extends BorderPane {
         setId("assistant-panel");getStyleClass().add("forge-chat");setMinSize(0,0);setPrefWidth(420);setMaxWidth(420);
         Label spark=Ui.label("✦","chat-spark");
         Label subtitle=Ui.label(gemini.configurationProblem().isBlank()?"AI BUILD HELPER":"AI OFFLINE · CATALOG SEARCH STILL WORKS","chat-subtitle");subtitle.setId("assistant-status");
-        VBox title=new VBox(2,Ui.label("Forge Assistant","chat-title"),subtitle);
+        VBox title=new VBox(2,Ui.label("FORGE AI","chat-title"),subtitle);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
         Button fresh=Ui.button("New chat",this::newChat);fresh.setId("assistant-new-chat");fresh.getStyleClass().add("chat-header-button");
         Button dismiss=Ui.button("×",close);dismiss.setId("assistant-close");dismiss.setAccessibleText("Close assistant");dismiss.getStyleClass().add("chat-header-button");
@@ -110,12 +110,17 @@ public final class AssistantPanel extends BorderPane {
         messages.getChildren().add(welcome);
     }
     private void showPrivacy(){
-        VBox notice=bot("Questions and relevant catalog/cart records go to Google when an AI explanation is needed. Free-tier content may improve Google's products. Don't enter sensitive information. Order summaries require separate approval and exclude addresses, usernames and payment methods. Chat history stays in memory until New chat or sign-out. Shopping preferences and your Gemini approval are stored locally on this device.");
+        VBox notice=bot("Questions and relevant catalog/cart records go to Google when an AI explanation is needed. Image search also sends your selected image and FORGE product photos, names and specifications to Gemini after you approve. Free-tier content may improve Google's products. Don't enter sensitive information. Order summaries require separate approval and exclude addresses, usernames and payment methods. Chat history stays in memory until New chat or sign-out. Shopping preferences and approvals are stored locally on this device.");
         if(consent){Button revoke=Ui.button("Forget Gemini approval",()->{});
             revoke.setOnAction(event->{
             try{preferenceStore.forgetGeminiConsent(user.getId());consent=false;notice.getChildren().add(Ui.label("Gemini approval cleared. FORGE will ask again before the next request sent to Google.","chat-muted"));revoke.setDisable(true);}
             catch(RuntimeException error){notice.getChildren().add(Ui.label(friendly(error),"chat-error"));}
             });revoke.getStyleClass().add("chat-prompt");notice.getChildren().add(revoke);}
+        if(preferenceStore.hasGeminiImageConsent(user.getId())){Button revokeImages=Ui.button("Forget image search approval",()->{});
+            revokeImages.setOnAction(event->{
+                try{preferenceStore.forgetGeminiImageConsent(user.getId());notice.getChildren().add(Ui.label("Image search approval cleared. FORGE will ask again before sending photos to Google.","chat-muted"));revokeImages.setDisable(true);}
+                catch(RuntimeException error){notice.getChildren().add(Ui.label(friendly(error),"chat-error"));}
+            });revokeImages.getStyleClass().add("chat-prompt");notice.getChildren().add(revokeImages);}
     }
     private void submit() { submit(input.getText().trim(),false,false); }
     private void submit(String question, boolean orderApproved, boolean retry) {
@@ -173,7 +178,7 @@ public final class AssistantPanel extends BorderPane {
     private void showAiConsent(String question, boolean orderApproved, CatalogAssistant.Memory previous) {
         VBox notice=bot("To answer this, I need to send your question and the relevant product, cart or approved order records to Google Gemini. Free-tier content may be used to improve Google's products. Don't include sensitive information.");
         HBox choices=new HBox(8);
-        Button allow=Ui.button("Continue to Gemini",()->{
+        Button allow=Ui.button("Continue with FORGE AI",()->{
             CatalogAssistant.Plan plan=awaitingConsent;String pendingQuestion=awaitingQuestion;
             try{preferenceStore.rememberGeminiConsent(user.getId());}
             catch(RuntimeException error){choices.getChildren().clear();choices.getChildren().add(Ui.label(friendly(error),"chat-error"));return;}

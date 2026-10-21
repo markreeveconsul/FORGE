@@ -105,7 +105,7 @@ The cart is not a reservation. A price change is rejected rather than silently c
 | Screen | Components | Backend calls |
 |---|---|---|
 | Login | TextField, PasswordField, Button | AuthService.login |
-| Catalog | TilePane of ProductCards, text/image search, category/sort controls | ProductService.search; VisualProductSearch; CartService.add |
+| Catalog | TilePane of ProductCards, text/Gemini Vision image search, category/sort controls | ProductService.search; GeminiAssistant.searchByImage; CartService.add |
 | Product details | Uploaded gallery, description/specifications, stock, quantity control, verified reviews and optional AI summary | ProductService.get; CartService.add; ProductReviewService; GeminiAssistant |
 | Cart | Item rows, +/- and quantity fields, OrderSummary | CartService.update; Cart.remove; Cart.getTotal |
 | Checkout | Recipient/street/city/postal fields, payment ComboBox, inline errors, OrderSummary | CheckoutService.checkout |
@@ -182,7 +182,7 @@ A working implementation does not guarantee marks: the student must understand a
 
 Potential later work: FXML after understanding JavaFX, persisted carts, discounts through a pricing policy, packaged runtime image. Avoid adding those until the current code can be explained confidently.
 
-Image search is an offline visual similarity feature: it ranks active catalog products by color-histogram similarity and skips products without a photo. It does not recognize objects or infer product type. Review summaries send only the product name, ratings and review text to Gemini after separate consent; reviewer names and account details are excluded. The admin overview lists active products with five or fewer units and links to inventory editing; this is a threshold alert, not a sales forecast.
+Image search sends the selected image and up to 40 active catalog product photos, names, categories and specifications to Gemini Vision after a separate, persistent per-account approval. Gemini identifies the item and returns only known catalog IDs with a minimum relevance confidence of 65; FORGE renders those products as normal product cards. Users can revoke approval from Assistant → Privacy. Review summaries send only the product name, ratings and review text to Gemini after separate consent; reviewer names and account details are excluded. The admin overview lists active products with five or fewer units and links to inventory editing; this is a threshold alert, not a sales forecast.
 
 ## Approved UI/UX refinement
 

@@ -112,6 +112,22 @@ class CatalogAssistantTest {
         assertFalse(plan.facts().has("yourOrders"));
         assertTrue(plan.facts().toString().contains("Private Street") == false);
     }
+    @Test void greetingsHelpAndFrustrationGetWarmLocalRepliesWithoutCatalogSearch() {
+        var greeting=ask("Hi Forge",CatalogAssistant.Memory.empty());
+        assertTrue(greeting.localAnswer().startsWith("Hi!"));assertTrue(greeting.products().isEmpty());
+        var help=ask("What can you do?",CatalogAssistant.Memory.empty());
+        assertTrue(help.localAnswer().contains("show product cards"));assertTrue(help.products().isEmpty());
+        var frustration=ask("That answer was dumb",CatalogAssistant.Memory.empty());
+        assertTrue(frustration.localAnswer().contains("I'm sorry"));
+        assertTrue(frustration.localAnswer().contains("search the FORGE catalog"));
+        var missingCard=ask("Still no card",CatalogAssistant.Memory.empty());
+        assertTrue(missingCard.localAnswer().contains("expected product cards"));
+        var thanks=ask("Thank you",CatalogAssistant.Memory.empty());
+        assertTrue(thanks.localAnswer().contains("You're welcome"));
+        var productPlan=ask("show laptops",CatalogAssistant.Memory.empty());
+        var prior=CatalogAssistant.remember(CatalogAssistant.Memory.empty(),productPlan,"show laptops",productPlan.localAnswer());
+        assertEquals(prior,CatalogAssistant.remember(prior,help,"What can you do?",help.localAnswer()));
+    }
     @Test void memoryIsBoundedAndOrderAnswersAreNotReplayed(){
         var memory=CatalogAssistant.Memory.empty();var plan=ask("show laptops",memory);
         for(int i=0;i<12;i++)memory=CatalogAssistant.remember(memory,plan,"question","answer");
@@ -168,5 +184,17 @@ class CatalogAssistantTest {
             store.forgetGeminiConsent(userId);
             assertFalse(new AssistantPreferences(file).hasGeminiConsent(userId));
         } finally { try{java.nio.file.Files.deleteIfExists(file);}catch(java.io.IOException e){throw new RuntimeException(e);} }
+    }
+    @Test void geminiImageConsentPersistsSeparatelyAndCanBeRevoked(){
+        Path file=Path.of("target","image-consent-"+java.util.UUID.randomUUID()+".properties");long userId=23456;
+        var store=new AssistantPreferences(file);
+        try{
+            assertFalse(store.hasGeminiImageConsent(userId));
+            store.rememberGeminiImageConsent(userId);
+            assertTrue(new AssistantPreferences(file).hasGeminiImageConsent(userId));
+            assertFalse(store.hasGeminiConsent(userId));
+            store.forgetGeminiImageConsent(userId);
+            assertFalse(store.hasGeminiImageConsent(userId));
+        }finally{try{java.nio.file.Files.deleteIfExists(file);}catch(java.io.IOException e){throw new RuntimeException(e);}}
     }
 }

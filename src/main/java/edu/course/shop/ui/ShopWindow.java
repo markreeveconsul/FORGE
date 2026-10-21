@@ -10,6 +10,7 @@ import edu.course.shop.model.Guest;
 import edu.course.shop.model.Product;
 import edu.course.shop.model.User;
 import edu.course.shop.service.CartService;
+import edu.course.shop.service.AssistantPreferences;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
@@ -212,13 +213,13 @@ public final class ShopWindow {
         motion.selectedProperty().bindBidirectional(Motion.reducedProperty());
         HBox footer=new HBox(16,Ui.label("FORGE · Good things, every day.","muted"),footerSpace,motion,link("About",this::showInfo),Ui.label("USD · Course demo · Simulated payments","muted"));
         if(!user.canManageProducts()) {
-            Button ask=link("Ask FORGE",this::toggleAssistant);
+            Button ask=link("FORGE AI",this::toggleAssistant);
             ask.setId("ask-forge");footer.getChildren().add(2,ask);
         }
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
         shell.setBottom(footer);stage.getScene().setRoot(window);
         if(!user.canManageProducts()) {
-            assistantLauncher=Ui.button("✦  Ask Forge",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
+            assistantLauncher=Ui.button("✦  FORGE AI",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
             assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,18,74,0));
             assistantPanel=new AssistantPanel(services,user,()->cart,()->assistantProduct,assistant,this::showDetails,this::updateCart,saved,this::toggleAssistant);
             assistantPanel.setVisible(false);assistantPanel.managedProperty().bind(assistantPanel.visibleProperty());
@@ -284,13 +285,21 @@ public final class ShopWindow {
         if(cartPulse!=null){cartPulse.stop();cartPulse=null;}
         if(cartButton!=null){cartButton.setScaleX(1);cartButton.setScaleY(1);}
     }
-    public void showCatalog(){CatalogView catalog=new CatalogView(user,cart,services.products(),new CartService(services.products()),(Runnable)this::updateCart,(Runnable)this::showCartDrawer,(java.util.function.Consumer<Product>)this::showDetails,search,catalogState,(java.util.function.Consumer<String>)this::showToast,(Runnable)this::updateNav);catalog.enableSavedItems(saved);headerNavigation.getChildren().clear();catalog.useHeaderNavigation(headerNavigation);headerSearch.getChildren().setAll(catalog.searchBar());HBox.setHgrow(catalog.searchBar(),Priority.ALWAYS);show(catalog);}
+    public void showCatalog(){CatalogView catalog=new CatalogView(user,cart,services.products(),new CartService(services.products()),(Runnable)this::updateCart,(Runnable)this::showCartDrawer,(java.util.function.Consumer<Product>)this::showDetails,search,catalogState,(java.util.function.Consumer<String>)this::showToast,(Runnable)this::updateNav,assistant,new AssistantPreferences());catalog.enableSavedItems(saved);headerNavigation.getChildren().clear();catalog.useHeaderNavigation(headerNavigation);headerSearch.getChildren().setAll(catalog.searchBar());HBox.setHgrow(catalog.searchBar(),Priority.ALWAYS);show(catalog);}
     private void showDetails(Product product){
-        dismissDrawer();Ui.async(shell,"Opening product…",()->services.products().get(product.getId()),latest->{
+        dismissDrawer();
+        VBox loading=Ui.skeletonProductDetail();
+        show(loading);
+        Ui.readOnly(shell,()->services.products().get(product.getId()),latest->{
+            if(shell.getCenter()!=loading)return;
             if(!latest.isActive()){showCatalog();return;}
             show(new ProductDetailView(latest,user,cart,new CartService(services.products()),services.products(),this::updateCart,this::showCatalog,this::showCartDrawer,this::showDetails,saved,this::showToast,services.reviews(),assistant));
             assistantProduct=latest;if(assistantPanel!=null)assistantPanel.refreshContext();
-        },Ui::error);
+        },error->{
+            if(shell.getCenter()!=loading)return;
+            VBox failed=Ui.page("Couldn’t open this product","The catalog could not load the latest product details.",Ui.primary("Try again",()->showDetails(product)),Ui.link("Back to products",this::showCatalog));
+            show(failed);
+        });
     }
     public void showCartDrawer(){
         if(overlay!=null)return;previousFocus=stage.getScene().getFocusOwner();stopFeedbackAnimations();

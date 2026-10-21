@@ -36,6 +36,15 @@ public final class AssistantPreferences {
     public synchronized void forgetGeminiConsent(long userId){
         Properties values=read();values.remove("user."+Math.max(0,userId)+".geminiConsent");write(values);
     }
+    public synchronized boolean hasGeminiImageConsent(long userId){
+        return Boolean.parseBoolean(read().getProperty("user."+Math.max(0,userId)+".geminiImageConsent","false"));
+    }
+    public synchronized void rememberGeminiImageConsent(long userId){
+        Properties values=read();values.setProperty("user."+Math.max(0,userId)+".geminiImageConsent","true");write(values);
+    }
+    public synchronized void forgetGeminiImageConsent(long userId){
+        Properties values=read();values.remove("user."+Math.max(0,userId)+".geminiImageConsent");write(values);
+    }
     public synchronized boolean hasReviewSummaryConsent(long userId){
         return Boolean.parseBoolean(read().getProperty("user."+Math.max(0,userId)+".reviewSummaryConsent","false"));
     }
