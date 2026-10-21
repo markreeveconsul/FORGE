@@ -132,7 +132,7 @@ public final class CatalogView extends VBox {
         cameraIcon.setFillRule(javafx.scene.shape.FillRule.EVEN_ODD);
         cameraIcon.setMouseTransparent(true);
         imageSearch.setGraphic(cameraIcon);
-        HBox searchInput=new HBox(12,StoreIcon.of("search"),search,clearSearch,imageSearch);searchInput.setAlignment(Pos.CENTER_LEFT);searchInput.setMinWidth(0);
+        HBox searchInput=new HBox(8,StoreIcon.of("search",18),search,clearSearch,imageSearch);searchInput.setAlignment(Pos.CENTER_LEFT);searchInput.setMinWidth(0);
         searchInput.getStyleClass().add("catalog-search-surface");HBox.setHgrow(searchInput,Priority.ALWAYS);
         Button find=Ui.primary("Search",()->{state.setScrollPosition(0);refresh();});find.setId("catalog-search");
         find.getStyleClass().add("purchase-action");find.setVisible(false);find.setManaged(false);
@@ -203,13 +203,15 @@ public final class CatalogView extends VBox {
     private HBox categoryNavigation() {
         HBox row=new HBox(6);row.setId("tech-category-nav");row.setAlignment(Pos.CENTER);
         row.getStyleClass().add("hero-category-nav");
+        // Leave room for readable search and account controls before showing every category inline.
+        var fullNavigation=widthProperty().greaterThanOrEqualTo(user instanceof edu.course.shop.model.Guest?1320:1440);
         for(int index=0;index<=Category.shopping().size();index++) {
             final int selection=index;
             Button tab=Ui.button(index==0?"Shop all":Ui.category(Category.shopping().get(index-1)),()->browseCategory(selection));
             tab.setId("hero-category-"+index);
             Runnable highlight=()->{tab.getStyleClass().remove("category-active");if(category.getSelectionModel().getSelectedIndex()==selection)tab.getStyleClass().add("category-active");};
             category.getSelectionModel().selectedIndexProperty().addListener((o,a,b)->highlight.run());highlight.run();
-            if(index>3){tab.visibleProperty().bind(widthProperty().greaterThanOrEqualTo(1200));tab.managedProperty().bind(tab.visibleProperty());}
+            if(index>3){tab.visibleProperty().bind(fullNavigation);tab.managedProperty().bind(tab.visibleProperty());}
             row.getChildren().add(tab);
         }
         javafx.scene.control.MenuButton more=new javafx.scene.control.MenuButton("More");more.setId("hero-category-more");
@@ -220,7 +222,7 @@ public final class CatalogView extends VBox {
         }
         Runnable markMore=()->{more.getStyleClass().remove("category-active");if(category.getSelectionModel().getSelectedIndex()>3)more.getStyleClass().add("category-active");};
         category.getSelectionModel().selectedIndexProperty().addListener((o,a,b)->markMore.run());markMore.run();
-        more.visibleProperty().bind(widthProperty().lessThan(1200));more.managedProperty().bind(more.visibleProperty());row.getChildren().add(more);
+        more.visibleProperty().bind(fullNavigation.not());more.managedProperty().bind(more.visibleProperty());row.getChildren().add(more);
         return row;
     }
     private static VBox labeled(String title,javafx.scene.control.Control input) {

@@ -41,6 +41,8 @@ public final class DatabaseManager {
             s.executeUpdate("CREATE TABLE IF NOT EXISTS customer_profiles (customer_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, display_name TEXT NOT NULL)");
             s.executeUpdate("CREATE TABLE IF NOT EXISTS customer_addresses (id INTEGER PRIMARY KEY, customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, recipient TEXT NOT NULL, street TEXT NOT NULL, city TEXT NOT NULL, postal TEXT NOT NULL, preferred INTEGER NOT NULL CHECK(preferred IN (0,1)))");
             s.executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS one_default_address ON customer_addresses(customer_id) WHERE preferred=1");
+            s.executeUpdate("CREATE TABLE IF NOT EXISTS admin_ai_batches (id TEXT PRIMARY KEY, actor_id INTEGER NOT NULL REFERENCES users(id), intent TEXT NOT NULL, created_at TEXT NOT NULL)");
+            s.executeUpdate("CREATE TABLE IF NOT EXISTS admin_ai_changes (batch_id TEXT NOT NULL REFERENCES admin_ai_batches(id), product_id INTEGER NOT NULL REFERENCES products(id), before_description TEXT NOT NULL, after_description TEXT NOT NULL, before_specs TEXT NOT NULL, after_specs TEXT NOT NULL, before_active INTEGER NOT NULL, after_active INTEGER NOT NULL, sources TEXT NOT NULL, PRIMARY KEY(batch_id,product_id))");
             if (!columns.contains("photo_frame")) s.executeUpdate("ALTER TABLE products ADD COLUMN photo_frame TEXT NOT NULL DEFAULT 'AUTO'");
             if (!columns.contains("photo_x")) s.executeUpdate("ALTER TABLE products ADD COLUMN photo_x REAL NOT NULL DEFAULT 0.5");
             if (!columns.contains("photo_y")) s.executeUpdate("ALTER TABLE products ADD COLUMN photo_y REAL NOT NULL DEFAULT 0.5");
