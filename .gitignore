@@ -1,11 +1,16 @@
 target/
 data/
 .tools/
-.forge-gemini-key.xml
-.forge-ai-free-tier-confirmed
+.-gemini-key.xml
+.-ai-free-tier-confirmed
 .idea/
 *.iml
 
+.env
+.env.*
+!.env.example
+.forge-gemini-key.xml
+.forge-ai-free-tier-confirmed
 .env
 .env.*
 !.env.example

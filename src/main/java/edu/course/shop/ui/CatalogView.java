@@ -355,8 +355,8 @@ public final class CatalogView extends VBox {
             state.setScrollPosition(0);grid.getChildren().clear();
             List<Product> matches=data.response().matches().stream().map(match->data.catalog().stream().filter(p->p.getId()==match.productId()).findFirst().orElse(null)).filter(java.util.Objects::nonNull).toList();
             for(Product product:matches){ProductCard card=new ProductCard(product,()->add(product),()->details.accept(product));if(saved!=null)card.enableSavedItems(saved);grid.getChildren().add(card);}
-            title.setText("Visual matches for "+data.response().identifiedItem());result.setText(matches.size()+(matches.size()==1?" close match":" close matches")+" · compared with Gemini Vision");
-            Button imageChip=Ui.button("Image search · sent to Google  ×",this::refresh);imageChip.getStyleClass().add("filter-chip");chips.getChildren().setAll(imageChip);chips.setVisible(true);
+            title.setText("Visual matches for "+data.response().identifiedItem());result.setText(matches.size()+(matches.size()==1?" close match":" close matches")+" · matched by FORGE AI");
+            Button imageChip=Ui.button("FORGE AI image search  ×",this::refresh);imageChip.getStyleClass().add("filter-chip");chips.getChildren().setAll(imageChip);chips.setVisible(true);
             feedback.setText("");results.getChildren().setAll(matches.isEmpty()?Ui.empty("No close catalog matches","Gemini recognized "+data.response().identifiedItem()+" but did not find a sufficiently similar listed product.","Show all products",this::refresh):grid);
             Platform.runLater(this::scrollToCollection);
         });

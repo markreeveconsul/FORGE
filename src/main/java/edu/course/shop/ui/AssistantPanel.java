@@ -52,7 +52,7 @@ public final class AssistantPanel extends BorderPane {
         setId("assistant-panel");getStyleClass().add("forge-chat");setMinSize(0,0);setPrefWidth(420);setMaxWidth(420);
         Label spark=Ui.label("✦","chat-spark");
         Label subtitle=Ui.label(gemini.configurationProblem().isBlank()?"AI BUILD HELPER":"AI OFFLINE · CATALOG SEARCH STILL WORKS","chat-subtitle");subtitle.setId("assistant-status");
-        VBox title=new VBox(2,Ui.label("Forge Assistant","chat-title"),subtitle);
+        VBox title=new VBox(2,Ui.label("FORGE AI","chat-title"),subtitle);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
         Button fresh=Ui.button("New chat",this::newChat);fresh.setId("assistant-new-chat");fresh.getStyleClass().add("chat-header-button");
         Button dismiss=Ui.button("×",close);dismiss.setId("assistant-close");dismiss.setAccessibleText("Close assistant");dismiss.getStyleClass().add("chat-header-button");
@@ -178,7 +178,7 @@ public final class AssistantPanel extends BorderPane {
     private void showAiConsent(String question, boolean orderApproved, CatalogAssistant.Memory previous) {
         VBox notice=bot("To answer this, I need to send your question and the relevant product, cart or approved order records to Google Gemini. Free-tier content may be used to improve Google's products. Don't include sensitive information.");
         HBox choices=new HBox(8);
-        Button allow=Ui.button("Continue to Gemini",()->{
+        Button allow=Ui.button("Continue with FORGE AI",()->{
             CatalogAssistant.Plan plan=awaitingConsent;String pendingQuestion=awaitingQuestion;
             try{preferenceStore.rememberGeminiConsent(user.getId());}
             catch(RuntimeException error){choices.getChildren().clear();choices.getChildren().add(Ui.label(friendly(error),"chat-error"));return;}

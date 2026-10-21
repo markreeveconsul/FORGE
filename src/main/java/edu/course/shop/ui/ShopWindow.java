@@ -213,13 +213,13 @@ public final class ShopWindow {
         motion.selectedProperty().bindBidirectional(Motion.reducedProperty());
         HBox footer=new HBox(16,Ui.label("FORGE · Good things, every day.","muted"),footerSpace,motion,link("About",this::showInfo),Ui.label("USD · Course demo · Simulated payments","muted"));
         if(!user.canManageProducts()) {
-            Button ask=link("Ask FORGE",this::toggleAssistant);
+            Button ask=link("FORGE AI",this::toggleAssistant);
             ask.setId("ask-forge");footer.getChildren().add(2,ask);
         }
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
         shell.setBottom(footer);stage.getScene().setRoot(window);
         if(!user.canManageProducts()) {
-            assistantLauncher=Ui.button("✦  Ask Forge",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
+            assistantLauncher=Ui.button("✦  FORGE AI",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
             assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,18,74,0));
             assistantPanel=new AssistantPanel(services,user,()->cart,()->assistantProduct,assistant,this::showDetails,this::updateCart,saved,this::toggleAssistant);
             assistantPanel.setVisible(false);assistantPanel.managedProperty().bind(assistantPanel.visibleProperty());
