@@ -39,9 +39,6 @@ public final class AssistantPanel extends BorderPane {
     private int generation;
     private boolean consent, busy;
     private String lastFailed;
-    private CatalogAssistant.Plan awaitingConsent;
-    private String awaitingQuestion;
-    private record Result(CatalogAssistant.Plan plan, String text) { }
 
     public AssistantPanel(Services services, User user, Supplier<Cart> cart, Supplier<Product> page,
                           GeminiAssistant gemini, Consumer<Product> viewProduct, Runnable cartChanged,
@@ -150,9 +147,8 @@ public final class AssistantPanel extends BorderPane {
         pending=task;
         task.setOnSucceeded(e->{if(ticket!=generation)return;finish();
             CatalogAssistant.Plan plan=task.getValue();
-            if(plan.localAnswer()!=null) {renderAnswer(plan,previous,effectiveQuestion,plan.localAnswer(),false);return;}
-            showMatchedProducts(plan);
-            if(!consent) {awaitingConsent=plan;awaitingQuestion=effectiveQuestion;showAiConsent(effectiveQuestion,orderApproved,previous);return;}
+            if(plan.localAnswer()!=null) {renderAnswer(plan,previous,effectiveQuestion,plan.localAnswer());return;}
+            if(!consent) {showAiConsent(plan,effectiveQuestion,previous);return;}
             startGemini(plan,effectiveQuestion,previous);
         });
         task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
@@ -175,42 +171,36 @@ public final class AssistantPanel extends BorderPane {
         Button cancel=Ui.button("Keep my cart",()->{card.setDisable(true);bot("No cart changes were made.");});
         apply.getStyleClass().add("chat-orange");cancel.getStyleClass().add("chat-prompt");card.getChildren().addAll(apply,cancel,wrap("Nothing changes until you confirm.","chat-muted"));
     }
-    private void showAiConsent(String question, boolean orderApproved, CatalogAssistant.Memory previous) {
+    private void showAiConsent(CatalogAssistant.Plan plan, String question, CatalogAssistant.Memory previous) {
+        int ticket=generation;
         VBox notice=bot("To answer this, I need to send your question and the relevant product, cart or approved order records to Google Gemini. Free-tier content may be used to improve Google's products. Don't include sensitive information.");
         HBox choices=new HBox(8);
         Button allow=Ui.button("Continue with FORGE AI",()->{
-            CatalogAssistant.Plan plan=awaitingConsent;String pendingQuestion=awaitingQuestion;
+            if(ticket!=generation||busy)return;
             try{preferenceStore.rememberGeminiConsent(user.getId());}
             catch(RuntimeException error){choices.getChildren().clear();choices.getChildren().add(Ui.label(friendly(error),"chat-error"));return;}
-            awaitingConsent=null;awaitingQuestion=null;consent=true;
+            consent=true;
             choices.getChildren().clear();choices.getChildren().add(Ui.label("Approved · this request is being sent to Gemini.","chat-muted"));
-            if(plan!=null)startGemini(plan,pendingQuestion,previous);
+            startGemini(plan,question,previous);
         });allow.setId("assistant-consent-continue");allow.getStyleClass().add("chat-orange");
-        Button cancel=Ui.button("Keep it here",()->{awaitingConsent=null;awaitingQuestion=null;choices.getChildren().clear();choices.getChildren().add(Ui.label("Not sent · no information was shared with Google.","chat-muted"));});cancel.getStyleClass().add("chat-prompt");
+        Button cancel=Ui.button("Keep it here",()->{if(ticket!=generation||busy)return;choices.getChildren().clear();choices.getChildren().add(Ui.label("Not sent · no information was shared with Google.","chat-muted"));});cancel.getStyleClass().add("chat-prompt");
         choices.getChildren().addAll(allow,cancel);notice.getChildren().add(choices);
     }
     private void startGemini(CatalogAssistant.Plan plan, String question, CatalogAssistant.Memory previous) {
         int ticket=++generation;setBusy(true);showThinking();
         Task<String> task=new Task<>() {@Override protected String call(){return gemini.answer(question,plan.facts());}};pending=task;
-        task.setOnSucceeded(e->{if(ticket!=generation)return;finish();renderAnswer(plan,previous,question,task.getValue(),true);});
+        task.setOnSucceeded(e->{if(ticket!=generation)return;finish();renderAnswer(plan,previous,question,task.getValue());});
         task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
             VBox error=bot(friendly(task.getException()));error.setId("assistant-error");error.getStyleClass().add("chat-error");
-            error.getChildren().add(wrap(plan.products().isEmpty()
-                ? "Your message is saved in this chat. Browsing and checkout still work."
-                : "Your product matches are above. You can still view, save or add them to your cart.","chat-muted"));
+            error.getChildren().add(wrap("Your message is saved in this chat. Browsing and checkout still work.","chat-muted"));
             if(!isSetupFailure(task.getException())) {
                 Button again=Ui.button("Try again",()->{submit(question,plan.orderContext(),true);});again.getStyleClass().add("chat-dark-button");error.getChildren().add(again);
             }
         });start(task);
     }
-    private void showMatchedProducts(CatalogAssistant.Plan plan) {
-        if(plan.products().isEmpty())return;
-        VBox cards=bot("Here's what I found.");
-        appendProductCards(cards,plan);
-    }
-    private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text, boolean cardsAlreadyShown) {
+    private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text) {
         memory=CatalogAssistant.remember(previous,plan,question,text);context.setText(plan.context());VBox bubble=bot(text);
-        if(!cardsAlreadyShown)appendProductCards(bubble,plan);
+        appendProductCards(bubble,plan);
         scrollDown();
     }
     private void appendProductCards(VBox bubble,CatalogAssistant.Plan plan) {
@@ -289,7 +279,6 @@ public final class AssistantPanel extends BorderPane {
     }
     public void stop() {
         generation++;if(pending!=null)pending.cancel(true);pending=null;
-        awaitingConsent=null;awaitingQuestion=null;
         boolean wasBusy=busy;finish();if(wasBusy)bot("Stopped. You can ask another question.");
     }
     private void finish(){setBusy(false);if(dots!=null){dots.stop();dots=null;}if(thinking!=null){messages.getChildren().remove(thinking);thinking=null;}}

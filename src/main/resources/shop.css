@@ -694,9 +694,9 @@
 
 /* FORGE AI camera search */
 .catalog-search-surface .button.image-search-camera {
-    -fx-min-width: 36; -fx-pref-width: 36; -fx-max-width: 36;
-    -fx-min-height: 36; -fx-pref-height: 36; -fx-max-height: 36;
-    -fx-padding: 7;
+    -fx-min-width: 24; -fx-pref-width: 24; -fx-max-width: 24;
+    -fx-min-height: 22; -fx-pref-height: 22; -fx-max-height: 22;
+    -fx-padding: 0;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-background-radius: 10; -fx-border-radius: 10;
@@ -712,6 +712,7 @@
     -fx-border-color: transparent;
 }
 .image-search-camera-icon {
+    -fx-scale-x: .8; -fx-scale-y: .8;
     -fx-fill: linear-gradient(to bottom right, rgba(244,250,255,.18), rgba(204,224,242,.04));
     -fx-stroke: linear-gradient(to bottom right, #FFFFFF 0%, #B8CDDE 45%, #F7FCFF 75%, #D0E0EC 100%);
     -fx-stroke-width: 1.8;

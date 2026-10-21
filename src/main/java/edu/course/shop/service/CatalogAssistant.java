@@ -20,13 +20,38 @@ public final class CatalogAssistant {
     }
     private final Services services;
     public CatalogAssistant(Services services) { this.services = services; }
+    // Longer category phrases must win over the generic "PC" alias.
+    private static final String CATEGORY_WORDS = "(?:pc|computer) (?:parts?|components?|sets?)|(?:complete|prebuilt|built) pcs?|"
+        + "peripherals?(?: and accessories)?|accessories|other electronics|electronics|"
+        + "laptops?|notebooks?|phones?(?: and tablets?)?|tablets?|components?|parts?|desktops?|pcs?";
+    private static final Pattern REJECTED_CATEGORY = Pattern.compile("\\b(?:not|no|exclude|excluding|except|instead of|rather than|"
+        + "don t want|do not want|don t show|do not show)\\s+(?:the\\s+)?(" + CATEGORY_WORDS + ")\\b");
+    private record CategoryIntent(String query, Set<Category> excluded, boolean correction) { }
+    private static CategoryIntent categoryIntent(String query) {
+        Set<Category> excluded = EnumSet.noneOf(Category.class);
+        Matcher rejected = REJECTED_CATEGORY.matcher(query);
+        StringBuilder positive = new StringBuilder();
+        while (rejected.find()) {
+            excluded.add(category(rejected.group(1)));
+            rejected.appendReplacement(positive, " ");
+        }
+        rejected.appendTail(positive);
+        boolean correction = !excluded.isEmpty() || query.matches(".*\\b(actually|i said|i mean|i meant|instead|rather)\\b.*");
+        return new CategoryIntent(positive.toString().replaceAll("\\s+", " ").trim(), Set.copyOf(excluded), correction);
+    }
+    static Category requestedCategory(String query) {
+        CategoryIntent intent = categoryIntent(words(query));
+        Category result = category(intent.query());
+        return result != null && intent.excluded().contains(result) ? null : result;
+    }
     public static boolean asksOrders(String question) {
         return words(question).matches(".*\\b(order|orders|delivery|tracking|shipment|refund|receipt)\\b.*");
     }
     private static String words(String s) { return s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9$., ]", " ").replaceAll("\\s+", " ").trim(); }
     public Plan prepare(User user, List<CartItem> cart, Product page, Memory memory, String question, boolean allowOrders) {
         if (question == null || question.isBlank() || question.length() > 1000) throw new IllegalArgumentException("Ask a question of 1–1,000 characters.");
-        String q = words(question);
+        CategoryIntent intent = categoryIntent(words(question));
+        String q = intent.query();
         JsonObject facts = new JsonObject();
         JsonArray history = new JsonArray();
         for (Turn turn : memory.turns()) {
@@ -73,26 +98,34 @@ public final class CatalogAssistant {
         }
         List<Product> catalog = services.products().search(new Guest(), "", null);
         Category category = category(q);
+        if (!intent.excluded().isEmpty() && (category == null || intent.excluded().contains(category)))
+            return new Plan(List.of(), facts, "Which category or product would you like instead? I'll leave "
+                + intent.excluded().stream().map(Category::label).sorted().reduce((a,b) -> a + " and " + b).orElse("")
+                + " out of these results.", "Catalog · choose a category", null, null, false);
         if ((q.contains("compare") || q.contains(" vs ")) && !terms(q).isEmpty()) category = null;
         BigDecimal budget = budget(q);
         boolean locationFollowUp = !memory.ids().isEmpty()
             && q.matches("^(where|where is it|where can i (find|buy) it|where can i find them|where can i buy them|where are they)$");
         boolean followUp = locationFollowUp || q.matches(".*\\b(it|this|these|those|them|which|something|cheaper|cheapest|more ram|alternatives|another|more|compare them)\\b.*");
         boolean alternatives = q.contains("alternative") || q.contains("show more") || q.contains("another");
-        if (!memory.ids().isEmpty() && q.matches("^(which|what about|does it|is it|will it).*")) category = memory.category();
-        boolean freshCategory = category != null && category != memory.category();
+        // A spec question refers to the previous products; an explicit shopping category replaces them.
+        boolean attributeFollowUp = !memory.ids().isEmpty()
+            && q.matches("^(which (has|have)|does (it|this) (have|support|use)|will (it|this) (support|use)).*");
+        if (attributeFollowUp && !intent.correction()) category = null;
+        boolean freshCategory = category != null && (category != memory.category() || intent.correction());
         if (category == null && followUp) category = memory.category();
         if (budget == null && followUp && !freshCategory) budget = memory.ceiling();
-        if (alternatives && q.contains("cheap") && !memory.ids().isEmpty()) {
+        if (alternatives && q.contains("cheap") && !freshCategory && !memory.ids().isEmpty()) {
             BigDecimal previousLowest = catalog.stream().filter(p -> memory.ids().contains(p.getId())).map(Product::getPrice).min(BigDecimal::compareTo).orElse(null);
             if (previousLowest != null) budget = previousLowest.subtract(new BigDecimal("0.01")).max(BigDecimal.ZERO);
         }
         final Category selectedCategory = category;
         final BigDecimal maxPrice = budget;
         List<Product> eligible = catalog.stream().filter(p -> selectedCategory == null || p.getCategory() == selectedCategory)
+            .filter(p -> !intent.excluded().contains(p.getCategory()))
             .filter(p -> maxPrice == null || p.getPrice().compareTo(maxPrice) <= 0)
             .filter(p -> !q.contains("in stock") || p.getStock() > 0).toList();
-        if (!followUp) {
+        if (!followUp || freshCategory) {
             String subtype = q.matches(".*\\b(gpu|gpus|graphics)\\b.*") ? "gpu|geforce|radeon|rtx|graphics"
                 : q.matches(".*\\b(keyboard|keyboards)\\b.*") ? "keyboard"
                 : q.matches(".*\\b(mouse|mice)\\b.*") ? "mouse|mice"
@@ -125,12 +158,10 @@ public final class CatalogAssistant {
         List<Product> allSelected = List.copyOf(selected);
         int count = allSelected.size();
         List<Product> visible = allSelected.stream().limit(6).toList();
-        JsonArray products = new JsonArray(); allSelected.stream().limit(20).forEach(p -> products.add(AssistantContext.product(p)));
-        facts.add("matchingCatalogRecords", products); facts.addProperty("totalMatches", count);
-        facts.addProperty("shownMatches", Math.min(count, 20));
         facts.addProperty("queryInterpretation", (category == null ? "All categories" : category.label()) + (budget == null ? "" : " · up to " + Money.format(budget)));
         facts.addProperty("buildWarning", "These are search results, not a verified compatible or complete PC build.");
-        boolean listing = q.matches(".*\\b(list|listed|show|find|available|have|looking|browse)\\b.*")
+        boolean listing = (intent.correction() || (category != null && terms.isEmpty() && !attributeFollowUp)
+            || q.matches(".*\\b(list|listed|show|find|available|have|looking|browse)\\b.*"))
             && !q.matches(".*\\b(compare|why|explain|better|best|fit|compatible|performance)\\b.*");
         String local;
         boolean asksCompatibility = q.matches(".*\\b(compatible|compatibility|fit together|work together|fit in|clearance)\\b.*");
@@ -159,8 +190,13 @@ public final class CatalogAssistant {
         }
         if (q.contains("compare") && !named && memory.ids().isEmpty() && page == null) {
             local = "Which products would you like to compare? Tell me their names, or first ask me to show a category such as gaming laptops.";
-            selected = List.of();
+            allSelected = List.of();
         }
+        // Keep the cards, context label and AI records in agreement after a clarification.
+        count = allSelected.size();
+        JsonArray products = new JsonArray(); allSelected.stream().limit(20).forEach(p -> products.add(AssistantContext.product(p)));
+        facts.add("matchingCatalogRecords", products); facts.addProperty("totalMatches", count);
+        facts.addProperty("shownMatches", Math.min(count, 20));
         return new Plan(allSelected, facts, local, "Catalog · " + count + (count == 1 ? " match" : " matches"), category, budget, false);
     }
     private static String conversationalReply(String q) {
@@ -191,15 +227,17 @@ public final class CatalogAssistant {
     private static Category category(String q) {
         if (q.matches(".*\\b(laptop|laptops|notebook|notebooks)\\b.*")) return Category.LAPTOPS;
         if (q.matches(".*\\b(phone|phones|tablet|tablets)\\b.*")) return Category.PHONES_TABLETS;
-        if (q.matches(".*\\b(gpu|gpus|graphics|cpu|processor|ram|motherboard|psu|ssd)\\b.*")) return Category.PC_PARTS;
-        if (q.matches(".*\\b(keyboard|keyboards|mouse|mice|headset|headphones|monitor)\\b.*")) return Category.PERIPHERALS;
-        if (q.matches(".*\\b(pc|desktop|desktops)\\b.*")) return Category.PC_SETS;
+        if (q.matches(".*\\b(parts?|components?|gpus?|graphics|cpus?|processors?|ram|motherboards?|psus?|ssds?)\\b.*")) return Category.PC_PARTS;
+        if (q.matches(".*\\b(peripherals?|accessories|keyboards?|mouse|mice|headsets?|headphones|monitors?)\\b.*")) return Category.PERIPHERALS;
+        if (q.matches(".*\\b(electronics)\\b.*")) return Category.ELECTRONICS;
+        if (q.matches(".*\\b(pcs?|desktops?)\\b.*")) return Category.PC_SETS;
         return null;
     }
     private static Set<String> terms(String q) {
         Set<String> ignored = Set.of("i","a","an","the","me","my","we","for","to","of","and","or","in","on","is","are","do","does","you","your","have","what","which","with","without","can","could","would","please","want","need","find","show","list","listed","currently","available","looking","browse","under","below","less","than","up","max","maximum","budget","within","gaming","school","work","play","build","setup","product","products","laptop","laptops","notebook","notebooks","pc","desktop","desktops","phone","phones","tablet","tablets","gpu","gpus","graphics","card","cards","cpu","ram","processor","motherboard","psu","ssd","keyboard","keyboards","mouse","mice","headset","headphones","monitor","stock","cheaper","cheapest","compare","two","these","those","them","this","it","more","better","best","specs","specifications","explain","fit","compatible","alternatives","alternative","another","good","be","will","how","much","all","store","where","there","buy");
         Set<String> result = new LinkedHashSet<>();
-        for (String token : q.split("[^a-z0-9]+")) if (token.length() > 1 && !token.matches("\\d+") && !ignored.contains(token)) result.add(token);
+        Set<String> categoryAndCorrectionWords = Set.of("parts","part","components","component","sets","set","shop","said","mean","meant","not","no","but","instead","actually","about","rather","computer","computers","complete","prebuilt","peripheral","peripherals","accessories","electronics");
+        for (String token : q.split("[^a-z0-9]+")) if (token.length() > 1 && !token.matches("\\d+") && !ignored.contains(token) && !categoryAndCorrectionWords.contains(token)) result.add(token);
         return result;
     }
 }
