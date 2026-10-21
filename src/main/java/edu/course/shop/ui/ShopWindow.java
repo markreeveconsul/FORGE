@@ -48,6 +48,7 @@ public final class ShopWindow {
     private User user=new Guest();private Cart cart=new Cart(0),pendingGuestCart;
     private final CheckoutDraft draft=new CheckoutDraft();
     private BorderPane shell;private StackPane window,overlay;private Button cartButton;
+    private AdminWorkspace adminWorkspace;
     private HBox headerSearch,headerNavigation;
     private Node previousFocus;
     // Header selection and brief action-feedback animations.
@@ -96,7 +97,7 @@ public final class ShopWindow {
     private void completeSignIn(User signedIn){
         CartService carts=new CartService(services.products());Cart previous=cart;
         if(signedIn.canManageProducts()){
-            pendingGuestCart=previous.getCustomerId()==0?previous:null;user=signedIn;cart=new Cart(user.getId());buildShell();showAdmin();return;
+            pendingGuestCart=previous.getCustomerId()==0?previous:null;user=signedIn;cart=new Cart(user.getId());buildShell();showAdminOverview();return;
         }
         cart=previous.getCustomerId()==0?carts.transferGuest(previous,signedIn):new Cart(signedIn.getId());user=signedIn;buildShell();
         if(cart.getItems().isEmpty())showCatalog();
@@ -116,7 +117,7 @@ public final class ShopWindow {
     private void buildShell(){
         if(assistantPanel!=null)assistantPanel.stop();assistantPanel=null;assistantProduct=null;
         dismissDrawer();stopFeedbackAnimations();
-        shell=new BorderPane();shell.setMinSize(0,0);
+        shell=new BorderPane();shell.setMinSize(0,0);adminWorkspace=null;
         // The toast sits in the window stack, above the page and below the cart drawer.
         toast=new Label();toast.setId("cart-toast-message");toast.setWrapText(true);toast.setMinWidth(0);HBox.setHgrow(toast,Priority.ALWAYS);
         Button review=Ui.button("Review cart →",this::showCartDrawer);review.setId("toast-review-cart");review.getStyleClass().add("toast-action");
@@ -127,34 +128,18 @@ public final class ShopWindow {
         window=new StackPane(shell,toastBar);window.setMinSize(0,0);StackPane.setAlignment(shell,Pos.TOP_LEFT);overlay=null;navButtons.clear();lastCartCount=-1;
         Label operation=Ui.feedback("operation-status");operation.getStyleClass().add("operation");
         if(user.canManageProducts()){
-            Button overview=Ui.button("Overview",this::showAdminOverview);overview.setId("admin-nav-overview");
-            Button inventory=Ui.button("Products",this::showAdmin);inventory.setId("nav-inventory");
-            Button orders=Ui.button("Orders",this::showAdminOrders);orders.setId("admin-nav-orders");
-            Button customers=Ui.button("Customers",this::showAdminCustomers);customers.setId("admin-nav-customers");
-            for(Button item:List.of(overview,inventory,orders,customers))item.setMaxWidth(Double.MAX_VALUE);
-            VBox nav=new VBox(12,Ui.label("MANAGE","eyebrow"),overview,inventory,orders,customers);
-            nav.setId("admin-navigation");
-            Region space=new Region();VBox.setVgrow(space,Priority.ALWAYS);
-            nav.getChildren().add(space);
-            nav.getStyleClass().add("sidebar");nav.setPrefWidth(210);shell.setLeft(nav);
-            HBox brand=new HBox(0,Ui.label("FOR","admin-brand-mark"),Ui.label("GE","admin-brand-rest"));
-            brand.setAlignment(Pos.BASELINE_LEFT);
-            Region topSpace=new Region();HBox.setHgrow(topSpace,Priority.ALWAYS);
-            Label role=Ui.label("ADMIN","admin-role");
-            Button exit=Ui.button("Sign out",this::signOut);exit.setId("admin-sign-out");exit.getStyleClass().add("admin-sign-out");
-            HBox adminHeader=new HBox(18,brand,topSpace,role,Ui.label(user.getUsername(),"admin-username"),exit);
-            adminHeader.setAlignment(Pos.CENTER_LEFT);adminHeader.getStyleClass().add("admin-topbar");
-            shell.setTop(new VBox(adminHeader,operation));cartButton=null;
+            adminWorkspace=new AdminWorkspace(user,services,this::showAdminOverview,this::showAdmin,this::showAdminOrders,this::showAdminCustomers,this::showAiManager,this::addAdminProduct,this::signOut);
+            shell.setCenter(adminWorkspace);cartButton=null;
         }else{
             search.setPromptText("Search the collection");search.setAccessibleText("Search products");search.setMinWidth(130);search.setPrefWidth(260);
             Runnable find=()->{catalogState.setScrollPosition(0);showCatalog();};search.setOnAction(e->find.run());
             Button logo=Ui.button("FORGE",()->category(0));logo.getStyleClass().add("brand-link");logo.setMinWidth(Region.USE_PREF_SIZE);
             cartButton=link("Cart · 0",this::showCartDrawer);cartButton.setId("nav-cart");
-            cartButton.setGraphic(StoreIcon.of("bag"));cartButton.getStyleClass().add("cart-button");
+            cartButton.setGraphic(StoreIcon.of("bag",18));cartButton.getStyleClass().add("cart-button");
             Button account=link(user instanceof Guest?"Sign in":"My orders",user instanceof Guest?this::showLogin:this::showOrders);account.setId("account");
-            account.setGraphic(StoreIcon.of("account"));account.setMinWidth(96);account.setPrefWidth(96);account.setMaxWidth(96);
-            Button favorites=link("Saved",this::showSaved);favorites.setGraphic(StoreIcon.of("heart"));favorites.setId("nav-saved");favorites.setAccessibleText("Saved items");
-            HBox right=new HBox(4,favorites,account,cartButton);right.setAlignment(Pos.CENTER_RIGHT);right.setMinWidth(Region.USE_PREF_SIZE);
+            account.setGraphic(StoreIcon.of("account",18));account.setMinWidth(Region.USE_PREF_SIZE);
+            Button favorites=link("Saved",this::showSaved);favorites.setGraphic(StoreIcon.of("heart",18));favorites.setId("nav-saved");favorites.setAccessibleText("Saved items");
+            HBox right=new HBox(6,favorites,account,cartButton);right.setAlignment(Pos.CENTER_RIGHT);right.setMinWidth(Region.USE_PREF_SIZE);
             if(!(user instanceof Guest)){
                 Button profile=link("Profile",this::showAccount);profile.setId("nav-profile");
                 Button signOut=link("Sign out",this::signOut);
@@ -186,18 +171,15 @@ public final class ShopWindow {
             javafx.scene.control.MenuButton menu=new javafx.scene.control.MenuButton("Shop");menu.setId("compact-shop-menu");menu.getStyleClass().add("compact-menu");
             javafx.scene.control.MenuItem allItem=new javafx.scene.control.MenuItem("Shop all");allItem.setOnAction(e->category(0));menu.getItems().add(allItem);
             for(Category c:Category.shopping()){javafx.scene.control.MenuItem item=new javafx.scene.control.MenuItem(Ui.category(c));item.setOnAction(e->category(c.shoppingIndex()));menu.getItems().add(item);}
-            headerSearch=new HBox();headerSearch.setId("header-search-slot");var searchSlotWidth=javafx.beans.binding.Bindings.createDoubleBinding(()->stage.getScene().getWidth()>=1100?Math.min(270,Math.max(180,stage.getScene().getWidth()-1070)):270,stage.getScene().widthProperty());headerSearch.minWidthProperty().bind(searchSlotWidth);headerSearch.prefWidthProperty().bind(searchSlotWidth);headerSearch.maxWidthProperty().bind(searchSlotWidth);
-            headerNavigation=new HBox();headerNavigation.setMinWidth(Region.USE_PREF_SIZE);
+            headerSearch=new HBox();headerSearch.setId("header-search-slot");headerSearch.setAlignment(Pos.CENTER_LEFT);
+            headerSearch.setMinWidth(200);headerSearch.setPrefWidth(320);headerSearch.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(headerSearch,Priority.ALWAYS);
+            headerNavigation=new HBox();headerNavigation.setAlignment(Pos.CENTER_LEFT);headerNavigation.setMinWidth(Region.USE_PREF_SIZE);
             HBox header=new HBox(12,logo,menu,headerNavigation,headerSearch,right,spacer);
-            if(user instanceof Guest){
-                headerSearch.minWidthProperty().unbind();headerSearch.prefWidthProperty().unbind();headerSearch.maxWidthProperty().unbind();
-                headerSearch.setMinWidth(180);headerSearch.setPrefWidth(320);headerSearch.setMaxWidth(Double.MAX_VALUE);
-                HBox.setHgrow(headerSearch,Priority.ALWAYS);
-                spacer.setVisible(false);spacer.setManaged(false);
-            }
             categories.setId("secondary-category-nav");categories.setAlignment(Pos.CENTER);categories.getStyleClass().add("tech-category-nav");
             var outsideCatalog=javafx.beans.binding.Bindings.createBooleanBinding(()->!(shell.getCenter() instanceof CatalogView),shell.centerProperty());
             var checkoutPage=javafx.beans.binding.Bindings.createBooleanBinding(()->shell.getCenter() instanceof CheckoutView,shell.centerProperty());
+            spacer.visibleProperty().bind(checkoutPage);spacer.managedProperty().bind(checkoutPage);
             right.visibleProperty().bind(checkoutPage.not());right.managedProperty().bind(right.visibleProperty());
             HBox checkoutLinks=new HBox(18,link("← Back to cart",this::showCart),Ui.label("Demo checkout","checkout-header-note"));checkoutLinks.setAlignment(Pos.CENTER_RIGHT);checkoutLinks.visibleProperty().bind(checkoutPage);checkoutLinks.managedProperty().bind(checkoutPage);header.getChildren().add(checkoutLinks);
             headerSearch.visibleProperty().bind(checkoutPage.not());headerSearch.managedProperty().bind(headerSearch.visibleProperty());
@@ -217,7 +199,7 @@ public final class ShopWindow {
             ask.setId("ask-forge");footer.getChildren().add(2,ask);
         }
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
-        shell.setBottom(footer);stage.getScene().setRoot(window);
+        if(!user.canManageProducts())shell.setBottom(footer);stage.getScene().setRoot(window);
         if(!user.canManageProducts()) {
             assistantLauncher=Ui.button("✦  FORGE AI",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
             assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,18,74,0));
@@ -242,7 +224,7 @@ public final class ShopWindow {
         info.initOwner(stage);info.setTitle("About FORGE");info.setHeaderText("A small shop. Good things.");info.showAndWait();
     }
     private void category(int index){catalogState.setCategoryIndex(index);catalogState.setScrollPosition(0);search.clear();showCatalog();}
-    private void show(Node page){assistantProduct=null;if(shell.getCenter() instanceof CatalogView previous&&previous!=page)previous.stopSearchSuggestions();dismissDrawer();stopFeedbackAnimations();if(headerNavigation!=null&&!(page instanceof CatalogView)){headerNavigation.setVisible(false);headerNavigation.setManaged(false);}shell.setCenter(page);if(!(page instanceof CatalogView)){search.setOnAction(e->{catalogState.setScrollPosition(0);showCatalog();});Motion.reveal(page);}updateNav();if(assistantPanel!=null)assistantPanel.refreshContext();}
+    private void show(Node page){assistantProduct=null;BorderPane target=adminWorkspace!=null&&user.canManageProducts()?adminWorkspace.pageHost():shell;if(target.getCenter() instanceof AiManagerView previous&&previous!=page)previous.dispose();if(target.getCenter() instanceof CatalogView previous&&previous!=page)previous.stopSearchSuggestions();dismissDrawer();stopFeedbackAnimations();if(headerNavigation!=null&&!(page instanceof CatalogView)){headerNavigation.setVisible(false);headerNavigation.setManaged(false);}target.setCenter(page instanceof AdminReportsView?Ui.scroll(page):page);if(!(page instanceof CatalogView)){search.setOnAction(e->{catalogState.setScrollPosition(0);showCatalog();});Motion.reveal(page);}updateNav();if(assistantPanel!=null)assistantPanel.refreshContext();}
 
     /** Highlights the header button for the current category, only while the storefront is showing. */
     private void updateNav(){
@@ -373,13 +355,17 @@ public final class ShopWindow {
         show(new CheckoutView(user,cart,services.checkout(),services.accounts(),draft,order->{updateCart();show(new ConfirmationView(order,this::showOrders,this::showCatalog));},this::showCart));
     }
     public void showOrders(){show(new OrdersView(user,services.orders(),services.products(),this::showCatalog,this::repeatOrder));}
-    public void showAdmin(){show(new AdminView(user,services.products()));markAdminTab("nav-inventory");}
-    private void showAdminOverview(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.OVERVIEW,this::showAdminOrders,this::showAdmin));markAdminTab("admin-nav-overview");}
+    public void showAdmin(){show(new AdminView(user,services.products(),this::runAdminCommand));markAdminTab("nav-inventory");}
+    private void addAdminProduct(){showAdmin();javafx.application.Platform.runLater(()->{Node button=adminWorkspace.lookup("#new-product");if(button instanceof Button add)add.fire();});}
+    private void runAdminCommand(String command){showAiManager();javafx.application.Platform.runLater(()->{if(adminWorkspace.pageHost().getCenter() instanceof AiManagerView view)view.submit(command);});}
+    private void showAdminOverview(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.OVERVIEW,this::showAdminOrders,this::showAdmin,this::showAiManager,this::addAdminProduct));markAdminTab("admin-nav-overview");}
     private void showAdminOrders(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.ORDERS,this::showAdminOrders));markAdminTab("admin-nav-orders");}
     private void showAdminCustomers(){show(new AdminReportsView(user,services.admin(),AdminReportsView.Section.CUSTOMERS,this::showAdminOrders));markAdminTab("admin-nav-customers");}
+    private void showAiManager(){show(new AiManagerView(user,services,assistant));markAdminTab("admin-nav-ai-manager");}
     private void markAdminTab(String selected){
         if(shell==null)return;
-        for(String id:List.of("admin-nav-overview","nav-inventory","admin-nav-orders","admin-nav-customers")){
+        if(adminWorkspace!=null){adminWorkspace.select(selected);return;}
+        for(String id:List.of("admin-nav-overview","nav-inventory","admin-nav-orders","admin-nav-customers","admin-nav-ai-manager")){
             Node node=shell.lookup("#"+id);if(node==null)continue;
             node.getStyleClass().remove("admin-nav-active");if(id.equals(selected))node.getStyleClass().add("admin-nav-active");
         }

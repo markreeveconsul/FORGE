@@ -20,7 +20,7 @@ import javax.imageio.ImageIO;
 import edu.course.shop.model.ProductReview;
 import edu.course.shop.model.Product;
 
-/** Optional, read-only Gemini client. No tools, writes, retries, or model fallback. */
+/** Optional Gemini transport. Tool requests are validated and dispatched by separate admin services. */
 public final class GeminiAssistant {
     public static final String DEFAULT_MODEL = "gemini-3.8-flash";
     private static final Gson JSON = new Gson();
@@ -97,6 +97,63 @@ public final class GeminiAssistant {
     }
     public String configurationProblem() { return config.problem(); }
     public String model() { return config.model(); }
+    /** Admin pipeline request; classification and draft generation can run sequentially without automatic retries. */
+    JsonObject managerRequest(JsonObject body) {
+        if(!config.problem().isBlank())throw new IllegalStateException(config.problem());
+        if(!busy.compareAndSet(false,true))throw new IllegalStateException("An AI request is already running.");
+        try {
+            long waitNanos=nextAllowed-System.nanoTime();
+            if(waitNanos>0)throw new IllegalStateException("FORGE AI is cooling down. Wait "+Math.max(1,(waitNanos+999_999_999L)/1_000_000_000L)+" seconds, then press Run again. Other AI features share this limit.");
+            // Gemini 3 spends the output budget on reasoning as well as the final tool call/JSON.
+            // Keep routine admin planning at low effort instead of exhausting a short response budget.
+            JsonObject payload=body.deepCopy();
+            if(config.model().matches("gemini-3[.-].*")){
+                JsonObject generation=payload.has("generationConfig")?payload.getAsJsonObject("generationConfig"):new JsonObject();
+                JsonObject thinking=new JsonObject();thinking.addProperty("thinkingLevel","low");
+                generation.add("thinkingConfig",thinking);payload.add("generationConfig",generation);
+            }
+            HttpRequest request=HttpRequest.newBuilder(URI.create("https://generativelanguage.googleapis.com/v1beta/models/"+config.model()+":generateContent"))
+                .timeout(Duration.ofSeconds(60)).header("Content-Type","application/json").header("x-goog-api-key",config.key)
+                .POST(HttpRequest.BodyPublishers.ofString(JSON.toJson(payload))).build();
+            Reply reply=sender.send(request);
+            if(reply.status()==429)nextAllowed=System.nanoTime()+Duration.ofSeconds(60).toNanos();
+            if(reply.status()!=200)throw new IllegalStateException(managerError(reply));
+            JsonObject root=JsonParser.parseString(reply.body()).getAsJsonObject();
+            JsonObject candidate=root.getAsJsonArray("candidates").get(0).getAsJsonObject();
+            String finish=candidate.has("finishReason")?candidate.get("finishReason").getAsString():"UNKNOWN";
+            if(!finish.equals("STOP"))throw new IllegalStateException(switch(finish){
+                case "MAX_TOKENS"->"FORGE AI reached its response token limit (MAX_TOKENS). Try a smaller product selection.";
+                case "MALFORMED_FUNCTION_CALL","UNEXPECTED_TOOL_CALL"->"FORGE AI returned an invalid tool call ("+finish+"). Rephrase and press Run again; nothing was changed.";
+                case "SAFETY","BLOCKLIST","PROHIBITED_CONTENT","RECITATION"->"FORGE AI blocked this response ("+finish+"). Rephrase the command; nothing was changed.";
+                default->"FORGE AI returned an incomplete command response. Press Run to try again.";
+            });
+            return root;
+        }catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalStateException("AI request cancelled.");}
+        catch(IOException e){throw new IllegalStateException("Gemini could not be reached. Check your connection.");}
+        catch(JsonParseException|NullPointerException|IndexOutOfBoundsException e){throw new IllegalStateException("FORGE AI returned an incomplete command response.");}
+        finally{busy.set(false);}
+    }
+    /** Administrator diagnostics exclude credentials and never expose the raw response body. */
+    private String managerError(Reply reply){
+        String detail="";
+        try{
+            JsonObject error=JsonParser.parseString(reply.body()).getAsJsonObject().getAsJsonObject("error");
+            if(error!=null&&error.has("message"))detail=error.get("message").getAsString();
+        }catch(RuntimeException ignored){ }
+        if(!config.key.isBlank())detail=detail.replace(config.key,"[redacted]");
+        detail=detail.replaceAll("AIza[0-9A-Za-z_-]{20,}","[redacted]")
+            .replaceAll("[\\p{Cntrl}]"," ").replaceAll("\\s+"," ").trim();
+        if(detail.length()>400)detail=detail.substring(0,400)+"…";
+        String hint=switch(reply.status()){
+            case 400->"The AI service rejected the request. Check the model and supported tools/settings.";
+            case 401,403->"AI access was rejected. Check your saved key, API restrictions and project permissions in AI Studio.";
+            case 404->"The configured model "+config.model()+" is unavailable. Check FORGE_AI_MODEL and model access.";
+            case 429->"The AI quota or rate limit was reached. Wait at least 60 seconds and check your free-tier limits.";
+            case 500,502,503,504->"The AI service is temporarily unavailable. Try again later.";
+            default->"The AI request failed. Try again later.";
+        };
+        return "HTTP "+reply.status()+": "+hint+(detail.isBlank()?"":" Details: "+detail);
+    }
     public String answer(String question, JsonObject context) {
         if (!config.problem().isEmpty()) throw new IllegalStateException(config.problem());
         if (question == null || question.isBlank() || question.length() > 1000)
