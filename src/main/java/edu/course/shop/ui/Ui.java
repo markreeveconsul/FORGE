@@ -21,6 +21,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
@@ -157,12 +158,42 @@ public final class Ui {
 
     public static VBox skeleton() {
         VBox placeholder=new VBox(16);placeholder.setId("loading-placeholder");placeholder.setAccessibleText("Loading products");
-        HBox cards=new HBox(20);
-        for(int i=0;i<3;i++) {
-            javafx.scene.layout.Region photo=new javafx.scene.layout.Region();photo.setPrefSize(220,190);photo.getStyleClass().add("skeleton-block");
-            javafx.scene.layout.Region title=new javafx.scene.layout.Region();title.setPrefSize(180,16);title.getStyleClass().add("skeleton-block");
-            VBox card=new VBox(12,photo,title);card.setMinWidth(0);HBox.setHgrow(card,Priority.ALWAYS);cards.getChildren().add(card);
-        }placeholder.getChildren().addAll(cards,label("Finding your next favorite…","muted"));return placeholder;
+        placeholder.getChildren().addAll(skeletonProductGrid(3),label("Finding your next favorite…","muted"));return placeholder;
+    }
+
+    public static TilePane skeletonProductGrid(int count) {
+        TilePane cards=new TilePane(20,24);cards.setId("loading-placeholder");cards.setAccessibleText("Loading product cards");cards.setPrefColumns(3);cards.setPrefTileWidth(240);cards.setMinWidth(0);
+        for(int i=0;i<count;i++)cards.getChildren().add(skeletonProductCard());
+        cards.widthProperty().addListener((o,a,b)->cards.setPrefColumns(Math.max(1,Math.min(5,(int)((b.doubleValue()+20)/260)))));
+        return cards;
+    }
+
+    public static VBox skeletonRows(int count) {
+        VBox rows=new VBox(12);rows.setId("loading-placeholder");rows.setAccessibleText("Loading records");
+        for(int i=0;i<count;i++) {
+            javafx.scene.layout.Region heading=skeletonBlock(220,18),detail=skeletonBlock(300,12),line=skeletonBlock(120,12);
+            VBox row=new VBox(12,heading,detail,line);row.setMinHeight(105);row.setMaxWidth(Double.MAX_VALUE);row.getStyleClass().add("skeleton-row");rows.getChildren().add(row);
+        }
+        return rows;
+    }
+
+    public static VBox skeletonProductDetail() {
+        VBox content=new VBox(24);content.setId("loading-placeholder");content.setAccessibleText("Loading product details");content.getStyleClass().add("page");
+        javafx.scene.layout.Region heading=skeletonBlock(430,34);
+        javafx.scene.layout.Region image=skeletonBlock(520,390);image.setMaxWidth(Double.MAX_VALUE);
+        javafx.scene.layout.Region line1=skeletonBlock(360,22),line2=skeletonBlock(260,18),line3=skeletonBlock(300,18),action=skeletonBlock(200,48);
+        VBox detail=new VBox(18,line1,line2,line3,action);detail.setMinWidth(0);
+        content.getChildren().addAll(heading,responsiveColumns(image,detail,950,28));return content;
+    }
+
+    private static VBox skeletonProductCard() {
+        VBox card=new VBox(12);card.setMinWidth(0);card.setMaxWidth(Double.MAX_VALUE);card.getStyleClass().add("skeleton-card");
+        javafx.scene.layout.Region photo=skeletonBlock(220,190),title=skeletonBlock(180,16),subtitle=skeletonBlock(130,12),price=skeletonBlock(110,20),action=skeletonBlock(150,38);
+        photo.setMaxWidth(Double.MAX_VALUE);card.getChildren().addAll(photo,title,subtitle,price,action);return card;
+    }
+
+    private static javafx.scene.layout.Region skeletonBlock(double width,double height) {
+        javafx.scene.layout.Region block=new javafx.scene.layout.Region();block.setPrefSize(width,height);block.setMinHeight(height);block.getStyleClass().add("skeleton-block");return block;
     }
 
     /** Stack purchase columns in compact windows, sharing one outer scroll surface. */
@@ -295,14 +326,16 @@ public final class Ui {
 
     /** Tasks preserve the FX thread for rendering, and block duplicate mutations. */
     public static <T> void async(Node owner, String busyText, Callable<T> work, Consumer<T> success, Consumer<Throwable> failure) {
-        Node lock = owner.getScene() == null ? owner : owner.getScene().getRoot();
-        Label status = lock.lookup("#operation-status") instanceof Label l ? l : null;
+        Node root=owner.getScene()==null?owner:owner.getScene().getRoot();
+        Node lock=owner instanceof javafx.scene.control.Control?owner:null;
+        Label status = root.lookup("#operation-status") instanceof Label l ? l : null;
         if (status != null) {
             status.setText(busyText);
         }
-        lock.setDisable(true);
+        boolean wasDisabled=lock!=null&&lock.isDisabled();
+        if(lock!=null)lock.setDisable(true);
         Runnable unlock = () -> {
-            lock.setDisable(false);
+            if(lock!=null)lock.setDisable(wasDisabled);
             if (status != null) {
                 status.setText("");
             }

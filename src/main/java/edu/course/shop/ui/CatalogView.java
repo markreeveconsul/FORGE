@@ -146,7 +146,7 @@ public final class CatalogView extends VBox {
         HBox toolbar=new HBox(20,collectionTitle,spacer,tools);toolbar.setAlignment(Pos.BOTTOM_LEFT);
         toolbar.getStyleClass().add("catalog-toolbar");
         chips.setId("filter-chips");chips.managedProperty().bind(chips.visibleProperty());
-        results.getChildren().add(grid);
+        results.getChildren().setAll(Ui.skeleton());
 
         VBox collection=new VBox(16,toolbar,chips,feedback,results);collectionSection=collection;collection.getStyleClass().add("collection-section");
         VBox content=new VBox(0);

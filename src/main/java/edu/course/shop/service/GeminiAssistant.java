@@ -159,10 +159,10 @@ public final class GeminiAssistant {
                 String metadata = "Catalog candidate id=" + product.getId() + "; name=" + product.getName()
                     + "; category=" + product.getCategory().label() + "; specifications=" + product.getSpecifications();
                 parts.add(textPart(metadata));
-                List<byte[]> photos = new ArrayList<>();
-                if (product.getPhoto() != null) photos.add(product.getPhoto());
-                for (byte[] angle : product.getAdditionalPhotos()) { if (photos.size() == 3) break; photos.add(angle); }
-                for (byte[] photo : photos) parts.add(imagePart(photo));
+                // One representative image per item keeps the request practical for free-tier limits.
+                byte[] representativePhoto=product.getPhoto();
+                if(representativePhoto==null&&!product.getAdditionalPhotos().isEmpty())representativePhoto=product.getAdditionalPhotos().get(0);
+                if(representativePhoto!=null)parts.add(imagePart(representativePhoto));
             }
             JsonObject body = new JsonObject(); JsonArray contents = new JsonArray(); JsonObject content = new JsonObject();
             content.addProperty("role", "user"); content.add("parts", parts); contents.add(content); body.add("contents", contents);

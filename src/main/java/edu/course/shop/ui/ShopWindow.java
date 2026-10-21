@@ -287,11 +287,19 @@ public final class ShopWindow {
     }
     public void showCatalog(){CatalogView catalog=new CatalogView(user,cart,services.products(),new CartService(services.products()),(Runnable)this::updateCart,(Runnable)this::showCartDrawer,(java.util.function.Consumer<Product>)this::showDetails,search,catalogState,(java.util.function.Consumer<String>)this::showToast,(Runnable)this::updateNav,assistant,new AssistantPreferences());catalog.enableSavedItems(saved);headerNavigation.getChildren().clear();catalog.useHeaderNavigation(headerNavigation);headerSearch.getChildren().setAll(catalog.searchBar());HBox.setHgrow(catalog.searchBar(),Priority.ALWAYS);show(catalog);}
     private void showDetails(Product product){
-        dismissDrawer();Ui.async(shell,"Opening product…",()->services.products().get(product.getId()),latest->{
+        dismissDrawer();
+        VBox loading=Ui.skeletonProductDetail();
+        show(loading);
+        Ui.readOnly(shell,()->services.products().get(product.getId()),latest->{
+            if(shell.getCenter()!=loading)return;
             if(!latest.isActive()){showCatalog();return;}
             show(new ProductDetailView(latest,user,cart,new CartService(services.products()),services.products(),this::updateCart,this::showCatalog,this::showCartDrawer,this::showDetails,saved,this::showToast,services.reviews(),assistant));
             assistantProduct=latest;if(assistantPanel!=null)assistantPanel.refreshContext();
-        },Ui::error);
+        },error->{
+            if(shell.getCenter()!=loading)return;
+            VBox failed=Ui.page("Couldn’t open this product","The catalog could not load the latest product details.",Ui.primary("Try again",()->showDetails(product)),Ui.link("Back to products",this::showCatalog));
+            show(failed);
+        });
     }
     public void showCartDrawer(){
         if(overlay!=null)return;previousFocus=stage.getScene().getFocusOwner();stopFeedbackAnimations();

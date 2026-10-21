@@ -270,6 +270,8 @@
 .save-heart:selected { -fx-text-fill: #C43D25; -fx-border-color: #E65436; }
 .product-card { -fx-background-radius: 8; }
 .skeleton-block { -fx-background-color: #ECECE8; -fx-background-radius: 6; }
+.skeleton-card { -fx-padding: 16; -fx-background-color: -surface; -fx-background-radius: 10; -fx-border-color: -line; -fx-border-radius: 10; }
+.skeleton-row { -fx-padding: 20; -fx-background-color: -surface; -fx-background-radius: 10; -fx-border-color: -line; -fx-border-radius: 10; }
 .order-card, .address-card { -fx-background-color: -surface; -fx-padding: 22; -fx-border-color: -line; -fx-border-radius: 10; -fx-background-radius: 10; }
 .order-selected { -fx-border-color: #E65436; -fx-border-width: 2; }
 .address-card { -fx-background-color: -tint; -fx-padding: 16; }

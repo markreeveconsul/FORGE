@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 public final class OrdersView extends VBox {
     public OrdersView(User user,OrderService orders,ProductService products,Runnable browse,Consumer<Order> repeat) {
         setId("orders-page");getStyleClass().add("page");setSpacing(20);
-        VBox cards=new VBox(16);cards.setId("order-cards");cards.setMinWidth(0);VBox receipt=new VBox(16);receipt.getStyleClass().add("card");receipt.setMinWidth(0);receipt.setId("order-receipt");
+        VBox cards=new VBox(16);cards.setId("order-cards");cards.setMinWidth(0);cards.getChildren().setAll(Ui.skeletonRows(3));VBox receipt=new VBox(16);receipt.getStyleClass().add("card");receipt.setMinWidth(0);receipt.setId("order-receipt");receipt.getChildren().setAll(Ui.skeletonRows(3));
         VBox body=Ui.responsiveColumns(cards,receipt,950,24);Label feedback=Ui.feedback("orders-feedback");
         DateTimeFormatter date=DateTimeFormatter.ofPattern("MMM dd, yyyy").withZone(ZoneId.systemDefault());
         Runnable refresh=()->Ui.async(this,"Loading your orders…",()->{
