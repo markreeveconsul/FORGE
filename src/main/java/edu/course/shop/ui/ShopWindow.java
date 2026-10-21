@@ -10,6 +10,7 @@ import edu.course.shop.model.Guest;
 import edu.course.shop.model.Product;
 import edu.course.shop.model.User;
 import edu.course.shop.service.CartService;
+import edu.course.shop.service.AssistantPreferences;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
@@ -284,7 +285,7 @@ public final class ShopWindow {
         if(cartPulse!=null){cartPulse.stop();cartPulse=null;}
         if(cartButton!=null){cartButton.setScaleX(1);cartButton.setScaleY(1);}
     }
-    public void showCatalog(){CatalogView catalog=new CatalogView(user,cart,services.products(),new CartService(services.products()),(Runnable)this::updateCart,(Runnable)this::showCartDrawer,(java.util.function.Consumer<Product>)this::showDetails,search,catalogState,(java.util.function.Consumer<String>)this::showToast,(Runnable)this::updateNav);catalog.enableSavedItems(saved);headerNavigation.getChildren().clear();catalog.useHeaderNavigation(headerNavigation);headerSearch.getChildren().setAll(catalog.searchBar());HBox.setHgrow(catalog.searchBar(),Priority.ALWAYS);show(catalog);}
+    public void showCatalog(){CatalogView catalog=new CatalogView(user,cart,services.products(),new CartService(services.products()),(Runnable)this::updateCart,(Runnable)this::showCartDrawer,(java.util.function.Consumer<Product>)this::showDetails,search,catalogState,(java.util.function.Consumer<String>)this::showToast,(Runnable)this::updateNav,assistant,new AssistantPreferences());catalog.enableSavedItems(saved);headerNavigation.getChildren().clear();catalog.useHeaderNavigation(headerNavigation);headerSearch.getChildren().setAll(catalog.searchBar());HBox.setHgrow(catalog.searchBar(),Priority.ALWAYS);show(catalog);}
     private void showDetails(Product product){
         dismissDrawer();Ui.async(shell,"Opening product…",()->services.products().get(product.getId()),latest->{
             if(!latest.isActive()){showCatalog();return;}

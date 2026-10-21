@@ -33,6 +33,9 @@ public final class CatalogAssistant {
             JsonObject t = new JsonObject(); t.addProperty("question", turn.question()); t.addProperty("answer", turn.answer()); history.add(t);
         }
         facts.add("conversationForReferenceOnly", history);
+        String conversationalReply = conversationalReply(q);
+        if (conversationalReply != null)
+            return new Plan(List.of(), facts, conversationalReply, "FORGE assistant", null, null, false);
         if (asksOrders(q)) {
             if (!(user instanceof Customer)) return new Plan(List.of(), facts, "Sign in as a customer to see your own orders. This demo does not provide real delivery or tracking.", "Order help", null, null, true);
             if (!allowOrders) throw new IllegalArgumentException("Please approve sharing your order summary first.");
@@ -143,7 +146,7 @@ public final class CatalogAssistant {
                 + " listed here in FORGE under " + (selectedCategory == null ? "the catalog" : selectedCategory.label())
                 + ". Open the product card below to view details. This demo doesn't have physical store or aisle locations.";
         } else if (count == 0) {
-            local = "I couldn't find a match in the current catalog. Try a product name or category such as laptops, GPUs or keyboards, or increase your budget.";
+            local = "I couldn't find that in the current FORGE catalog. Share the exact model name, a category such as laptops or GPUs, or your budget and I'll check again.";
         } else if (listing) {
             String rows = visible.stream().map(p -> p.getName() + " · " + Money.format(p.getPrice()) + " · "
                 + (p.getStock() == 0 ? "Out of stock" : "In stock" + (p.getStock() <= 3 ? " (" + p.getStock() + " left)" : "")))
@@ -160,7 +163,19 @@ public final class CatalogAssistant {
         }
         return new Plan(allSelected, facts, local, "Catalog · " + count + (count == 1 ? " match" : " matches"), category, budget, false);
     }
+    private static String conversationalReply(String q) {
+        if (q.matches("^(hi|hello|hey|good morning|good afternoon|good evening|how are you|what s up)( forge)?$"))
+            return "Hi! I can help you find products by name, category or budget, compare listed items, and explain recorded specs. What are you shopping for?";
+        if (q.matches("^(thanks|thank you|thank you forge|thx|appreciate it)$"))
+            return "You're welcome. Want to compare anything else or narrow your search by budget?";
+        if (q.matches("^(help|what can you do|how can you help)( forge)?$"))
+            return "I can find products in the FORGE catalog, show product cards, compare recorded details, check some listed part compatibility, and help review your cart or your own order records. What would you like to do?";
+        if (q.matches("^(this is (useless|annoying|not helpful)|that answer was (bad|dumb|wrong)|you are not helping|that did not help|that didn t help|still no card|nothing happened|this isn t what i asked)$"))
+            return "I'm sorry—that didn't help. If you expected product cards, tell me the category or product name again and I'll search the FORGE catalog directly. You can add a budget too.";
+        return null;
+    }
     public static Memory remember(Memory old, Plan plan, String question, String answer) {
+        if ("FORGE assistant".equals(plan.context())) return old;
         List<Turn> turns = new ArrayList<>(old.turns());
         // Private order answers are not replayed as general chat history.
         if (!plan.orderContext()) turns.add(new Turn(question, answer.substring(0, Math.min(1800, answer.length()))));

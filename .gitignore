@@ -5,3 +5,7 @@ data/
 .forge-ai-free-tier-confirmed
 .idea/
 *.iml
+
+.env
+.env.*
+!.env.example
