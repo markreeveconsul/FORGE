@@ -60,7 +60,78 @@ class CatalogAssistantTest {
         assertEquals(1,result.products().size());
         assertEquals("MSI Titan Laptop",result.products().getFirst().getName());
         assertTrue(result.products().getFirst().getSpecifications().isBlank());
-        assertNull(result.localAnswer()); // The UI previews this matched card before asking Gemini for an explanation.
+        assertNull(result.localAnswer()); // Keep the match for the card rendered with the completed AI explanation.
+    }
+    @Test void pcPartsRequestsNeverReturnCompletePcs(){
+        for(String question:List.of("Show me pc parts that is listed on the shop", "show computer components", "show all PC Parts", "PC Parts")){
+            var result=ask(question,CatalogAssistant.Memory.empty());
+            assertEquals(Category.PC_PARTS,result.category(),question);
+            assertEquals(2,result.products().size(),question);
+            assertTrue(result.products().stream().allMatch(p->p.getCategory()==Category.PC_PARTS),question);
+            assertNotNull(result.localAnswer(),question);
+        }
+    }
+    @Test void correctionsReplaceOldCategoryIdsAndBudgetAndExcludeRejectedCategories(){
+        var sets=ask("show pc sets under $1500",CatalogAssistant.Memory.empty());
+        var memory=CatalogAssistant.remember(CatalogAssistant.Memory.empty(),sets,"show pc sets under $1500",sets.localAnswer());
+        for(String question:List.of("i said pc parts not pc sets", "not pc sets, pc parts", "PC parts instead of PC sets", "I meant computer components", "Show me PC parts, not desktops")){
+            var corrected=ask(question,memory);
+            assertEquals(Category.PC_PARTS,corrected.category(),question);
+            assertNull(corrected.ceiling(),question);
+            assertEquals(2,corrected.products().size(),question);
+            assertNotNull(corrected.localAnswer(),question);
+            assertTrue(corrected.products().stream().allMatch(p->p.getCategory()==Category.PC_PARTS),question);
+            assertFalse(corrected.facts().get("matchingCatalogRecords").toString().contains("Ducati"),question);
+        }
+        var parts=ask("show PC parts",CatalogAssistant.Memory.empty());
+        var partsMemory=CatalogAssistant.remember(CatalogAssistant.Memory.empty(),parts,"show PC parts",parts.localAnswer());
+        var reversed=ask("I said PC sets, not PC parts",partsMemory);
+        assertEquals(Category.PC_SETS,reversed.category());
+        assertEquals(List.of("Ducati Desktop"),reversed.products().stream().map(Product::getName).toList());
+    }
+    @Test void explicitNewCategoryOverridesFollowupAndProductPageContext(){
+        var laptops=ask("show laptops under $800",CatalogAssistant.Memory.empty());
+        var memory=CatalogAssistant.remember(CatalogAssistant.Memory.empty(),laptops,"show laptops",laptops.localAnswer());
+        Product laptop=laptops.products().getFirst();
+        for(String question:List.of("What about PC parts?", "Which PC parts are listed?", "Show me these GPUs instead")){
+            var result=assistant.prepare(new Guest(),List.of(),laptop,memory,question,false);
+            assertEquals(Category.PC_PARTS,result.category(),question);
+            assertFalse(result.products().isEmpty(),question);
+            assertTrue(result.products().stream().allMatch(p->p.getCategory()==Category.PC_PARTS),question);
+            assertNull(result.ceiling(),question);
+        }
+    }
+    @Test void rejectionWithoutReplacementAsksInsteadOfRepeatingOldProducts(){
+        var sets=ask("show pc sets",CatalogAssistant.Memory.empty());
+        var memory=CatalogAssistant.remember(CatalogAssistant.Memory.empty(),sets,"show pc sets",sets.localAnswer());
+        var result=ask("Not PC sets",memory);
+        assertTrue(result.products().isEmpty());
+        assertTrue(result.localAnswer().contains("Which category or product"));
+        var after=CatalogAssistant.remember(memory,result,"Not PC sets",result.localAnswer());
+        assertTrue(after.ids().isEmpty());
+        assertNull(after.category());
+    }
+    @Test void emptyRequestedCategoryDoesNotFallBackToTheOldResults(){
+        var sets=ask("show pc sets",CatalogAssistant.Memory.empty());
+        var memory=CatalogAssistant.remember(CatalogAssistant.Memory.empty(),sets,"show pc sets",sets.localAnswer());
+        for(Product p:services.products().search(admin,"",Category.PC_PARTS))
+            services.products().save(admin,p.getId(),p.getName(),p.getCategory(),p.getPrice(),p.getStock(),false);
+        var result=ask("i said pc parts not pc sets",memory);
+        assertTrue(result.products().isEmpty());
+        assertEquals(0,result.facts().get("totalMatches").getAsInt());
+        assertTrue(result.localAnswer().contains("couldn't find"));
+    }
+    @Test void clarificationDoesNotKeepUnrelatedRecordsForCardsOrAi(){
+        var result=ask("Compare products",CatalogAssistant.Memory.empty());
+        assertTrue(result.products().isEmpty());
+        assertTrue(result.facts().getAsJsonArray("matchingCatalogRecords").isEmpty());
+        assertEquals(0,result.facts().get("totalMatches").getAsInt());
+        assertEquals("Catalog · 0 matches",result.context());
+    }
+    @Test void savedPcPartsPreferenceUsesTheSameCategoryRules(){
+        assertEquals(Category.PC_PARTS,CatalogAssistant.requestedCategory("PC parts, not PC sets"));
+        assertEquals("Recommend PC parts",AssistantPreferences.apply("Recommend PC parts",new AssistantPreferences.Profile(Category.PC_SETS,null)));
+        assertNull(CatalogAssistant.requestedCategory("something"));
     }
     @Test void compatibilityChecksOnlyExplicitSpecsAndReportsConflictsOrUnknowns(){
         Product cpu=addWithSpecs("AMD Ryzen 7 CPU",Category.PC_PARTS,"250","Socket: AM5");

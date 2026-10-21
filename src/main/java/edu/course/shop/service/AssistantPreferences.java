@@ -75,12 +75,7 @@ public final class AssistantPreferences {
         return question+suffix;
     }
     private static Category category(String q){
-        if(q.matches("(?s).*\\b(laptop|laptops|notebook|notebooks)\\b.*"))return Category.LAPTOPS;
-        if(q.matches("(?s).*\\b(phone|phones|tablet|tablets)\\b.*"))return Category.PHONES_TABLETS;
-        if(q.matches("(?s).*\\b(gpu|gpus|graphics|cpu|processor|ram|motherboard|psu|ssd)\\b.*"))return Category.PC_PARTS;
-        if(q.matches("(?s).*\\b(keyboard|keyboards|mouse|mice|headset|headphones|monitor)\\b.*"))return Category.PERIPHERALS;
-        if(q.matches("(?s).*\\b(pc|desktop|desktops)\\b.*"))return Category.PC_SETS;
-        return null;
+        return CatalogAssistant.requestedCategory(q);
     }
     private static boolean mentionsCategory(String q){return category(q)!=null;}
     private static boolean hasBudget(String q){return parseBudget(q)!=null;}

@@ -120,7 +120,19 @@ public final class CatalogView extends VBox {
         clearSearch.setId("clear-search");clearSearch.setAccessibleText("Clear search");
         clearSearch.getStyleClass().add("search-clear");
         clearSearch.visibleProperty().bind(search.textProperty().isNotEmpty());clearSearch.managedProperty().bind(clearSearch.visibleProperty());
-        HBox searchInput=new HBox(12,StoreIcon.of("search"),search,clearSearch);searchInput.setAlignment(Pos.CENTER_LEFT);searchInput.setMinWidth(0);
+        imageSearch=Ui.button("",this::chooseImage);
+        imageSearch.setId("catalog-image-search");
+        imageSearch.setAccessibleText("Search products by image with FORGE AI");
+        imageSearch.setTooltip(new javafx.scene.control.Tooltip("Search by image · FORGE AI"));
+        imageSearch.getStyleClass().addAll("catalog-image-search","image-search-camera");
+
+        javafx.scene.shape.SVGPath cameraIcon=new javafx.scene.shape.SVGPath();
+        cameraIcon.setContent("M8 5L10 3H14L16 5H19A2 2 0 0 1 21 7V18A2 2 0 0 1 19 20H5A2 2 0 0 1 3 18V7A2 2 0 0 1 5 5Z M16 12.5A4 4 0 1 1 8 12.5A4 4 0 1 1 16 12.5Z M18 8H18.05");
+        cameraIcon.getStyleClass().add("image-search-camera-icon");
+        cameraIcon.setFillRule(javafx.scene.shape.FillRule.EVEN_ODD);
+        cameraIcon.setMouseTransparent(true);
+        imageSearch.setGraphic(cameraIcon);
+        HBox searchInput=new HBox(12,StoreIcon.of("search"),search,clearSearch,imageSearch);searchInput.setAlignment(Pos.CENTER_LEFT);searchInput.setMinWidth(0);
         searchInput.getStyleClass().add("catalog-search-surface");HBox.setHgrow(searchInput,Priority.ALWAYS);
         Button find=Ui.primary("Search",()->{state.setScrollPosition(0);refresh();});find.setId("catalog-search");
         find.getStyleClass().add("purchase-action");find.setVisible(false);find.setManaged(false);
@@ -141,8 +153,8 @@ public final class CatalogView extends VBox {
         sort.getStyleClass().add("catalog-outline-control");
         sort.setButtonCell(new javafx.scene.control.ListCell<>(){ @Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:"Sort by");} });
         sort.setPrefWidth(105);
-        imageSearch=Ui.button("Find by image",this::chooseImage);imageSearch.setId("catalog-image-search");imageSearch.setAccessibleText("Find visually similar products using an image search");imageSearch.getStyleClass().addAll("catalog-outline-control","catalog-image-search");
-        HBox tools=new HBox(12,imageSearch,toggle,sort);tools.setAlignment(Pos.BOTTOM_RIGHT);
+
+        HBox tools=new HBox(12,toggle,sort);tools.setAlignment(Pos.BOTTOM_RIGHT);
         HBox toolbar=new HBox(20,collectionTitle,spacer,tools);toolbar.setAlignment(Pos.BOTTOM_LEFT);
         toolbar.getStyleClass().add("catalog-toolbar");
         chips.setId("filter-chips");chips.managedProperty().bind(chips.visibleProperty());

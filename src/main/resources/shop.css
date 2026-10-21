@@ -691,3 +691,40 @@
 .forge-chat .chat-disclaimer { -fx-font-size: 10px; -fx-text-fill: #646467; }
 .forge-chat .chat-error { -fx-background-color: #FBECE8; }
 .forge-chat .chat-error .chat-message-text { -fx-text-fill: #A72820; }
+
+/* FORGE AI camera search */
+.catalog-search-surface .button.image-search-camera {
+    -fx-min-width: 24; -fx-pref-width: 24; -fx-max-width: 24;
+    -fx-min-height: 22; -fx-pref-height: 22; -fx-max-height: 22;
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 10; -fx-border-radius: 10;
+    -fx-effect: null; -fx-cursor: hand;
+}
+.catalog-search-surface .button.image-search-camera:hover {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.catalog-search-surface .button.image-search-camera:focused,
+.catalog-search-surface .button.image-search-camera:armed {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.image-search-camera-icon {
+    -fx-scale-x: .8; -fx-scale-y: .8;
+    -fx-fill: linear-gradient(to bottom right, rgba(244,250,255,.18), rgba(204,224,242,.04));
+    -fx-stroke: linear-gradient(to bottom right, #FFFFFF 0%, #B8CDDE 45%, #F7FCFF 75%, #D0E0EC 100%);
+    -fx-stroke-width: 1.8;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    -fx-effect: dropshadow(gaussian, rgba(214,234,250,.30), 3, .12, 0, 0);
+}
+.image-search-camera:hover .image-search-camera-icon {
+    -fx-stroke: linear-gradient(to bottom right, #FFFFFF, #E4F4FF);
+    -fx-effect: dropshadow(gaussian, rgba(224,242,255,.50), 4, .16, 0, 0);
+}
+.image-search-camera:focused .image-search-camera-icon {
+    -fx-stroke: #FFA481;
+    -fx-effect: dropshadow(gaussian, rgba(239,80,43,.45), 4, .16, 0, 0);
+}

@@ -115,8 +115,8 @@ public final class GuiSmoke {
             check(fx(()->scene.lookup("#assistant-product-3").lookup(".chat-product-name")!=null),
                 "Assistant card contains the matched product name");
             check(fx(()->scene.lookup("#assistant-product-3").lookup(".chat-product-category")!=null&&
-                scene.lookup("#assistant-product-3").lookup(".chat-product-note")!=null),
-                "Assistant card shows category and catalog-grounded fit note");
+                scene.lookup("#assistant-product-3").lookup(".chat-evidence-missing")==null),
+                "Assistant keeps product cards useful without repeated missing-specification messages");
             check(fx(()->scene.lookup("#assistant-product-3").lookup(".chat-product-heart")!=null&&
                 scene.lookup("#assistant-product-3").lookup(".chat-dark-button")!=null),
                 "Assistant card offers save and add actions");
