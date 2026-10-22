@@ -176,3 +176,18 @@
 .forge-admin .workspace-delete-button { -fx-text-fill: #B91C1C; -fx-border-color: #FECACA; -fx-background-color: #FEF2F2; }
 .forge-admin.admin-dark .workspace-delete-button { -fx-text-fill: #FCA5A5; -fx-border-color: #713F3F; -fx-background-color: #3B1E1B; }
 .forge-admin.admin-dark .order-tracking .tracking-complete { -fx-text-fill: #86EFAC; -fx-background-color: #15352A; }
+/* Fixed inventory thumbnails do not depend on a virtual table row's first layout pass. */
+.forge-admin #admin-page #admin-table { -fx-fixed-cell-size: 72; }
+.forge-admin #admin-table .column-header { -fx-padding: 10 8; }
+.forge-admin #admin-table .column-header .label { -fx-padding: 0; }
+.forge-admin #admin-table .inventory-thumbnail { -fx-background-color: -admin-soft; -fx-background-radius: 9; }
+.forge-admin #admin-table .table-row-cell:selected { -fx-background-color: #FFF3E8; }
+.forge-admin.admin-dark #admin-table .table-row-cell:selected { -fx-background-color: #38271D; }
+.forge-admin #admin-table .table-row-cell:selected .table-cell { -fx-text-fill: -admin-text; }
+/* Keep short capacity units fully visible inside the product editor. */
+.forge-admin .combo-box.specification-unit { -fx-padding: 4 6; -fx-min-height: 38; -fx-pref-height: 38; -fx-max-height: 38; }
+.forge-admin .combo-box.specification-unit .list-cell { -fx-padding: 0 4; }
+.forge-admin .text-field.invalid { -fx-border-color: #B91C1C; -fx-border-width: 1.5; }
+.forge-admin.admin-dark .text-field.invalid { -fx-border-color: #FCA5A5; }
+.forge-admin .field-error.field-warning { -fx-text-fill: #92400E; }
+.forge-admin.admin-dark .field-error.field-warning { -fx-text-fill: #FDE68A; }

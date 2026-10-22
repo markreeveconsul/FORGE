@@ -123,7 +123,7 @@ public final class ShopWindow {
         toastBar.setMinWidth(0);toastBar.setMaxWidth(720);toastBar.setMaxHeight(Region.USE_PREF_SIZE);toastBar.setOpacity(0);
         toastBar.visibleProperty().bind(toastBar.opacityProperty().greaterThan(0));
         StackPane.setAlignment(toastBar,Pos.BOTTOM_CENTER);StackPane.setMargin(toastBar,new Insets(0,24,64,24));
-        window=new StackPane(shell,toastBar);window.setMinSize(0,0);StackPane.setAlignment(shell,Pos.TOP_LEFT);overlay=null;navButtons.clear();lastCartCount=-1;
+        window=new StackPane(shell,toastBar);Interactions.install(window);window.setMinSize(0,0);StackPane.setAlignment(shell,Pos.TOP_LEFT);overlay=null;navButtons.clear();lastCartCount=-1;
         Label operation=Ui.feedback("operation-status");operation.getStyleClass().add("operation");
         if(user.canManageProducts()){
             adminWorkspace=new AdminWorkspace(user,services,this::showAdminOverview,this::showAdmin,this::showAdminOrders,this::showAdminCustomers,this::showAiManager,this::addAdminProduct,this::signOut);

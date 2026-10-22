@@ -22,7 +22,7 @@ public final class SavedItems {
         Runnable render=()->{boolean saved=ids.contains(product.getId());heart.setText(saved?"♥":"♡");heart.setAccessibleText((saved?"Remove ":"Save ")+product.getName()+" in saved items");heart.pseudoClassStateChanged(javafx.css.PseudoClass.getPseudoClass("selected"),saved);};
         SetChangeListener<Long> listener=c->render.run();ids.addListener(new WeakSetChangeListener<>(listener));heart.getProperties().put("market.savedListener",listener);
         heart.setOnAction(e->{
-            boolean save=!ids.contains(product.getId());Runnable finish=()->{if(save)ids.add(product.getId());else ids.remove(product.getId());render.run();};
+            boolean save=!ids.contains(product.getId());Runnable finish=()->{if(save)ids.add(product.getId());else ids.remove(product.getId());render.run();Motion.reveal(heart);};
             if(user instanceof Guest)finish.run();
             else Ui.async(heart,"Updating saved items…",()->{accounts.saveItem(user,product.getId(),save);return true;},done->finish.run(),Ui::error);
         });render.run();return heart;

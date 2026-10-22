@@ -1,0 +1,61 @@
+/* Shared popups have their own palette because they live in a separate JavaFX window. */
+.forge-options {
+    -fx-background-color: #FFFFFF; -fx-border-color: #E7E5E4;
+    -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1;
+    -fx-padding: 6; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.17),18,.06,0,5);
+}
+
+.forge-options .menu-item {
+    -fx-padding: 10 12; -fx-background-radius: 8; -fx-min-height: 40;
+}
+.forge-options .menu-item .label { -fx-text-fill: #1C1917; -fx-font-size: 13px; }
+.forge-options .menu-item:focused, .forge-options .menu-item:hover { -fx-background-color: #FFF3E8; }
+.forge-options .menu-item:focused .label, .forge-options .menu-item:hover .label { -fx-text-fill: #9A3412; }
+.forge-options .menu-item:disabled { -fx-opacity: .45; }
+.forge-options .menu-item .store-icon { -fx-stroke: #1C1917; }
+.forge-options .check-menu-item:checked > .left-container > .check { -fx-background-color: #9A3412; }
+.forge-options .separator { -fx-padding: 5 0; }
+.forge-options.list-view { -fx-background-insets: 0; -fx-max-height: 360; }
+.forge-options .list-cell { -fx-background-color: #FFFFFF; -fx-text-fill: #1C1917; -fx-padding: 10 12; -fx-min-height: 40; -fx-background-radius: 8; }
+.forge-options .list-cell:filled:hover, .forge-options .list-cell:filled:selected { -fx-background-color: #FFF3E8; -fx-text-fill: #9A3412; }
+.forge-options .list-cell:empty { -fx-background-color: #FFFFFF; }
+.forge-options .scroll-bar { -fx-background-color: transparent; }
+.forge-options .scroll-bar .thumb { -fx-background-color: #E7E5E4; -fx-background-radius: 8; }
+.forge-store .menu-button:showing, .forge-admin .menu-button:showing { -fx-border-color: #EA580C; }
+.forge-store .menu-button:focused, .forge-admin .menu-button:focused,
+.forge-store .combo-box:focused, .forge-admin .combo-box:focused { -fx-border-color: #EA580C; }
+.forge-store .button:focused, .forge-admin .button:focused { -fx-effect: dropshadow(gaussian,rgba(234,88,12,.28),5,.25,0,0); }
+.forge-store .button:pressed, .forge-admin .button:pressed { -fx-opacity: .86; }
+.forge-store .button:disabled, .forge-admin .button:disabled { -fx-cursor: default; }
+.forge-store .button.primary, .forge-admin .button.primary { -fx-background-color: #EA580C; -fx-border-color: #EA580C; -fx-text-fill: white; }
+.forge-store .button.primary:hover, .forge-admin .button.primary:hover { -fx-background-color: #C2410C; -fx-border-color: #C2410C; }
+.forge-admin .button.workspace-delete-button { -fx-background-color: transparent; -fx-border-color: #FCA5A5; -fx-text-fill: #B91C1C; }
+.forge-admin .button.workspace-delete-button:hover { -fx-background-color: #FEF2F2; }
+.forge-admin.admin-dark .button.workspace-delete-button { -fx-border-color: #7F3934; -fx-text-fill: #FCA5A5; }
+.forge-admin.admin-dark .button.workspace-delete-button:hover { -fx-background-color: #3B1E1B; }
+.forge-store .filter-section { -fx-border-color: transparent transparent -line transparent; -fx-padding: 0 0 14 0; }
+.forge-store .filter-section .button.disclosure-toggle {
+    -fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 8;
+    -fx-text-fill: -ink; -fx-alignment: center-left; -fx-padding: 4 6; -fx-min-height: 36;
+    -fx-font-size: 13px; -fx-graphic-text-gap: 12;
+}
+.forge-store .filter-section .button.disclosure-toggle:hover { -fx-background-color: -tint; }
+.forge-store .filter-section .button.disclosure-toggle:focused { -fx-border-color: #EA580C; }
+.forge-store .disclosure-chevron { -fx-text-fill: -ink-muted; }
+.category-indicator { -fx-background-color: #EA580C; -fx-background-radius: 2; }
+.forge-store .store-category-row .animated-category-nav .button.category-active,
+.forge-store .store-category-row .animated-category-nav .menu-button.category-active { -fx-border-color: transparent; }
+/* Override theme rules inherited from a menu's anchor, including its text nodes. */
+.forge-options.forge-options .menu-item .label { -fx-text-fill: #1C1917; }
+.forge-options.forge-options .menu-item:focused .label, .forge-options.forge-options .menu-item:hover .label { -fx-text-fill: #9A3412; }
+.forge-options .menu-item > .left-container > .check { -fx-background-color: #9A3412; }
+.forge-options.forge-options-dark { -fx-background-color: #1C1917; -fx-border-color: #57534E; }
+.forge-options.forge-options-dark .menu-item .label, .forge-options.forge-options-dark .list-cell { -fx-text-fill: #FAFAF9; }
+.forge-options.forge-options-dark .list-cell { -fx-background-color: #1C1917; }
+.forge-options.forge-options-dark .menu-item:focused, .forge-options.forge-options-dark .menu-item:hover,
+.forge-options.forge-options-dark .list-cell:filled:hover, .forge-options.forge-options-dark .list-cell:filled:selected { -fx-background-color: #38271D; }
+.forge-options.forge-options-dark .menu-item:focused .label, .forge-options.forge-options-dark .menu-item:hover .label,
+.forge-options.forge-options-dark .list-cell:filled:hover, .forge-options.forge-options-dark .list-cell:filled:selected { -fx-text-fill: #FDBA74; }
+.forge-options.forge-options-dark .menu-item .store-icon { -fx-stroke: #FAFAF9; }
+.forge-options.forge-options-dark .menu-item > .left-container > .check, .forge-options.forge-options-dark .check-menu-item:checked > .left-container > .check { -fx-background-color: #FDBA74; }
+.forge-options.forge-options-dark .scroll-bar .thumb { -fx-background-color: #57534E; }

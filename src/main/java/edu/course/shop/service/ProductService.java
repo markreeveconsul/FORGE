@@ -117,7 +117,7 @@ public final class ProductService {
         byte[] snapshot = photo == null ? null : photo.clone();
         ProductPhotos.validate(snapshot);
         Product previous=id==0?null:get(id);
-        String validSpecs=previous!=null&&previous.getSpecifications().equals(specifications)?specifications:ProductSpecifications.validated(specifications);
+        String validSpecs=previous!=null&&previous.getSpecifications().equals(specifications)?specifications:ProductSpecifications.listingText(specifications);
         Product product = new Product(id, name, category, price, stock, active, description, snapshot,additionalPhotos,validSpecs,frame);
         for(byte[] bytes:product.getAdditionalPhotos())ProductPhotos.validate(bytes);
         try (Connection c = database.open()) {

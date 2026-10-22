@@ -101,9 +101,17 @@ class CommerceWorkflowTest {
         assertEquals("16 GB",ProductSpecifications.value(laptop,"RAM"));assertEquals("1 TB",ProductSpecifications.value(laptop,"Storage"));assertTrue(ProductSpecifications.matches(laptop,Map.of("Brand","forge","RAM","16 GB")));assertFalse(ProductSpecifications.matches(laptop,Map.of("RAM","32 GB")));
         assertEquals("Length: 30 cm\nWattage: 650 W",ProductSpecifications.validated("GPU length: 30cm\nWattage: 650w"));
     }
-    @Test void invalidUnitsAndDuplicateKeysAreRejectedBeforeSaving(){
-        for(String specs:List.of("RAM: lots","Storage: -1 TB","Wattage: 0 W","RAM: 16 GB\nram capacity: 32 GB"))assertThrows(ValidationException.class,()->products.save(admin,laptop.getId(),laptop.getName(),laptop.getCategory(),laptop.getPrice(),10,true,"Fixture",null,List.of(),specs));
-        assertEquals("16 GB",ProductSpecifications.value(products.get(laptop.getId()),"RAM"));
+    @Test void customSpecificationFormatsAreAdvisoryAndPreservedWhenSaving(){
+        for(String specs:List.of("RAM: lots","Storage: -1 TB","Wattage: 0 W","VRAM: Shared memory")){
+            products.save(admin,laptop.getId(),laptop.getName(),laptop.getCategory(),laptop.getPrice(),10,true,"Fixture",null,List.of(),specs);
+            assertEquals(specs,products.get(laptop.getId()).getSpecifications());assertFalse(ProductSpecifications.formatWarnings(specs).isEmpty());
+            assertThrows(ValidationException.class,()->ProductSpecifications.validated(specs));
+        }
+        assertEquals("VRAM: 8 GB",ProductSpecifications.listingText("VRAM: 8gb"));assertTrue(ProductSpecifications.formatWarnings("VRAM: 8gb").isEmpty());
+        String duplicate="RAM: 16 GB\nram capacity: 32 GB";
+        assertThrows(ValidationException.class,()->products.save(admin,laptop.getId(),laptop.getName(),laptop.getCategory(),laptop.getPrice(),10,true,"Fixture",null,List.of(),duplicate));
+        assertEquals("VRAM: Shared memory",products.get(laptop.getId()).getSpecifications());
+        assertThrows(ValidationException.class,()->ProductSpecifications.listingText("Note: "+"x".repeat(201)));
     }
     @Test void configurationsHaveUniqueSkusAndIndependentStock(){
         assertThrows(ValidationException.class,()->products.save(admin,0,"Duplicate",Category.LAPTOPS,BigDecimal.TEN,5,true,"",null,List.of(),"SKU: st-16"));

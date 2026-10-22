@@ -220,7 +220,7 @@
 .table-row-cell { -fx-background-color: -surface; -fx-border-color: transparent transparent -line transparent; }
 .table-row-cell:hover { -fx-background-color: -tint; }
 .table-row-cell:selected { -fx-background-color: #E6E6E1; }
-.table-row-cell:selected .text { -fx-fill: -ink; }
+.table-row-cell:selected .table-cell { -fx-text-fill: -ink; }
 
 /* Quiet scrollbars retain scrolling and keyboard access. */
 .clean-scroll, .clean-scroll > .viewport { -fx-background-color: transparent; }
@@ -324,8 +324,8 @@
 .hero-category-nav .menu-button:hover, .hero-category-nav .menu-button:focused { -fx-border-color: transparent transparent #F08B63 transparent; }
 .hero-category-nav .category-active, .hero-category-nav .category-active:hover,
 .hero-category-nav .category-active > .label { -fx-text-fill: #F08B63; -fx-border-color: transparent transparent #F08B63 transparent; }
-.hero-category-nav .context-menu .label { -fx-text-fill: #171719; }
-.hero-category-nav .context-menu .menu-item:focused .label { -fx-text-fill: white; }
+
+
 .storefront-campaign .hero-copy { -fx-padding: 12 40 18 40; -fx-spacing: 12; }
 .storefront-campaign .hero-headline { -fx-font-size: 64px; }
 .storefront-campaign.hero-compact { -fx-min-height: 280; -fx-pref-height: 280; -fx-max-height: 280; }

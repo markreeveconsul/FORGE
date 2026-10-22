@@ -84,7 +84,7 @@ public final class AdminWorkspace extends StackPane {
     }
     private void showModal(Node card,boolean drawer){
         closeModal();Region scrim=new Region();scrim.getStyleClass().add("workspace-scrim");scrim.setOnMouseClicked(e->closeModal());
-        modal=new StackPane(scrim,card);modal.setId("admin-modal");getChildren().add(modal);if(drawer){StackPane.setAlignment(card,Pos.CENTER_RIGHT);Motion.reveal(card);}
+        modal=new StackPane(scrim,card);modal.setId("admin-modal");getChildren().add(modal);if(drawer){StackPane.setAlignment(card,Pos.CENTER_RIGHT);Motion.panel(card);}
     }
     private void closeModal(){if(modal!=null){getChildren().remove(modal);modal=null;}Runnable cleanup=modalClosed;modalClosed=null;if(cleanup!=null)cleanup.run();}
     public static void inventoryChanged(Node owner){

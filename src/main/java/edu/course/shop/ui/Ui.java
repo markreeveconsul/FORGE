@@ -57,7 +57,7 @@ public final class Ui {
     public static Button button(String text, Runnable action) {
         Button button = new Button(text);
         button.setOnAction(e -> attempt(action));
-        Motion.lift(button);
+        Motion.press(button);
         return button;
     }
 
@@ -86,6 +86,17 @@ public final class Ui {
         node.setClip(clip);
     }
 
+    /** Reveal validation feedback inside the nearest scrolling form without discarding the draft. */
+    public static void focus(Node target) {
+        target.requestFocus();javafx.application.Platform.runLater(()->{
+            if(target.getScene()==null)return;
+            for(Node ancestor=target.getParent();ancestor!=null;ancestor=ancestor.getParent())if(ancestor instanceof ScrollPane scroll){
+                scroll.applyCss();scroll.layout();Node content=scroll.getContent();
+                double range=content.getLayoutBounds().getHeight()-scroll.getViewportBounds().getHeight();
+                if(range>0){double y=target.localToScene(target.getBoundsInLocal()).getMinY()-content.localToScene(content.getBoundsInLocal()).getMinY();scroll.setVvalue(Math.max(0,Math.min(1,(y-24)/range)));}break;
+            }
+        });
+    }
     /** Shows or clears the red "invalid" border on a form control. */
     public static void flag(Control control, boolean invalid) {
         control.getStyleClass().remove("invalid");
@@ -165,7 +176,7 @@ public final class Ui {
         TilePane cards=new TilePane(20,24);cards.setId("loading-placeholder");cards.setAccessibleText("Loading product cards");cards.setPrefColumns(3);cards.setPrefTileWidth(240);cards.setMinWidth(0);
         for(int i=0;i<count;i++)cards.getChildren().add(skeletonProductCard());
         cards.widthProperty().addListener((o,a,b)->cards.setPrefColumns(Math.max(1,Math.min(5,(int)((b.doubleValue()+20)/260)))));
-        return cards;
+        Motion.loading(cards);return cards;
     }
 
     public static VBox skeletonRows(int count) {
@@ -174,7 +185,7 @@ public final class Ui {
             javafx.scene.layout.Region heading=skeletonBlock(220,18),detail=skeletonBlock(300,12),line=skeletonBlock(120,12);
             VBox row=new VBox(12,heading,detail,line);row.setMinHeight(105);row.setMaxWidth(Double.MAX_VALUE);row.getStyleClass().add("skeleton-row");rows.getChildren().add(row);
         }
-        return rows;
+        Motion.loading(rows);return rows;
     }
 
     public static VBox skeletonProductDetail() {
@@ -183,7 +194,7 @@ public final class Ui {
         javafx.scene.layout.Region image=skeletonBlock(520,390);image.setMaxWidth(Double.MAX_VALUE);
         javafx.scene.layout.Region line1=skeletonBlock(360,22),line2=skeletonBlock(260,18),line3=skeletonBlock(300,18),action=skeletonBlock(200,48);
         VBox detail=new VBox(18,line1,line2,line3,action);detail.setMinWidth(0);
-        content.getChildren().addAll(heading,responsiveColumns(image,detail,950,28));return content;
+        content.getChildren().addAll(heading,responsiveColumns(image,detail,950,28));Motion.loading(content);return content;
     }
 
     private static VBox skeletonProductCard() {
@@ -297,7 +308,7 @@ public final class Ui {
 
     public static void success(Label label, String text) {
         label.getStyleClass().removeAll("error-feedback");
-        label.setText(text);
+        label.setText(text);Motion.reveal(label);
     }
 
     public static void error(Throwable e) {

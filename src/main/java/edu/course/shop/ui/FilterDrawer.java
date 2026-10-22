@@ -12,7 +12,7 @@ final class FilterDrawer {
   panel.setMinWidth(0);panel.prefWidthProperty().bind(owner.getScene().widthProperty().multiply(.38));panel.setMaxWidth(380);
   Button close=new Button();close.setGraphic(StoreIcon.of("close"));close.getStyleClass().add("filter-close");close.setId("close-filters");close.setAccessibleText("Close filters without applying");
   Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);HBox heading=new HBox(Ui.label("Filters","section-title"),gap,close);heading.setAlignment(Pos.CENTER_LEFT);
-  ToggleGroup categories=new ToggleGroup();VBox category=new VBox(4,Ui.label("Category","field-label"));
+  ToggleGroup categories=new ToggleGroup();VBox category=new VBox(4);
   for(int i=0;i<=edu.course.shop.model.Category.shopping().size();i++){RadioButton radio=new RadioButton(i==0?"All products":Ui.category(edu.course.shop.model.Category.shopping().get(i-1)));radio.setMaxWidth(Double.MAX_VALUE);radio.setToggleGroup(categories);radio.setUserData(i);radio.setId("filter-category-"+i);radio.setSelected(i==state.getCategoryIndex());category.getChildren().add(radio);}
   double from=state.getMinimumPrice().isBlank()?0:Double.parseDouble(state.getMinimumPrice());
   double to=state.getMaximumPrice().isBlank()?ceiling:Double.parseDouble(state.getMaximumPrice());
@@ -21,11 +21,11 @@ final class FilterDrawer {
   PriceRange range=new PriceRange(ceiling,from,to);range.setId("price-range");
   Label low=new Label(),high=new Label();low.textProperty().bind(range.lowProperty().asString("$%,.2f"));high.textProperty().bind(range.highProperty().asString("$%,.2f"));
   Region space=new Region();HBox.setHgrow(space,Priority.ALWAYS);HBox values=new HBox(low,space,high);
-  VBox price=new VBox(10,Ui.label("Price range · USD","field-label"),values,range,Ui.label("Drag either handle to set your range.","range-help"));
+  VBox price=new VBox(10,values,range,Ui.label("Drag either handle to set your range.","range-help"));
   CheckBox stock=new CheckBox("In stock only");stock.setId("filter-in-stock");stock.setSelected(state.isInStockOnly());
   Label count=Ui.label("","filter-match-count");count.setId("filter-match-count");
   VBox specs=new VBox(12);specs.setId("specification-filters");java.util.Map<String,String> specFilters=new java.util.LinkedHashMap<>(state.getSpecificationFilters());
-  VBox body=new VBox(20,category,specs,new Separator(),price,new Separator(),new VBox(12,Ui.label("Availability","field-label"),stock,count));
+  VBox specSection=Interactions.section("Specifications",specs);specSection.visibleProperty().bind(specs.visibleProperty());specSection.managedProperty().bind(specSection.visibleProperty());VBox body=new VBox(16,Interactions.section("Category",category),specSection,Interactions.section("Price range · USD",price),Interactions.section("Availability",stock),count);
   ScrollPane scroll=Ui.scroll(body);scroll.setMinHeight(0);VBox.setVgrow(scroll,Priority.ALWAYS);
   Button reset=Ui.link("Clear all",()->{categories.getToggles().getFirst().setSelected(true);range.setRange(0,range.getCeiling());stock.setSelected(false);specFilters.clear();});reset.setId("clear-filters");
   Button confirm=Ui.primary("Apply filters",()->{});confirm.setId("apply-filters");confirm.getStyleClass().add("purchase-action");
