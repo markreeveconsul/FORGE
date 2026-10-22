@@ -87,6 +87,9 @@ public final class AdminWorkspace extends StackPane {
         modal=new StackPane(scrim,card);modal.setId("admin-modal");getChildren().add(modal);if(drawer){StackPane.setAlignment(card,Pos.CENTER_RIGHT);Motion.reveal(card);}
     }
     private void closeModal(){if(modal!=null){getChildren().remove(modal);modal=null;}Runnable cleanup=modalClosed;modalClosed=null;if(cleanup!=null)cleanup.run();}
+    public static void inventoryChanged(Node owner){
+        for(Node node=owner;node!=null;node=node.getParent())if(node instanceof AdminWorkspace workspace){workspace.select("nav-inventory");return;}
+    }
     public static void editProduct(Node owner,VBox form){
         Node ancestor=owner;while(ancestor!=null&&!(ancestor instanceof AdminWorkspace))ancestor=ancestor.getParent();if(!(ancestor instanceof AdminWorkspace workspace)||!(form.getParent() instanceof VBox parent))return;
         workspace.closeModal();int index=parent.getChildren().indexOf(form);parent.getChildren().remove(form);

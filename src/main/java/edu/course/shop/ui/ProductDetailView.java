@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import java.util.function.Consumer;
+import java.util.List;
 
 public final class ProductDetailView extends VBox {
     public ProductDetailView(Product product,User user,Cart cart,CartService carts,ProductService products,

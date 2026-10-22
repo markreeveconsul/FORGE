@@ -11,7 +11,9 @@ import java.util.List;
 public final class AdminRepository {
     public record Summary(int activeProducts, int lowStockProducts, int orders, int customers, long recordedOrderCents) { }
     public record OrderRow(long id, String customer, String createdAt, String paymentMethod,
-                           String paymentStatus, int itemCount, long totalCents,String fulfillmentStatus) { }
+                           String paymentStatus, int itemCount, long totalCents,String fulfillmentStatus) {
+        public OrderRow(long id,String customer,String createdAt,String method,String payment,int itemCount,long total){this(id,customer,createdAt,method,payment,itemCount,total,"CONFIRMED");}
+    }
     public record CustomerRow(long id, String username, String displayName, int orderCount, long orderCents) { }
     public record LowStockRow(long id, String name, String category, int stock) { }
 

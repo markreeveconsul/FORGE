@@ -134,12 +134,12 @@ public final class AdminReportsView extends VBox {
     private void buildOrders() {
         getChildren().addAll(Ui.label("CUSTOMER ORDERS","page-title"),Ui.label("Process deliveries, record tracking details and manage cancellations.","muted"),feedback);
         TableView<AdminRepository.OrderRow> table=orderTable("admin-orders-table");VBox detail=new VBox(16);detail.setId("admin-order-details");
-        Runnable[] reload=new Runnable[1];
+        Runnable[] reload=new Runnable[1];long[] request={0};
         java.util.function.Consumer<AdminRepository.OrderRow> select=row->{
-            if(row==null){detail.getChildren().clear();return;}
+            long token=++request[0];if(row==null){detail.getChildren().clear();return;}
             long id=row.id();detail.getChildren().setAll(Ui.skeletonRows(2));
             Ui.readOnly(this,()->reports.orderProcessing().get(admin,id),order->{
-                if(table.getSelectionModel().getSelectedItem()!=null&&table.getSelectionModel().getSelectedItem().id()==id)detail.getChildren().setAll(new OrderProcessingView(admin,reports.orderProcessing(),order,reload[0]));
+                if(token==request[0]&&table.getSelectionModel().getSelectedItem()!=null&&table.getSelectionModel().getSelectedItem().id()==id)detail.getChildren().setAll(new OrderProcessingView(admin,reports.orderProcessing(),order,reload[0]));
             },error->Ui.failure(feedback,error));
         };
         reload[0]=()->{

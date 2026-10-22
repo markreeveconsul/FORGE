@@ -157,10 +157,12 @@ class ShopTest {
         assertEquals(product.getPrice(), saved.items().getFirst().unitPrice());
         assertEquals(50, new ProductService(reopened, new ProductRepository()).get(product.getId()).getStock());
     }
-    @Test void historyDoesNotExposeOtherCustomersOrders() {
+    @Test void historyDoesNotExposeOtherCustomersOrders() throws Exception {
         carts.add(customer, cart, product.getId(), 1);
         checkout.checkout(customer, cart, "123 Sample Street", new CashOnDeliveryPayment());
+        try(Connection c=database.open();PreparedStatement p=c.prepareStatement("INSERT INTO users(id,username,password_hash,role) VALUES(999,'other','test-only','CUSTOMER')")){p.executeUpdate();}
         assertTrue(orders.history(new Customer(999, "other")).isEmpty());
+        assertThrows(ValidationException.class,()->orders.history(new Customer(998,"missing")));
         assertThrows(ValidationException.class, () -> orders.history(admin));
     }
 

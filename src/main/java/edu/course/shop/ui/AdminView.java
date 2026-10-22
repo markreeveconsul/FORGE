@@ -125,7 +125,7 @@ public final class AdminView extends VBox {
             ButtonType remove=new ButtonType("Delete product",ButtonBar.ButtonData.OK_DONE);
             Alert confirm=new Alert(Alert.AlertType.CONFIRMATION,"Delete “"+chosen.getName()+"”?\n\nIt will be removed from the storefront, saved items and inventory list. Past order receipts are preserved.",remove,ButtonType.CANCEL);
             confirm.setTitle("Delete product");confirm.setHeaderText("Delete product #"+chosen.getId());confirm.initOwner(getScene().getWindow());
-            if(confirm.showAndWait().orElse(ButtonType.CANCEL)==remove)Ui.async(this,"Deleting product…",()->{products.delete(admin,chosen);return true;},done->{selected.remove(chosen.getId());Ui.success(feedback,"Deleted "+chosen.getName()+". Past receipts are preserved.");refresh.run();},error->Ui.failure(feedback,error));
+            if(confirm.showAndWait().orElse(ButtonType.CANCEL)==remove)Ui.async(this,"Deleting product…",()->{products.delete(admin,chosen);return true;},done->{selected.remove(chosen.getId());AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"Deleted "+chosen.getName()+". Past receipts are preserved.");refresh.run();},error->Ui.failure(feedback,error));
         });delete.setId("delete-product");delete.getStyleClass().add("workspace-delete-button");delete.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
         table.setRowFactory(t->{TableRow<Product> row=new TableRow<>();row.setOnMouseClicked(e->{if(e.getClickCount()==2&&!row.isEmpty()){Product p=row.getItem();table.getSelectionModel().select(p);AdminWorkspace.inspect(this,"PRODUCT",p.getName(),List.of(AdminWorkspace.detail("SKU / ID","#"+p.getId()),AdminWorkspace.detail("PRICE",Money.format(p.getPrice())),AdminWorkspace.detail("STOCK LEVEL",p.getStock()+" units"),AdminWorkspace.detail("DESCRIPTION",p.getDescription().isBlank()?"Not yet recorded":p.getDescription()),AdminWorkspace.detail("SPECIFICATIONS",p.getSpecifications().isBlank()?"Not yet recorded":p.getSpecifications())),edit);}});return row;});
         editButton.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
@@ -147,7 +147,7 @@ public final class AdminView extends VBox {
             long id=editingId;String value=name.getText();Category group=category.getValue();BigDecimal cost=amount;int qty=quantity;boolean enabled=active.isSelected();
             String details=description.getText(),specs=specifications.getText();byte[] selectedPhoto=photos.getPhoto();List<byte[]> angles=photos.getAdditionalPhotos();PhotoFrame frame=photos.getFraming();
             Ui.async(this,"Saving product…",()->{products.save(admin,id,value,group,cost,qty,enabled,details,selectedPhoto,angles,specs,frame);return true;},done-> {
-                form.setVisible(false);Ui.success(feedback,"✓ "+value.trim()+" saved.");refresh.run();
+                form.setVisible(false);AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"✓ "+value.trim()+" saved.");refresh.run();
             },error->Ui.failure(feedback,error));
         });
         save.setId("save-product");

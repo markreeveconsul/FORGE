@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 public final class OrderTracking {
     private OrderTracking(){}
     public static VBox view(Order order){
-        VBox box=new VBox(12);box.getStyleClass().add("order-tracking");box.setId("order-tracking-"+order.id());
+        VBox box=new VBox(12);box.getStyleClass().add("order-tracking");box.setId("order-tracking-"+order.id());box.setMinHeight(Region.USE_PREF_SIZE);
         box.getChildren().add(Ui.label("Delivery · "+order.fulfillmentStatus(),"section-title"));
         FlowPane steps=new FlowPane(8,8);
         if(order.fulfillmentStatus()==FulfillmentStatus.CANCELLED)steps.getChildren().add(Ui.label("Cancelled · items returned to inventory","order-status"));
@@ -27,6 +27,7 @@ public final class OrderTracking {
             String time;try{time=date.format(Instant.parse(event.createdAt()));}catch(RuntimeException e){time=event.createdAt();}
             box.getChildren().add(new VBox(3,Ui.label(event.note(),"field-label"),Ui.label(time,"muted")));
         }
+        for(var node:box.getChildren())if(node instanceof VBox row)for(var child:row.getChildren())if(child instanceof Label label)label.setMinHeight(Region.USE_PREF_SIZE);
         return box;
     }
     public static String payment(Order order){return switch(order.paymentStatus()){case "PAID"->"Paid · demo";case "REFUNDED"->"Refund recorded · demo";case "CANCELLED"->"Payment cancelled";default->"Due on delivery";};}
