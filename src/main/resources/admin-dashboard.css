@@ -141,3 +141,32 @@
 .forge-admin .scroll-bar .track, .forge-admin .scroll-bar .increment-button, .forge-admin .scroll-bar .decrement-button { -fx-background-color: transparent; }
 .forge-admin .scroll-bar .thumb { -fx-background-color: #D6D3D1; -fx-background-radius: 20; }
 .forge-admin.admin-dark .scroll-bar .thumb { -fx-background-color: #44403C; }
+
+/* Revenue explorer: legible amounts, exact hover values, and a comparison without a second area fill. */
+.forge-admin .revenue-card { -fx-padding: 22 24; }
+.forge-admin .revenue-stats { -fx-padding: 12 0 8 0; }
+.forge-admin .revenue-total { -fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: -admin-text; }
+.forge-admin .revenue-stat-value { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -admin-text; }
+.forge-admin .revenue-change { -fx-font-size: 11px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-change.revenue-up { -fx-text-fill: #059669; }
+.forge-admin .revenue-change.revenue-down { -fx-text-fill: #E11D48; }
+.forge-admin .revenue-period-text { -fx-font-size: 11px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-note { -fx-font-size: 10px; -fx-text-fill: -admin-muted; -fx-line-spacing: 3; }
+.forge-admin .revenue-updated { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-compare { -fx-font-size: 11px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-quiet-button { -fx-font-size: 11px; -fx-padding: 7 11; -fx-min-height: 32; }
+.forge-admin .revenue-card .workspace-period { -fx-cursor: hand; }
+.forge-admin .revenue-card .default-color0.chart-area-symbol { -fx-background-color: #EA580C, -admin-card; -fx-background-insets: 0, 2; -fx-padding: 3px; -fx-background-radius: 8; }
+.forge-admin .revenue-card .default-color1.chart-area-symbol { -fx-background-color: #A8A29E; -fx-padding: 2px; -fx-background-radius: 8; }
+.forge-admin .revenue-card .default-color1.chart-series-area-line { -fx-stroke: #A8A29E; -fx-stroke-width: 1.7; -fx-stroke-dash-array: 6 6; }
+.forge-admin .revenue-card .default-color1.chart-series-area-fill { -fx-fill: transparent; }
+.forge-admin .revenue-crosshair { -fx-stroke: #A8A29E; -fx-stroke-width: 1; -fx-stroke-dash-array: 4 5; }
+.forge-admin .revenue-hover-dot { -fx-fill: #EA580C; -fx-stroke: -admin-card; -fx-stroke-width: 2; }
+.forge-admin .revenue-hover-card { -fx-background-color: -admin-card; -fx-background-radius: 10; -fx-border-color: -admin-border; -fx-border-radius: 10; -fx-padding: 12 15; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.16),14,0,0,4); }
+.forge-admin .revenue-hover-date { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: -admin-text; }
+.forge-admin .revenue-hover-amount { -fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: #EA580C; }
+.forge-admin .revenue-hover-orders { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin #revenue-day-details { -fx-padding: 18 0 0 0; -fx-border-color: -admin-border transparent transparent transparent; -fx-border-width: 1 0 0 0; }
+.forge-admin #revenue-orders-table { -fx-fixed-cell-size: 48; }
+.forge-admin .revenue-card .date-picker { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-border-radius: 8; -fx-background-radius: 8; }
+.forge-admin .revenue-card .date-picker .arrow-button { -fx-background-color: -admin-soft; -fx-background-radius: 0 8 8 0; }

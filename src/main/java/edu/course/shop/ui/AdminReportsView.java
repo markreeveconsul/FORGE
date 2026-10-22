@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.chart.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import javafx.geometry.Pos;
@@ -17,7 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -69,12 +67,8 @@ public final class AdminReportsView extends VBox {
         stats.setId("admin-report-stats");
         stats.widthProperty().addListener((o,a,b)->resizeStats(stats));
         getChildren().add(stats);
-        CategoryAxis dates=new CategoryAxis();NumberAxis amounts=new NumberAxis();amounts.setForceZeroInRange(true);amounts.setTickLabelFormatter(new javafx.util.StringConverter<Number>(){public String toString(Number n){return "$"+(n.doubleValue()>=1000?String.format(Locale.ROOT,"%.0fk",n.doubleValue()/1000):String.format(Locale.ROOT,"%.0f",n.doubleValue()));}public Number fromString(String s){return 0;}});
-        AreaChart<String,Number> chart=new AreaChart<>(dates,amounts);chart.setId("admin-revenue-chart");chart.setAnimated(false);chart.setCreateSymbols(false);chart.setLegendVisible(false);chart.setPrefHeight(260);chart.setMinHeight(240);chart.setMaxHeight(280);
-        ToggleButton weekly=new ToggleButton("Weekly"),monthly=new ToggleButton("Monthly");weekly.setId("admin-chart-weekly");monthly.setId("admin-chart-monthly");ToggleGroup period=new ToggleGroup();weekly.setToggleGroup(period);monthly.setToggleGroup(period);weekly.setSelected(true);weekly.getStyleClass().add("workspace-period");monthly.getStyleClass().add("workspace-period");
-        HBox range=new HBox(3,weekly,monthly);range.getStyleClass().add("workspace-range");range.setAlignment(Pos.CENTER);Region chartGap=new Region();HBox.setHgrow(chartGap,Priority.ALWAYS);
-        HBox chartHeader=new HBox(12,new VBox(5,Ui.label("Revenue Performance","section-title"),Ui.label("Paid orders · simulated payments","muted")),chartGap,range);chartHeader.setAlignment(Pos.CENTER_LEFT);
-        VBox chartCard=new VBox(16,chartHeader,chart);chartCard.getStyleClass().add("card");getChildren().add(chartCard);
+        RevenuePerformanceCard revenue=new RevenuePerformanceCard(()->reports.orders(admin));
+        getChildren().add(revenue);
         TableView<AdminRepository.LowStockRow> lowStock = lowStockTable();
         HBox stockHeader = new HBox(StoreIcon.of("warning",22),new VBox(5,Ui.label("Restock Attention", "section-title"),Ui.label("Products reaching the low stock threshold","muted")), new javafx.scene.layout.Region(), Ui.link("View inventory →", viewInventory));
         HBox.setHgrow(stockHeader.getChildren().get(2), Priority.ALWAYS);
@@ -100,8 +94,7 @@ public final class AdminReportsView extends VBox {
                 metric("ORDERS", Integer.toString(s.orders()),"Recorded checkouts","bag"),
                 metric("CUSTOMERS", Integer.toString(s.customers()),"Registered shoppers","users"),
                 metric("TOTAL VALUE", Money.format(Money.amount(s.recordedOrderCents())),"All recorded orders","dollar"));
-            resizeStats(stats);renderChart(chart,data.orders(),7);
-            weekly.setOnAction(e->{weekly.setSelected(true);renderChart(chart,data.orders(),7);});monthly.setOnAction(e->{monthly.setSelected(true);renderChart(chart,data.orders(),30);});
+            resizeStats(stats);revenue.setOrders(data.orders());
             List<AdminRepository.OrderRow> latest = data.orders().stream().limit(6).toList();
             recent.setItems(FXCollections.observableArrayList(latest));
             fitTable(recent, latest.size());
@@ -138,13 +131,6 @@ public final class AdminReportsView extends VBox {
         return tile;
     }
     private void resizeStats(FlowPane stats){double width=stats.getWidth();if(width<=0)return;int columns=width>=850?5:width>=650?3:2;double tileWidth=Math.floor((width-(columns-1)*14)/columns)-1;for(var child:stats.getChildren())((Region)child).setPrefWidth(tileWidth);}
-    private void renderChart(AreaChart<String,Number> chart,List<AdminRepository.OrderRow> orders,int days){
-        LocalDate today=LocalDate.now();var totals=new java.util.LinkedHashMap<LocalDate,Long>();for(int i=days-1;i>=0;i--)totals.put(today.minusDays(i),0L);
-        for(var order:orders){if(!"PAID".equalsIgnoreCase(order.paymentStatus()))continue;try{LocalDate date=Instant.parse(order.createdAt()).atZone(ZoneId.systemDefault()).toLocalDate();if(totals.containsKey(date))totals.merge(date,order.totalCents(),Long::sum);}catch(RuntimeException ignored){}}
-        XYChart.Series<String,Number> series=new XYChart.Series<>();totals.forEach((date,cents)->series.getData().add(new XYChart.Data<>(date.format(DateTimeFormatter.ofPattern("MMM d")),cents/100.0)));
-        chart.getData().setAll(List.of(series));
-    }
-
     private void buildOrders() {
         getChildren().addAll(Ui.label("CUSTOMER ORDERS", "page-title"),
             Ui.label("Review checkouts, payment states, and order details.", "muted"), feedback);
