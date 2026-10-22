@@ -208,4 +208,61 @@ class AiManagerServiceTest {
         var result=manager.prepare(admin,"What did we make this week and what needs restocking?",false);
         assertEquals(2,result.sales().orders());assertEquals(new BigDecimal("50.00"),result.sales().orderValue());assertEquals(new BigDecimal("20.00"),result.sales().paidValue());assertEquals(2,result.products().size());
     }
+    byte[] tinyPhoto()throws Exception{var bytes=new ByteArrayOutputStream();javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(2,2,java.awt.image.BufferedImage.TYPE_INT_RGB),"png",bytes);return bytes.toByteArray();}
+    void emptyInventory()throws Exception{try(var c=db.open();var s=c.createStatement()){s.executeUpdate("DELETE FROM products");}}
+    GeminiAssistant.Reply generatedDescriptions(java.net.http.HttpRequest request){
+        JsonObject body=JsonParser.parseString(requestBody(request)).getAsJsonObject();
+        if(body.has("tools")&&body.getAsJsonArray("tools").get(0).getAsJsonObject().has("functionDeclarations"))return call("fix_content","{\"missingField\":\"description\"}");
+        JsonArray products=JsonParser.parseString(body.getAsJsonArray("contents").get(0).getAsJsonObject().getAsJsonArray("parts").get(0).getAsJsonObject().get("text").getAsString()).getAsJsonArray();
+        List<Object> drafts=new ArrayList<>();for(JsonElement p:products){JsonObject row=p.getAsJsonObject();drafts.add(Map.of("id",row.get("id").getAsLong(),"description",row.get("name").getAsString()+". "+row.get("specifications").getAsString(),"specifications","","exactModel",false,"sources",List.of(),"note","Uses recorded catalog details."));}
+        return response(new Gson().toJsonTree(List.of(Map.of("text",new Gson().toJson(Map.of("drafts",drafts))))).getAsJsonArray(),null);
+    }
+    @Test void nineProductContentFixReviewsAndSavesOnlyApprovedRecords()throws Exception{
+        emptyInventory();byte[] photo=tinyPhoto();for(int i=1;i<=9;i++)services.products().save(admin,0,"Listing "+i,Category.PC_PARTS,BigDecimal.TEN,10,true,"",photo,List.of(),"Memory: 8 GB");
+        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(request->{requests.incrementAndGet();return generatedDescriptions(request);}));
+        assertEquals(9,manager.metrics(admin).needContent());var preview=manager.prepare(admin,"Fill in the missing product descriptions",false);
+        assertEquals(2,requests.get());assertEquals(9,preview.changes().size());assertEquals(9,manager.metrics(admin).needContent());assertEquals(0,auditCount());
+        var approved=new AiManagerService.Result(preview.batchId(),preview.command(),preview.products(),preview.changes().subList(0,8),preview.drafts(),preview.sales(),preview.offline(),preview.message(),preview.totalMatches());
+        manager.apply(admin,approved);assertEquals(1,manager.metrics(admin).needContent());assertEquals(8,auditCount());
+        for(var change:approved.changes()){Product saved=services.products().get(change.expected().getId());assertFalse(saved.getDescription().isBlank());assertEquals("Memory: 8 GB",saved.getSpecifications());assertArrayEquals(photo,saved.getPhoto());assertEquals(BigDecimal.TEN.setScale(2),saved.getPrice());assertEquals(10,saved.getStock());}
+    }
+    @Test void contentFixContinuesBeyondTheTwentyProductBatch()throws Exception{
+        emptyInventory();byte[] photo=tinyPhoto();for(int i=1;i<=25;i++)services.products().save(admin,0,"Batch listing "+i,Category.PC_PARTS,BigDecimal.TEN,10,true,"",photo,List.of(),"Memory: 8 GB");
+        var manager=new AiManagerService(services,client(this::generatedDescriptions));var first=manager.prepare(admin,"Fix all missing descriptions",false);
+        assertEquals(25,first.totalMatches());assertEquals(20,first.changes().size());manager.apply(admin,first);
+        var next=manager.prepare(admin,"Fix all missing descriptions",false);assertEquals(5,next.changes().size());manager.apply(admin,next);assertEquals(0,manager.metrics(admin).needContent());assertEquals(25,auditCount());
+    }
+    @Test void photoOnlyRecordsDoNotSpendADraftingRequest(){
+        services.products().save(admin,gpu.getId(),gpu.getName(),gpu.getCategory(),gpu.getPrice(),gpu.getStock(),true,"Existing description",null,List.of(),"Memory: 8 GB");
+        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->{requests.incrementAndGet();return call("fix_content","{\"ids\":["+gpu.getId()+"]}");}));
+        var preview=manager.prepare(admin,"Fix all missing content for #"+gpu.getId(),false);assertEquals(1,requests.get());assertTrue(preview.changes().isEmpty());assertFalse(preview.offline());assertTrue(preview.message().toLowerCase(Locale.ROOT).contains("photo"));
+    }
+    @Test void photoOnlyRecordsCannotCrowdFixableTextOutOfTheBatch()throws Exception{
+        emptyInventory();for(int i=0;i<20;i++)services.products().save(admin,0,"Photo-only "+i,Category.PC_PARTS,BigDecimal.TEN,1,true,"Existing description",null,List.of(),"Memory: 8 GB");
+        services.products().save(admin,0,"Text needing help",Category.PC_PARTS,BigDecimal.TEN,20,true,"",tinyPhoto(),List.of(),"Memory: 8 GB");
+        var manager=new AiManagerService(services,client(request->{JsonObject body=JsonParser.parseString(requestBody(request)).getAsJsonObject();if(body.has("toolConfig"))return call("fix_content","{}");return generatedDescriptions(request);}));
+        var preview=manager.prepare(admin,"Fix missing content",false);assertEquals(21,preview.totalMatches());assertEquals(1,preview.changes().size());assertEquals("Text needing help",preview.changes().getFirst().expected().getName());
+    }
+    @Test void missingSpecificationsWithoutResearchDoNotSpendADraftingRequest(){
+        services.products().save(admin,gpu.getId(),gpu.getName(),gpu.getCategory(),gpu.getPrice(),gpu.getStock(),true,"Existing description",null,List.of(),"");
+        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->{requests.incrementAndGet();return call("fix_content","{\"ids\":["+gpu.getId()+"],\"missingField\":\"specifications\"}");}));
+        var preview=manager.prepare(admin,"Complete the specifications",false);assertEquals(1,requests.get());assertTrue(preview.changes().isEmpty());assertTrue(preview.message().toLowerCase(Locale.ROOT).contains("research"));
+    }
+    @Test void missingResponsePartsAreAnActionableDraftFailureRatherThanACrash(){
+        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->requests.getAndIncrement()==0?call("fix_content","{\"ids\":["+gpu.getId()+"]}"):new GeminiAssistant.Reply(200,"{\"candidates\":[{\"finishReason\":\"STOP\"}]}")));
+        var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().startsWith("Content drafting:"));assertTrue(preview.changes().isEmpty());
+    }
+    @Test void dailyQuotaExhaustedDuringDraftingNeverSavesPartialChanges()throws Exception{
+        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->requests.getAndIncrement()==0?call("fix_content","{\"ids\":["+gpu.getId()+"]}"):new GeminiAssistant.Reply(429,"{\"error\":{\"message\":\"Daily free request quota exceeded.\"}}")));
+        var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().contains("Content drafting: HTTP 429"));assertTrue(preview.aiIssue().contains("Daily free request quota"));assertEquals(0,auditCount());assertTrue(preview.changes().isEmpty());assertTrue(services.products().get(gpu.getId()).getDescription().isBlank());
+        manager.prepare(admin,"Fix content",false);assertEquals(2,requests.get());
+    }
+    @Test void malformedDuplicateAndUnknownDraftsAreRejectedBeforeSaving()throws Exception{
+        String good=new Gson().toJson(Map.of("id",gpu.getId(),"description","Recorded catalog description","specifications","","sources",List.of(),"note","","exactModel",false));
+        String unknown=good.replace("\"id\":"+gpu.getId(),"\"id\":999999");
+        for(String text:List.of("not valid JSON","{\"drafts\":["+good+","+good+"]}","{\"drafts\":["+unknown+"]}")){
+            AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->requests.getAndIncrement()==0?call("fix_content","{\"ids\":["+gpu.getId()+"]}"):response(new Gson().toJsonTree(List.of(Map.of("text",text))).getAsJsonArray(),null)));
+            assertThrows(ValidationException.class,()->manager.prepare(admin,"Fix content",false));assertEquals(0,auditCount());assertTrue(services.products().get(gpu.getId()).getDescription().isBlank());
+        }
+    }
 }

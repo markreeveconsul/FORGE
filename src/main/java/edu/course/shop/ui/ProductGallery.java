@@ -103,7 +103,7 @@ public final class ProductGallery extends VBox {
         String description=product.getDescription().isBlank()?"A closer look at this item from the FORGE collection.":product.getDescription();
         Label productDescription=Ui.label(description,"viewer-description");productDescription.setWrapText(true);
         Label price=Ui.label(Money.format(product.getPrice()),"viewer-product-price");
-        Label availability=Ui.label(product.getStock()==0?"Currently unavailable":product.getStock()<=5?"Only "+product.getStock()+" left in stock":"In stock · ships in 2 days",product.getStock()==0?"stock-out":"viewer-stock");
+        Label availability=Ui.label(product.getStock()==0?"Currently unavailable":product.getStock()<=5?"Only "+product.getStock()+" left in stock":"In stock · ready to add",product.getStock()==0?"stock-out":"viewer-stock");
         VBox details=new VBox(18,category,productName,productDescription,price,availability);details.getStyleClass().add("viewer-info");details.setMinWidth(230);details.prefWidthProperty().bind(javafx.beans.binding.Bindings.min(360,panel.prefWidthProperty().multiply(.34).subtract(24)));details.setMaxWidth(360);details.setMaxHeight(Region.USE_PREF_SIZE);
         Button add=null;
         if(addToCart!=null){add=Ui.primary("Add to cart",()->{});add.setId("image-viewer-add");add.getStyleClass().add("viewer-add");add.setMaxWidth(Double.MAX_VALUE);add.setDisable(!product.isActive()||product.getStock()==0);}

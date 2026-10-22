@@ -39,3 +39,9 @@ Committed batches and before/after values are recorded in `admin_ai_batches` and
 Sales calculations run locally. Calendar periods use the machine's time zone; this week begins Monday. Order value includes recorded orders in the period, while paid value only includes orders marked PAID. Payments remain simulated. Restock attention reflects current active stock, not a predictive sales model.
 
 Command text and relevant public catalog text can be sent to Google Gemini. Customer/order rows, addresses and account names are not included in model requests. The module's How it works link explains the external provider and free-tier data use. All service entry points enforce administrator access.
+
+### Content fix limits and quota use
+
+A normal content-fix request uses a planning call and then one generation call. Classification can still use quota even when no records need a draft. Before generation, FORGE prioritizes missing descriptions and, when online research is enabled, missing specifications. Photo-only records cannot crowd these out of the 20-product batch. If there are no text fields that can be filled with the selected options, no generation call is made; the panel explains the manual photo/research step.
+
+Quota failures during either call preserve the database. A 60-second local cooldown prevents immediate duplicate requests, but does not restore an exhausted daily provider quota. Wait for the reset shown in AI Studio. Incomplete responses are reported as failed drafts; they do not apply partial content.

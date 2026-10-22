@@ -18,17 +18,30 @@ public final class OrderRepository {
             }
             p.executeBatch();
         }
-        return new Order(id, order.customerId(), order.createdAt(), order.address(), order.paymentMethod(), order.paymentStatus(), order.total(), order.items());
+        event(c,id,FulfillmentStatus.CONFIRMED,order.createdAt(),"Order confirmed",order.customerId());
+        return find(c,id);
     }
     public List<Order> forCustomer(Connection c, long customerId) throws SQLException {
         List<Order> orders = new ArrayList<>();
         try (PreparedStatement p = c.prepareStatement("SELECT * FROM orders WHERE customer_id=? ORDER BY id DESC")) {
             p.setLong(1, customerId);
             try (ResultSet r = p.executeQuery()) {
-                while (r.next()) orders.add(new Order(r.getLong("id"), customerId, r.getString("created_at"), r.getString("address"), r.getString("payment_method"), r.getString("payment_status"), Money.amount(r.getLong("total_cents")), items(c, r.getLong("id"))));
+                while (r.next()) orders.add(read(c,r));
             }
         }
         return orders;
+    }
+    public Order find(Connection c,long id)throws SQLException{
+        try(var p=c.prepareStatement("SELECT * FROM orders WHERE id=?")){p.setLong(1,id);try(var r=p.executeQuery()){if(!r.next())throw new edu.course.shop.exception.ValidationException("Order no longer exists.");return read(c,r);}}
+    }
+    private Order read(Connection c,ResultSet r)throws SQLException{
+        long id=r.getLong("id");List<OrderEvent> events=new ArrayList<>();
+        try(var p=c.prepareStatement("SELECT * FROM order_events WHERE order_id=? ORDER BY id")){p.setLong(1,id);try(var history=p.executeQuery()){while(history.next())events.add(new OrderEvent(FulfillmentStatus.valueOf(history.getString("status")),history.getString("created_at"),history.getString("note")));}}
+        if(events.isEmpty())events.add(new OrderEvent(FulfillmentStatus.valueOf(r.getString("fulfillment_status")),r.getString("created_at"),"Order recorded"));
+        return new Order(id,r.getLong("customer_id"),r.getString("created_at"),r.getString("address"),r.getString("payment_method"),r.getString("payment_status"),Money.amount(r.getLong("total_cents")),items(c,id),FulfillmentStatus.valueOf(r.getString("fulfillment_status")),r.getString("carrier"),r.getString("tracking_number"),events);
+    }
+    public void event(Connection c,long id,FulfillmentStatus status,String time,String note,long actor)throws SQLException{
+        try(var p=c.prepareStatement("INSERT INTO order_events(order_id,status,created_at,note,actor_id) VALUES(?,?,?,?,?,?)")){p.setLong(1,id);p.setString(2,status.name());p.setString(3,time);p.setString(4,note);p.setLong(5,actor);p.executeUpdate();}
     }
     private List<OrderItem> items(Connection c, long id) throws SQLException {
         List<OrderItem> items = new ArrayList<>();

@@ -31,7 +31,7 @@ public final class CartView extends VBox {
         getStyleClass().add("page"); setId("cart-page"); setSpacing(16);
         undo.setId("undo-cart-removal");undoBar.setId("undo-removal-bar");undoBar.getStyleClass().add("notice");undoBar.setVisible(false);undoBar.managedProperty().bind(undoBar.visibleProperty());undoTimeout.setOnFinished(e->{removed=null;undoBar.setVisible(false);});sceneProperty().addListener((o,a,b)->{if(b==null){undoTimeout.stop();removed=null;undoBar.setVisible(false);}});
         getChildren().addAll(Ui.label("Your cart", "page-title"),
-            Ui.label("Review your items, adjust quantities, then make them yours.", "muted"),feedback,undoBar,Ui.scroll(body)); refresh();
+            Ui.label(user instanceof Guest?"Your guest cart lasts for this visit. Sign in to save it.":"Saved to your account. Review prices and availability before checkout; cart items are not reserved.", "muted"),feedback,undoBar,Ui.scroll(body)); refresh();
     }
     private void refresh() {
         body.getChildren().clear();

@@ -46,6 +46,15 @@ public final class DatabaseManager {
             if (!columns.contains("photo_frame")) s.executeUpdate("ALTER TABLE products ADD COLUMN photo_frame TEXT NOT NULL DEFAULT 'AUTO'");
             if (!columns.contains("photo_x")) s.executeUpdate("ALTER TABLE products ADD COLUMN photo_x REAL NOT NULL DEFAULT 0.5");
             if (!columns.contains("photo_y")) s.executeUpdate("ALTER TABLE products ADD COLUMN photo_y REAL NOT NULL DEFAULT 0.5");
+            if (!columns.contains("deleted")) s.executeUpdate("ALTER TABLE products ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1))");
+            java.util.Set<String> orderColumns=new java.util.HashSet<>();
+            try(ResultSet r=s.executeQuery("PRAGMA table_info(orders)")){while(r.next())orderColumns.add(r.getString("name"));}
+            if(!orderColumns.contains("fulfillment_status"))s.executeUpdate("ALTER TABLE orders ADD COLUMN fulfillment_status TEXT NOT NULL DEFAULT 'CONFIRMED'");
+            if(!orderColumns.contains("carrier"))s.executeUpdate("ALTER TABLE orders ADD COLUMN carrier TEXT NOT NULL DEFAULT ''");
+            if(!orderColumns.contains("tracking_number"))s.executeUpdate("ALTER TABLE orders ADD COLUMN tracking_number TEXT NOT NULL DEFAULT ''");
+            s.executeUpdate("CREATE TABLE IF NOT EXISTS order_events(id INTEGER PRIMARY KEY,order_id INTEGER NOT NULL REFERENCES orders(id),status TEXT NOT NULL,created_at TEXT NOT NULL,note TEXT NOT NULL,actor_id INTEGER REFERENCES users(id))");
+            s.executeUpdate("INSERT INTO order_events(order_id,status,created_at,note) SELECT id,fulfillment_status,created_at,'Order recorded' FROM orders WHERE NOT EXISTS(SELECT 1 FROM order_events e WHERE e.order_id=orders.id)");
+            s.executeUpdate("CREATE TABLE IF NOT EXISTS customer_cart_items(customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,product_id INTEGER NOT NULL REFERENCES products(id),quantity INTEGER NOT NULL CHECK(quantity BETWEEN 1 AND 100000),unit_price_cents INTEGER NOT NULL CHECK(unit_price_cents>0),PRIMARY KEY(customer_id,product_id))");
             int userCount;
             try (ResultSet r = s.executeQuery("SELECT COUNT(*) FROM users")) { r.next(); userCount = r.getInt(1); }
             if (userCount == 0) {

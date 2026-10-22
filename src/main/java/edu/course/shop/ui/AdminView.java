@@ -92,7 +92,7 @@ public final class AdminView extends VBox {
                 super.updateItem(value,empty);setText(value==null?"Choose a tech category":Ui.category(value));
             }
         });
-        category.getSelectionModel().selectFirst();
+        category.getSelectionModel().selectFirst();specifications.setCategory(category.getValue());category.valueProperty().addListener((o,a,b)->specifications.setCategory(b));
         CheckBox active=new CheckBox("Available to customers"); active.setSelected(true); active.setId("product-active");
         javafx.beans.property.BooleanProperty replacementRequired=new javafx.beans.property.SimpleBooleanProperty();
         Label replacement=Ui.label("This item is kept for replacement. Choose a tech category, update its content, then enable Available to customers when ready.","notice");replacement.setId("retired-category-notice");
@@ -120,6 +120,13 @@ public final class AdminView extends VBox {
         };
         Button add=Ui.primary("+ Add product",create); add.setId("new-product");
         Button editButton=Ui.button("Edit selected",edit); editButton.setId("edit-product");
+        Button delete=Ui.button("Delete product",()->{
+            Product chosen=table.getSelectionModel().getSelectedItem();if(chosen==null)return;
+            ButtonType remove=new ButtonType("Delete product",ButtonBar.ButtonData.OK_DONE);
+            Alert confirm=new Alert(Alert.AlertType.CONFIRMATION,"Delete “"+chosen.getName()+"”?\n\nIt will be removed from the storefront, saved items and inventory list. Past order receipts are preserved.",remove,ButtonType.CANCEL);
+            confirm.setTitle("Delete product");confirm.setHeaderText("Delete product #"+chosen.getId());confirm.initOwner(getScene().getWindow());
+            if(confirm.showAndWait().orElse(ButtonType.CANCEL)==remove)Ui.async(this,"Deleting product…",()->{products.delete(admin,chosen);return true;},done->{selected.remove(chosen.getId());Ui.success(feedback,"Deleted "+chosen.getName()+". Past receipts are preserved.");refresh.run();},error->Ui.failure(feedback,error));
+        });delete.setId("delete-product");delete.getStyleClass().add("workspace-delete-button");delete.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
         table.setRowFactory(t->{TableRow<Product> row=new TableRow<>();row.setOnMouseClicked(e->{if(e.getClickCount()==2&&!row.isEmpty()){Product p=row.getItem();table.getSelectionModel().select(p);AdminWorkspace.inspect(this,"PRODUCT",p.getName(),List.of(AdminWorkspace.detail("SKU / ID","#"+p.getId()),AdminWorkspace.detail("PRICE",Money.format(p.getPrice())),AdminWorkspace.detail("STOCK LEVEL",p.getStock()+" units"),AdminWorkspace.detail("DESCRIPTION",p.getDescription().isBlank()?"Not yet recorded":p.getDescription()),AdminWorkspace.detail("SPECIFICATIONS",p.getSpecifications().isBlank()?"Not yet recorded":p.getSpecifications())),edit);}});return row;});
         editButton.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
         add.disableProperty().bind(form.visibleProperty()); search.disableProperty().bind(form.visibleProperty());
@@ -172,7 +179,7 @@ public final class AdminView extends VBox {
         HBox inventorySearch=new HBox(8,search,clearSearch);inventorySearch.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         VBox searchField=new VBox(7,Ui.label("Search inventory","field-label"),inventorySearch);HBox.setHgrow(searchField,Priority.ALWAYS);search.setMinWidth(0);
         Label statusLabel=Ui.label("Status","field-label"),categoryLabel=Ui.label("Category","field-label");statusLabel.setLabelFor(status);categoryLabel.setLabelFor(filterCategory);
-        HBox filterBar=new HBox(16,searchField,new VBox(7,statusLabel,status),new VBox(7,categoryLabel,filterCategory)),actions=new HBox(12,editButton);
+        HBox filterBar=new HBox(16,searchField,new VBox(7,statusLabel,status),new VBox(7,categoryLabel,filterCategory)),actions=new HBox(12,editButton,delete);
         status.setMinWidth(140);filterCategory.setMinWidth(170);searchField.setMinWidth(100);
         filterBar.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);filterBar.getStyleClass().add("inventory-filter-panel");
         filterBar.visibleProperty().bind(form.visibleProperty().not());filterBar.managedProperty().bind(filterBar.visibleProperty());

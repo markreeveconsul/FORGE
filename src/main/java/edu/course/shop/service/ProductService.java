@@ -10,6 +10,22 @@ public final class ProductService {
     private final DatabaseManager database;
     private final ProductRepository products;
     public ProductService(DatabaseManager database, ProductRepository products) { this.database = database; this.products = products; }
+    /** Remove from inventory without breaking historical order items or their stock-restoration references. */
+    public void delete(User actor,Product expected){
+        if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
+        if(expected==null||expected.getId()<=0)throw new ValidationException("Select a saved product to delete.");
+        try(Connection c=database.open()){
+            c.setAutoCommit(false);try{
+                try(var check=c.prepareStatement("SELECT 1 FROM users WHERE id=? AND role='ADMIN'")){check.setLong(1,actor.getId());try(var r=check.executeQuery()){if(!r.next())throw new ValidationException("Administrator access is required.");}}
+                try(var p=c.prepareStatement("UPDATE products SET active=0,deleted=1 WHERE id=? AND deleted=0 AND name=? AND price_cents=? AND stock=? AND active=?")){
+                    p.setLong(1,expected.getId());p.setString(2,expected.getName());p.setLong(3,Money.cents(expected.getPrice()));p.setInt(4,expected.getStock());p.setBoolean(5,expected.isActive());if(p.executeUpdate()!=1)throw new ValidationException("This product changed. Refresh inventory before deleting it.");
+                }
+                for(String table:List.of("saved_items","customer_cart_items"))try(var p=c.prepareStatement("DELETE FROM "+table+" WHERE product_id=?")){p.setLong(1,expected.getId());p.executeUpdate();}
+                c.commit();
+            }catch(SQLException|RuntimeException e){c.rollback();throw e;}
+        }catch(SQLException e){throw new StorageException(e);}
+    }
+    public PersistentCartService savedCarts(){return new PersistentCartService(database,products);}
     public List<Product> search(User user, String query, Category category) {
         if (user == null) throw new ValidationException("Please sign in.");
         String term = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
@@ -56,7 +72,7 @@ public final class ProductService {
                 for(ManagerChange change:changes){
                     Product p=change.expected();String description=change.description()==null?p.getDescription():change.description().trim();
                     String specs=change.specifications()==null?p.getSpecifications():change.specifications().trim();boolean active=change.active()==null?p.isActive():change.active();
-                    try(PreparedStatement update=c.prepareStatement("UPDATE products SET description=?,specifications=?,active=? WHERE id=? AND name=? AND category=? AND price_cents=? AND stock=? AND active=? AND description=? AND specifications=?")){
+                    try(PreparedStatement update=c.prepareStatement("UPDATE products SET description=?,specifications=?,active=? WHERE id=? AND name=? AND category=? AND price_cents=? AND stock=? AND active=? AND description=? AND specifications=? AND deleted=0")){
                         update.setString(1,description);update.setString(2,specs);update.setBoolean(3,active);update.setLong(4,p.getId());update.setString(5,p.getName());update.setString(6,p.getCategory().name());update.setLong(7,Money.cents(p.getPrice()));update.setInt(8,p.getStock());update.setBoolean(9,p.isActive());update.setString(10,p.getDescription());update.setString(11,p.getSpecifications());
                         if(update.executeUpdate()!=1)throw new ValidationException(p.getName()+" changed since this preview. Run the command again; nothing in this batch was saved.");
                     }
@@ -83,7 +99,7 @@ public final class ProductService {
         if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
         if(expected==null||expected.getId()<=0)throw new ValidationException("Choose a saved product.");
         BigDecimal valid=Money.price(price);if(stock<0||stock>100000)throw new ValidationException("Stock must be between 0 and 100,000.");
-        try(Connection c=database.open();var statement=c.prepareStatement("UPDATE products SET price_cents=?,stock=? WHERE id=? AND price_cents=? AND stock=?")){
+        try(Connection c=database.open();var statement=c.prepareStatement("UPDATE products SET price_cents=?,stock=? WHERE id=? AND price_cents=? AND stock=? AND deleted=0")){
             statement.setLong(1,Money.cents(valid));statement.setInt(2,stock);statement.setLong(3,expected.getId());statement.setLong(4,Money.cents(expected.getPrice()));statement.setInt(5,expected.getStock());
             if(statement.executeUpdate()!=1)throw new ValidationException("This product changed while you were editing. Refresh inventory and try again.");
         }catch(SQLException e){throw new StorageException(e);}
@@ -100,11 +116,17 @@ public final class ProductService {
         if(category!=null&&category.isRetired()&&(active||id==0))throw new ValidationException("Choose a tech category before offering this product. Retired inventory can stay inactive until you replace it.");
         byte[] snapshot = photo == null ? null : photo.clone();
         ProductPhotos.validate(snapshot);
-        Product product = new Product(id, name, category, price, stock, active, description, snapshot,additionalPhotos,specifications,frame);
+        Product previous=id==0?null:get(id);
+        String validSpecs=previous!=null&&previous.getSpecifications().equals(specifications)?specifications:ProductSpecifications.validated(specifications);
+        Product product = new Product(id, name, category, price, stock, active, description, snapshot,additionalPhotos,validSpecs,frame);
         for(byte[] bytes:product.getAdditionalPhotos())ProductPhotos.validate(bytes);
         try (Connection c = database.open()) {
             c.setAutoCommit(false);
-            try {products.save(c,product);c.commit();}
+            try {
+                String sku=ProductSpecifications.value(product,"SKU");
+                if(!sku.isBlank())for(Product other:products.list(c,true))if(other.getId()!=id&&sku.equalsIgnoreCase(ProductSpecifications.value(other,"SKU")))throw new ValidationException("SKU is already used by "+other.getName()+".");
+                products.save(c,product);c.commit();
+            }
             catch(SQLException|RuntimeException error){c.rollback();throw error;}
         }
         catch (SQLException e) { throw new StorageException(e); }

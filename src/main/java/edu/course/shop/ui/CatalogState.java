@@ -1,6 +1,9 @@
 package edu.course.shop.ui;
 /** Retains the shopper's filters between screens. */
 public final class CatalogState {
+    private java.util.Map<String,String> specificationFilters=java.util.Map.of();
+    public java.util.Map<String,String> getSpecificationFilters(){return specificationFilters;}
+    public void setSpecificationFilters(java.util.Map<String,String> value){specificationFilters=java.util.Map.copyOf(value);}
     private String minimumPrice="",maximumPrice="";
     public String getMinimumPrice(){return minimumPrice;}
     public String getMaximumPrice(){return maximumPrice;}

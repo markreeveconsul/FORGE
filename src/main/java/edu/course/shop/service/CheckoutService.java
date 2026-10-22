@@ -15,7 +15,10 @@ public final class CheckoutService {
     public CheckoutService(DatabaseManager database, ProductRepository products, OrderRepository orders) {
         this.database = database; this.products = products; this.orders = orders;
     }
-    public Order checkout(User customer, Cart cart, String address, PaymentMethod payment) {
+    public Order checkout(User customer,Cart cart,String address,PaymentMethod payment){
+        synchronized(cart){return checkoutLocked(customer,cart,address,payment);}
+    }
+    private Order checkoutLocked(User customer, Cart cart, String address, PaymentMethod payment) {
         if (!(customer instanceof Customer)) throw new ValidationException("Please sign in as a customer to check out.");
         CartService.checkOwner(customer, cart);
         if (cart.getItems().isEmpty()) throw new ValidationException("Your cart is empty.");
@@ -39,8 +42,9 @@ public final class CheckoutService {
                 PaymentResult result = payment.pay(total);
                 if (!result.accepted()) throw new ValidationException("Demo wallet payment declined. Your cart and stock are unchanged.");
                 Order order = orders.save(c, new Order(0, customer.getId(), Instant.now().toString(), address.trim(), payment.getName(), result.status(), total, lines));
+                try(PreparedStatement saved=c.prepareStatement("DELETE FROM customer_cart_items WHERE customer_id=?")){saved.setLong(1,customer.getId());saved.executeUpdate();}
                 c.commit();
-                cart.clear(); // Only after the database confirms the entire checkout.
+                cart.clearAfterCheckout(); // Saved cart was cleared in the order transaction.
                 return order;
             } catch (SQLException | RuntimeException e) {
                 try { c.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }

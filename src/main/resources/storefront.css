@@ -1,0 +1,251 @@
+/* Customer workspace: the same warm surfaces and orange accent as FORGE admin.
+   Scoped to the storefront root so login and management retain their own themes. */
+.forge-store {
+    -ink: #1C1917;
+    -ink-muted: #78716C;
+    -line: #E7E5E4;
+    -surface: #FFFFFF;
+    -canvas: #FAFAF9;
+    -tint: #F5F5F4;
+    -brand: #1C1917;
+    -signal: #EA580C;
+    -danger: #B91C1C;
+    -store-hover: #F0EFED;
+    -store-accent-soft: #FFF7ED;
+    -store-accent-text: #C2410C;
+    -store-good-bg: #ECFDF5;
+    -store-good-text: #166534;
+    -store-low-bg: #FEF3C7;
+    -store-low-text: #92400E;
+    -store-error-bg: #FEF2F2;
+    -store-skeleton: #E7E5E4;
+    -fx-background-color: -canvas;
+    -fx-font-family: "Segoe UI", "System";
+    -fx-font-size: 14px;
+}
+.forge-store.store-dark {
+    -ink: #FAFAF9;
+    -ink-muted: #A8A29E;
+    -line: #3B3530;
+    -surface: #1C1917;
+    -canvas: #0C0A09;
+    -tint: #25211F;
+    -brand: #292524;
+    -danger: #FCA5A5;
+    -store-hover: #332D28;
+    -store-accent-soft: #382317;
+    -store-accent-text: #FDBA74;
+    -store-good-bg: #15352A;
+    -store-good-text: #86EFAC;
+    -store-low-bg: #3A2A12;
+    -store-low-text: #FDE68A;
+    -store-error-bg: #3B1E1B;
+    -store-skeleton: #3B3530;
+}
+.forge-store .page-title, .forge-store .collection-title {
+    -fx-font-family: "Segoe UI", "System"; -fx-font-size: 30px; -fx-font-weight: bold;
+}
+.forge-store .section-title { -fx-font-size: 20px; }
+.forge-store .muted, .forge-store .product-description { -fx-text-fill: -ink-muted; }
+.forge-store .page { -fx-background-color: -canvas; -fx-padding: 28 32; }
+.forge-store .catalog-page { -fx-padding: 0; }
+.forge-store .button {
+    -fx-background-color: -surface; -fx-border-color: -line; -fx-text-fill: -ink;
+    -fx-background-radius: 12; -fx-border-radius: 12; -fx-padding: 9 16; -fx-min-height: 40;
+}
+.forge-store .button:hover { -fx-background-color: -store-hover; -fx-border-color: -ink-muted; }
+.forge-store .button:focused { -fx-border-color: -signal; }
+.forge-store .button.primary, .forge-store .button.purchase-action, .forge-store .button.hero-cta,
+.forge-store .button.added-confirmation, .forge-store .assistant-launcher {
+    -fx-background-color: #EA580C; -fx-border-color: #EA580C; -fx-text-fill: white;
+}
+.forge-store .button.primary:hover, .forge-store .button.purchase-action:hover,
+.forge-store .button.hero-cta:hover, .forge-store .assistant-launcher:hover { -fx-background-color: #C2410C; -fx-border-color: #C2410C; }
+.forge-store .button.quick-add { -fx-background-color: #1C1917; -fx-border-color: #1C1917; -fx-text-fill: white; -fx-padding: 7 15; -fx-min-height: 36; -fx-background-radius: 18; -fx-border-radius: 18; }
+.forge-store.store-dark .button.quick-add { -fx-background-color: #FAFAF9; -fx-border-color: #FAFAF9; -fx-text-fill: #1C1917; }
+.forge-store .button.quick-add:hover { -fx-background-color: #44403C; -fx-border-color: #44403C; -fx-text-fill: white; }
+.forge-store .button.quick-add:disabled, .forge-store .button.purchase-action:disabled { -fx-background-color: -tint; -fx-border-color: -line; -fx-text-fill: -ink-muted; -fx-opacity: 1; }
+.forge-store .button.link-button, .forge-store .button.text-button, .forge-store .button.header-link {
+    -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8 2; -fx-text-fill: -ink-muted;
+}
+.forge-store .button.link-button:hover, .forge-store .button.header-link:hover { -fx-text-fill: -store-accent-text; }
+.forge-store .button.text-button { -fx-text-fill: -danger; }
+.forge-store .text-field, .forge-store .text-area, .forge-store .combo-box, .forge-store .spinner {
+    -fx-background-color: -surface; -fx-border-color: -line; -fx-text-fill: -ink; -fx-prompt-text-fill: -ink-muted; -fx-background-radius: 10; -fx-border-radius: 10;
+}
+.forge-store .text-field:focused, .forge-store .text-area:focused, .forge-store .combo-box:focused { -fx-border-color: -signal; }
+.forge-store .text-area .content { -fx-background-color: -surface; }
+.forge-store .combo-box .list-cell { -fx-text-fill: -ink; }
+.forge-store .check-box, .forge-store .radio-button, .forge-store .toggle-button { -fx-text-fill: -ink; }
+.forge-store .store-icon { -fx-stroke: -ink; }
+.forge-store .scroll-bar .thumb { -fx-background-color: -line; }
+.forge-store .scroll-pane, .forge-store .scroll-pane > .viewport { -fx-background-color: transparent; }
+
+/* Two calm navigation levels leave a useful search field at every desktop width. */
+.forge-store .store-header { -fx-background-color: #171513; -fx-padding: 12 32; -fx-min-height: 68; }
+.forge-store .store-header .button.brand-link { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-family: "Segoe UI"; -fx-font-size: 23px; -fx-font-weight: bold; -fx-padding: 0; -fx-effect: null; }
+.forge-store .store-header .button.header-link, .forge-store .store-header .button.cart-button {
+    -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #E7E5E4;
+    -fx-font-size: 13px; -fx-min-height: 40; -fx-pref-height: 40; -fx-max-height: 40; -fx-padding: 0 8; -fx-graphic-text-gap: 8;
+}
+.forge-store .store-header .button.header-link:hover, .forge-store .store-header .button.cart-button:hover { -fx-background-color: rgba(255,255,255,.08); -fx-text-fill: white; }
+.forge-store .store-header .store-icon { -fx-stroke: #E7E5E4; }
+.forge-store .store-header .compact-menu { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0 8; -fx-font-size: 13px; -fx-min-height: 40; }
+.forge-store .store-header .compact-menu > .label { -fx-text-fill: white; }
+.forge-store .store-header .catalog-search-surface {
+    -fx-background-color: linear-gradient(to bottom, #35312D, #292623); -fx-border-color: #625A54;
+    -fx-background-radius: 24; -fx-border-radius: 24; -fx-min-height: 44; -fx-pref-height: 44; -fx-max-height: 44; -fx-padding: 4 14;
+}
+.forge-store .store-header .text-field.catalog-search-input { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #FAFAF9; -fx-prompt-text-fill: #BDB7B1; -fx-font-size: 13px; -fx-padding: 3 0; }
+.forge-store .catalog-search-surface .button.image-search-camera { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0; -fx-min-height: 26; -fx-pref-height: 26; -fx-max-height: 26; -fx-min-width: 26; -fx-pref-width: 26; -fx-max-width: 26; }
+.forge-store .store-header .button.search-clear { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0; -fx-min-height: 26; -fx-pref-height: 26; -fx-max-height: 26; }
+.forge-store .store-category-row, .forge-store .tech-category-nav { -fx-background-color: -surface; -fx-border-color: transparent transparent -line transparent; -fx-padding: 0 24; }
+.forge-store .store-category-row .hero-category-nav { -fx-padding: 0; -fx-min-height: 44; -fx-pref-height: 44; -fx-max-height: 44; -fx-spacing: 8; }
+.forge-store .store-category-row .button, .forge-store .store-category-row .menu-button, .forge-store .tech-category-nav .button {
+    -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: -ink-muted; -fx-font-size: 13px;
+    -fx-padding: 0 16; -fx-min-height: 44; -fx-pref-height: 44; -fx-max-height: 44; -fx-border-width: 0 0 2 0; -fx-background-radius: 0; -fx-border-radius: 0;
+}
+.forge-store .store-category-row .menu-button > .label { -fx-text-fill: -ink-muted; }
+.forge-store .store-category-row .menu-button > .arrow-button > .arrow { -fx-background-color: -ink-muted; }
+.forge-store .store-category-row .button:hover, .forge-store .store-category-row .category-active,
+.forge-store .tech-category-nav .category-active, .forge-store .store-category-row .category-active > .label { -fx-text-fill: -store-accent-text; -fx-border-color: transparent transparent #EA580C transparent; }
+.forge-store .store-footer { -fx-background-color: -surface; -fx-border-color: -line transparent transparent transparent; -fx-padding: 9 32; }
+.forge-store .store-footer .button.header-link { -fx-min-height: 30; -fx-font-size: 12px; }
+.forge-store .button.store-theme-toggle { -fx-padding: 0; -fx-min-width: 32; -fx-pref-width: 32; -fx-max-width: 32; -fx-min-height: 32; -fx-pref-height: 32; -fx-background-radius: 10; -fx-border-radius: 10; }
+
+/* Consistent catalog cards: square photos, readable names and wrapping stock badges. */
+.forge-store .collection-section { -fx-padding: 32; -fx-background-color: -canvas; }
+.forge-store .catalog-toolbar { -fx-padding: 0 0 12 0; }
+.forge-store .product-card { -fx-background-color: -surface; -fx-border-color: -line; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 10; -fx-effect: dropshadow(gaussian,rgba(28,25,23,.035),8,0,0,2); }
+.forge-store .product-card:hover { -fx-border-color: -ink-muted; -fx-effect: dropshadow(gaussian,rgba(28,25,23,.09),14,0,0,4); }
+.forge-store .product-body { -fx-padding: 14 4 4 4; -fx-spacing: 10; }
+.forge-store .product-name { -fx-font-size: 14px; -fx-font-weight: bold; }
+.forge-store .product-body .eyebrow { -fx-font-size: 10px; -fx-text-fill: -ink-muted; }
+.forge-store .product-body .price { -fx-font-size: 20px; }
+.forge-store .product-card .button.link-button { -fx-font-size: 12px; -fx-text-fill: -ink-muted; -fx-min-height: 36; -fx-padding: 4 0; }
+.forge-store .button.photo-button { -fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 12; -fx-border-radius: 12; }
+.forge-store .button.photo-button:hover { -fx-background-color: transparent; }
+.forge-store .product-art { -fx-background-color: -tint; -fx-background-radius: 12; }
+.forge-store .stock, .forge-store .stock-low, .forge-store .stock-out { -fx-background-radius: 5; -fx-font-size: 10px; -fx-padding: 4 7; }
+.forge-store .stock { -fx-background-color: -store-good-bg; -fx-text-fill: -store-good-text; }
+.forge-store .stock-low { -fx-background-color: -store-low-bg; -fx-text-fill: -store-low-text; }
+.forge-store .stock-out { -fx-background-color: -store-error-bg; -fx-text-fill: -danger; }
+.forge-store .button.filter-chip { -fx-background-color: -store-accent-soft; -fx-border-color: transparent; -fx-text-fill: -store-accent-text; -fx-background-radius: 16; -fx-border-radius: 16; -fx-padding: 6 12; -fx-min-height: 32; }
+.forge-store .collection-tile { -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16; -fx-padding: 22; }
+.forge-store .collection-tile:hover { -fx-background-color: -store-hover; }
+.forge-store .discovery-section { -fx-padding: 32; }
+.forge-store .closing-section { -fx-background-color: #171513; }
+.forge-store .button.hero-link { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #E7E5E4; }
+.forge-store .button.hero-art-button { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0; }
+
+/* Purchase flow, gallery and product details share the admin card surfaces. */
+.forge-store .card, .forge-store .summary, .forge-store .order-card, .forge-store .address-card,
+.forge-store .cart-row.cart-item, .forge-store .detail-info {
+    -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16; -fx-padding: 24;
+}
+.forge-store .summary { -fx-spacing: 18; -fx-effect: dropshadow(gaussian,rgba(28,25,23,.045),14,0,0,3); }
+.forge-store .summary .total { -fx-font-size: 28px; }
+.forge-store .detail-info .page-title { -fx-font-size: 28px; }
+.forge-store .detail-info .card { -fx-background-color: -tint; -fx-padding: 16; -fx-background-radius: 12; -fx-border-radius: 12; }
+.forge-store .cart-row.cart-item { -fx-padding: 18; }
+.forge-store .stepper { -fx-border-color: -line; -fx-background-color: -tint; }
+.forge-store .stepper .button, .forge-store .stepper .text-field { -fx-background-color: transparent; -fx-border-color: transparent; }
+.forge-store .step-now { -fx-background-color: #EA580C; }
+.forge-store .step-done { -fx-text-fill: -store-good-text; }
+.forge-store .payment-choice { -fx-background-color: -surface; -fx-border-color: -line; -fx-text-fill: -ink; -fx-background-radius: 12; -fx-border-radius: 12; }
+.forge-store .payment-choice:selected { -fx-background-color: -store-accent-soft; -fx-border-color: #EA580C; }
+.forge-store .cart-drawer, .forge-store .filter-drawer { -fx-background-color: -surface; -fx-border-color: -line; -fx-padding: 24; }
+.forge-store .drawer-total { -fx-background-color: -tint; -fx-background-radius: 12; }
+.forge-store .filter-drawer .radio-button:hover { -fx-background-color: -tint; }
+.forge-store .filter-drawer .radio-button:selected { -fx-background-color: -store-accent-soft; }
+.forge-store .filter-drawer .radio-button .radio, .forge-store .filter-drawer .check-box .box { -fx-background-color: -surface; -fx-border-color: -line; }
+.forge-store .filter-drawer .radio-button:selected .radio, .forge-store .filter-drawer .check-box:selected .box { -fx-border-color: #EA580C; }
+.forge-store .filter-drawer .check-box:selected .box { -fx-background-color: #EA580C; }
+.forge-store .filter-drawer .radio-button:selected .dot { -fx-background-color: #EA580C; }
+.forge-store .range-help, .forge-store .filter-match-count { -fx-text-fill: -ink-muted; }
+.forge-store .button.gallery-thumbnail { -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 4; }
+.forge-store .button.gallery-selected { -fx-border-color: #EA580C; }
+.forge-store .glass-image-viewer { -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 20; -fx-border-radius: 20; -fx-padding: 24; }
+.forge-store .glass-image-viewer .label { -fx-text-fill: -ink; }
+.forge-store .glass-image-viewer .muted, .forge-store .glass-image-viewer .viewer-description, .forge-store .glass-image-viewer .viewer-stock { -fx-text-fill: -ink-muted; }
+.forge-store .glass-image-viewer .viewer-title { -fx-font-size: 16px; }
+.forge-store .glass-image-viewer .viewer-info { -fx-background-color: -tint; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16; }
+.forge-store .glass-image-viewer .viewer-category { -fx-text-fill: -store-accent-text; }
+.forge-store .glass-image-viewer .image-viewer-surface { -fx-background-color: #F1F0EE; -fx-background-radius: 14; }
+.forge-store .glass-image-viewer .button { -fx-background-color: -tint; -fx-border-color: -line; -fx-text-fill: -ink; -fx-background-radius: 20; -fx-border-radius: 20; }
+.forge-store .glass-image-viewer .button:hover { -fx-background-color: -store-hover; }
+.forge-store .glass-image-viewer .button.viewer-add { -fx-background-color: #EA580C; -fx-border-color: #EA580C; -fx-text-fill: white; }
+.forge-store .search-overlay-card { -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16; }
+.forge-store .search-overlay-name, .forge-store .search-overlay-price { -fx-text-fill: -ink; }
+.forge-store .search-overlay-meta, .forge-store .search-overlay-hint, .forge-store .search-overlay-heading, .forge-store .search-overlay-empty { -fx-text-fill: -ink-muted; }
+.forge-store .button.search-overlay-result { -fx-background-color: transparent; -fx-border-color: transparent transparent -line transparent; -fx-background-radius: 8; -fx-border-radius: 8; }
+.forge-store .button.search-overlay-result:hover, .forge-store .button.search-overlay-active { -fx-background-color: -tint; }
+.forge-store .button.search-overlay-all { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: -store-accent-text; }
+.forge-store .search-overlay-pill .text-field.search-overlay-input { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: white; -fx-background-radius: 0; -fx-border-radius: 0; }
+.forge-store .search-overlay-pill .button.search-overlay-clear { -fx-background-color: #FAFAF9; -fx-text-fill: #1C1917; -fx-border-color: transparent; -fx-background-radius: 24; -fx-border-radius: 24; }
+.forge-store .search-overlay-pill .store-icon { -fx-stroke: white; }
+
+/* AI retains rich result cards and existing behavior in either theme. */
+.forge-store .forge-chat { -fx-background-color: -surface; -fx-border-color: -line; -fx-border-width: 0 0 0 1; }
+.forge-store .forge-chat .chat-header { -fx-background-color: #171513; -fx-padding: 18; }
+.forge-store .forge-chat .chat-context { -fx-background-color: -tint; -fx-border-color: transparent transparent -line transparent; -fx-padding: 10 18; }
+.forge-store .forge-chat .chat-context-text, .forge-store .forge-chat .chat-muted,
+.forge-store .forge-chat .chat-disclaimer, .forge-store .forge-chat .chat-evidence { -fx-text-fill: -ink-muted; }
+.forge-store .forge-chat .chat-messages, .forge-store .forge-chat .chat-composer, .forge-store .forge-chat .chat-disclaimer-row { -fx-background-color: -surface; }
+.forge-store .forge-chat .chat-bubble { -fx-background-color: -tint; -fx-background-radius: 4 16 16 16; }
+.forge-store .forge-chat .chat-message-text, .forge-store .forge-chat .chat-welcome-title, .forge-store .forge-chat .chat-product-name, .forge-store .forge-chat .chat-price { -fx-text-fill: -ink; }
+.forge-store .forge-chat .chat-product-card { -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16; -fx-padding: 12; }
+.forge-store .forge-chat .chat-product-category { -fx-text-fill: -ink-muted; }
+.forge-store .forge-chat .chat-product-note { -fx-background-color: -store-accent-soft; -fx-text-fill: -store-accent-text; }
+.forge-store .forge-chat .button.chat-prompt { -fx-background-color: -surface; -fx-border-color: -line; -fx-text-fill: -ink; }
+.forge-store .forge-chat .button.chat-prompt:hover { -fx-background-color: -tint; -fx-border-color: #EA580C; }
+.forge-store .forge-chat .button.chat-link { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: -ink; }
+.forge-store .forge-chat .chat-composer { -fx-border-color: -line transparent transparent transparent; }
+.forge-store .forge-chat .chat-spark, .forge-store .forge-chat .chat-welcome-spark, .forge-store .forge-chat .chat-best-match,
+.forge-store .forge-chat .button.chat-orange, .forge-store .forge-chat .button.chat-send { -fx-background-color: #EA580C; -fx-border-color: #EA580C; -fx-text-fill: white; }
+.forge-store .forge-chat .button.chat-header-button { -fx-background-color: transparent; -fx-border-color: #57534E; -fx-text-fill: white; -fx-min-height: 30; -fx-padding: 5 9; }
+.forge-store .forge-chat .button.chat-dark-button { -fx-background-color: #1C1917; -fx-border-color: #1C1917; -fx-text-fill: white; }
+.forge-store.store-dark .forge-chat .button.chat-dark-button { -fx-background-color: #FAFAF9; -fx-border-color: #FAFAF9; -fx-text-fill: #1C1917; }
+.forge-store .forge-chat .chat-stock { -fx-background-color: -store-good-bg; -fx-text-fill: -store-good-text; }
+.forge-store .forge-chat .chat-stock-low { -fx-background-color: -store-low-bg; -fx-text-fill: -store-low-text; }
+.forge-store .forge-chat .chat-stock-out { -fx-background-color: -store-error-bg; -fx-text-fill: -danger; }
+.forge-store .forge-chat .chat-error, .forge-store .error-feedback { -fx-background-color: -store-error-bg; -fx-text-fill: -danger; }
+.forge-store .forge-chat .chat-error .chat-message-text { -fx-text-fill: -danger; }
+.forge-store .forge-chat .chat-evidence-missing { -fx-text-fill: -ink-muted; }
+.forge-store .assistant-launcher { -fx-background-radius: 24; -fx-border-radius: 24; -fx-padding: 12 20; }
+.forge-store .notice, .forge-store .empty-state, .forge-store .feedback { -fx-background-color: -tint; -fx-background-radius: 12; }
+.forge-store .error-feedback { -fx-background-color: -store-error-bg; }
+.forge-store .product-reviews .review-summary { -fx-background-color: -store-accent-soft; -fx-text-fill: -ink; }
+.forge-store .skeleton-block { -fx-background-color: -store-skeleton; -fx-background-radius: 8; }
+.forge-store .skeleton-card, .forge-store .skeleton-row { -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16; }
+/* Legacy page IDs in shop.css have higher specificity than shared component rules. */
+.forge-store #toggle-filters, .forge-store #sort { -fx-background-color: -surface; -fx-border-color: -line; -fx-text-fill: -ink; -fx-background-radius: 12; -fx-border-radius: 12; }
+.forge-store #toggle-filters:hover, .forge-store #sort:hover { -fx-background-color: -tint; -fx-border-color: -ink-muted; }
+.forge-store #toggle-filters:focused, .forge-store #sort:focused { -fx-border-color: #EA580C; -fx-border-width: 1; }
+.forge-store #sort .list-cell { -fx-text-fill: -ink; }
+.forge-store #sort > .arrow-button > .arrow { -fx-background-color: -ink-muted; }
+.forge-store #cart-page .cart-row.cart-item, .forge-store #checkout-page .card, .forge-store #account-page .card,
+.forge-store #saved-items-page .product-card, .forge-store #orders-page .order-card, .forge-store #orders-page #order-receipt,
+.forge-store #cart-page .summary, .forge-store #checkout-page .summary {
+    -fx-background-color: -surface; -fx-border-color: -line; -fx-background-radius: 16; -fx-border-radius: 16;
+}
+.forge-store #account-page .address-card { -fx-background-color: -tint; -fx-border-color: -line; }
+.forge-store #orders-page .order-selected { -fx-background-color: -store-accent-soft; -fx-border-color: #EA580C; }
+.forge-store #orders-page .order-status-paid { -fx-background-color: -store-good-bg; -fx-text-fill: -store-good-text; }
+.forge-store #orders-page .order-status-pending { -fx-background-color: -store-low-bg; -fx-text-fill: -store-low-text; }
+.forge-store .account-navigation { -fx-background-color: -tint; }
+.forge-store .account-tab-active { -fx-background-color: -surface; -fx-text-fill: -store-accent-text; }
+.forge-store .account-navigation .button.account-tab { -fx-text-fill: -ink-muted; }
+.forge-store .account-navigation .button.account-tab:hover { -fx-background-color: -store-hover; -fx-text-fill: -ink; }
+.forge-store .button.save-heart, .forge-store .forge-chat .button.chat-product-heart {
+    -fx-background-color: -surface; -fx-border-color: -line; -fx-text-fill: -ink; -fx-padding: 0;
+    -fx-background-radius: 22; -fx-border-radius: 22; -fx-font-size: 22px; -fx-alignment: center;
+}
+.forge-store .button.save-heart:hover { -fx-background-color: -store-accent-soft; -fx-text-fill: -store-accent-text; }
+.forge-store .button.save-heart:selected { -fx-text-fill: #EA580C; -fx-border-color: #EA580C; }
+.forge-store .range-track { -fx-background-color: -line; }
+.forge-store .range-selection { -fx-background-color: #EA580C; }
+.forge-store .filter-drawer .button.range-thumb { -fx-padding: 0; -fx-min-height: 20; -fx-pref-height: 20; -fx-min-width: 20; -fx-pref-width: 20; -fx-background-color: -surface; -fx-border-color: #EA580C; -fx-border-width: 2; -fx-background-radius: 20; -fx-border-radius: 20; }
+.forge-store .forge-chat .chat-spark, .forge-store .forge-chat .chat-welcome-spark, .forge-store .forge-chat .chat-best-match { -fx-border-color: transparent; }
+.forge-store .forge-chat .button.chat-send { -fx-background-radius: 24; -fx-border-radius: 24; -fx-padding: 0; }
+.forge-store .separator .line { -fx-border-color: -line; -fx-border-width: 1 0 0 0; }

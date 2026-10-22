@@ -7,7 +7,7 @@ import java.util.*;
 public final class ProductRepository {
     public List<Product> list(Connection c, boolean includeInactive) throws SQLException {
         List<Product> products = new ArrayList<>();
-        try (PreparedStatement p = c.prepareStatement("SELECT * FROM products" + (includeInactive ? "" : " WHERE active = 1") + " ORDER BY name"); ResultSet r = p.executeQuery()) {
+        try (PreparedStatement p = c.prepareStatement("SELECT * FROM products WHERE deleted=0" + (includeInactive ? "" : " AND active = 1") + " ORDER BY name"); ResultSet r = p.executeQuery()) {
             while (r.next()) products.add(read(c,r));
         }
         return products;
@@ -24,7 +24,7 @@ public final class ProductRepository {
     public void save(Connection c, Product product) throws SQLException {
         String sql = product.getId() == 0
             ? "INSERT INTO products(name,category,price_cents,stock,active,description,photo,specifications,photo_frame,photo_x,photo_y) VALUES(?,?,?,?,?,?,?,?,?,?,?)"
-            : "UPDATE products SET name=?,category=?,price_cents=?,stock=?,active=?,description=?,photo=?,specifications=?,photo_frame=?,photo_x=?,photo_y=? WHERE id=?";
+            : "UPDATE products SET name=?,category=?,price_cents=?,stock=?,active=?,description=?,photo=?,specifications=?,photo_frame=?,photo_x=?,photo_y=? WHERE id=? AND deleted=0";
         try (PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, product.getName()); p.setString(2, product.getCategory().name()); p.setLong(3, Money.cents(product.getPrice()));
             p.setInt(4, product.getStock()); p.setBoolean(5, product.isActive());
@@ -43,7 +43,7 @@ public final class ProductRepository {
         }
     }
     public void deductStock(Connection c, Product product, int quantity) throws SQLException {
-        try (PreparedStatement p = c.prepareStatement("UPDATE products SET stock=stock-? WHERE id=? AND active=1 AND stock>=?")) {
+        try (PreparedStatement p = c.prepareStatement("UPDATE products SET stock=stock-? WHERE id=? AND active=1 AND deleted=0 AND stock>=?")) {
             p.setInt(1, quantity); p.setLong(2, product.getId()); p.setInt(3, quantity);
             if (p.executeUpdate() != 1) throw new OutOfStockException(product.getName());
         }

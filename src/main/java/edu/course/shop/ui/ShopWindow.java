@@ -64,6 +64,7 @@ public final class ShopWindow {
     private AssistantPanel assistantPanel;
     private Button assistantLauncher;
     private Product assistantProduct;
+    private boolean darkStore;
 
     public ShopWindow(Stage stage,Services services){this.stage=stage;this.services=services;this.saved=new SavedItems(services.accounts());search.setId("search");}
     public void showStorefront(){buildShell();showCatalog();}
@@ -84,33 +85,29 @@ public final class ShopWindow {
         login.getChildren().add(controls);
         stage.getScene().setRoot(login);
     }
+    private record CustomerSession(java.util.Set<Long> saved,edu.course.shop.service.PersistentCartService.Restored restored){}
     private void signedIn(User signedIn){
         if(signedIn.canManageProducts()){saved.reset();completeSignIn(signedIn);return;}
-        java.util.Set<Long> guestSaved=saved.snapshot();
-        Ui.async(stage.getScene().getRoot(),"Loading saved items…",()->{
+        java.util.Set<Long> guestSaved=saved.snapshot();Cart guest=cart.getCustomerId()==0?cart:null;
+        Ui.async(stage.getScene().getRoot(),"Restoring your account and cart…",()->{
             java.util.Set<Long> ids=new java.util.HashSet<>(services.accounts().saved(signedIn));
             java.util.Set<Long> available=services.products().search(signedIn,"",null).stream().map(Product::getId).collect(java.util.stream.Collectors.toSet());
             for(long id:guestSaved)if(available.contains(id)){services.accounts().saveItem(signedIn,id,true);ids.add(id);}
-            return ids;
-        },ids->{saved.signedIn(signedIn,ids);completeSignIn(signedIn);},Ui::error);
+            return new CustomerSession(ids,services.products().savedCarts().restore(signedIn,guest));
+        },session->{
+            saved.signedIn(signedIn,session.saved());user=signedIn;cart=session.restored().cart();buildShell();
+            if(cart.getItems().isEmpty()&&session.restored().notices().isEmpty())showCatalog();
+            else{
+                showCart();Label feedback=(Label)shell.lookup("#cart-feedback");
+                Ui.success(feedback,session.restored().notices().isEmpty()?"Your cart is saved to your account. Prices and availability were checked; stock is reserved only at checkout.":String.join("\n",session.restored().notices()));
+            }
+        },Ui::error);
     }
     private void completeSignIn(User signedIn){
-        CartService carts=new CartService(services.products());Cart previous=cart;
-        if(signedIn.canManageProducts()){
-            pendingGuestCart=previous.getCustomerId()==0?previous:null;user=signedIn;cart=new Cart(user.getId());buildShell();showAdminOverview();return;
-        }
-        cart=previous.getCustomerId()==0?carts.transferGuest(previous,signedIn):new Cart(signedIn.getId());user=signedIn;buildShell();
-        if(cart.getItems().isEmpty())showCatalog();
-        else{
-            showCart();Label feedback=(Label)shell.lookup("#cart-feedback");
-            Ui.async(shell,"Reviewing your saved cart…",()->carts.review(cart),message->Ui.success(feedback,message),error->Ui.failure(feedback,error));
-        }
+        Cart previous=cart;pendingGuestCart=previous.getCustomerId()==0?previous:null;
+        user=signedIn;cart=new Cart(user.getId());buildShell();showAdminOverview();
     }
     private void signOut(){
-        if(user.canShop()&&!cart.getItems().isEmpty()){
-            Alert confirm=new Alert(Alert.AlertType.CONFIRMATION,"Sign out and discard this cart?",ButtonType.YES,ButtonType.NO);
-            confirm.initOwner(stage);if(confirm.showAndWait().orElse(ButtonType.NO)!=ButtonType.YES)return;
-        }
         user=new Guest();cart=pendingGuestCart==null?new Cart(0):pendingGuestCart;pendingGuestCart=null;draft.clear();saved.reset();showStorefront();
     }
     private Button link(String text,Runnable action){Button b=Ui.button(text,action);b.getStyleClass().add("header-link");return b;}
@@ -132,7 +129,10 @@ public final class ShopWindow {
             adminWorkspace=new AdminWorkspace(user,services,this::showAdminOverview,this::showAdmin,this::showAdminOrders,this::showAdminCustomers,this::showAiManager,this::addAdminProduct,this::signOut);
             shell.setCenter(adminWorkspace);cartButton=null;
         }else{
-            search.setPromptText("Search the collection");search.setAccessibleText("Search products");search.setMinWidth(130);search.setPrefWidth(260);
+            window.getStyleClass().add("forge-store");
+            window.getStylesheets().add(ShopWindow.class.getResource("/storefront.css").toExternalForm());
+            if(darkStore)window.getStyleClass().add("store-dark");
+            search.setPromptText("Search products, brands and more…");search.setAccessibleText("Search products");search.setMinWidth(130);search.setPrefWidth(260);
             Runnable find=()->{catalogState.setScrollPosition(0);showCatalog();};search.setOnAction(e->find.run());
             Button logo=Ui.button("FORGE",()->category(0));logo.getStyleClass().add("brand-link");logo.setMinWidth(Region.USE_PREF_SIZE);
             cartButton=link("Cart · 0",this::showCartDrawer);cartButton.setId("nav-cart");
@@ -176,7 +176,9 @@ public final class ShopWindow {
             headerSearch.setMinWidth(200);headerSearch.setPrefWidth(320);headerSearch.setMaxWidth(Double.MAX_VALUE);
             HBox.setHgrow(headerSearch,Priority.ALWAYS);
             headerNavigation=new HBox();headerNavigation.setAlignment(Pos.CENTER_LEFT);headerNavigation.setMinWidth(Region.USE_PREF_SIZE);
-            HBox header=new HBox(12,logo,menu,headerNavigation,headerSearch,right,spacer);
+            HBox header=new HBox(24,logo,menu,headerSearch,right,spacer);
+            header.setId("store-header");
+            headerNavigation.setId("store-category-row");headerNavigation.getStyleClass().add("store-category-row");
             categories.setId("secondary-category-nav");categories.setAlignment(Pos.CENTER);categories.getStyleClass().add("tech-category-nav");
             var outsideCatalog=javafx.beans.binding.Bindings.createBooleanBinding(()->!(shell.getCenter() instanceof CatalogView),shell.centerProperty());
             var checkoutPage=javafx.beans.binding.Bindings.createBooleanBinding(()->shell.getCenter() instanceof CheckoutView,shell.centerProperty());
@@ -188,16 +190,24 @@ public final class ShopWindow {
             menu.visibleProperty().bind(header.widthProperty().lessThan(1100).and(outsideCatalog).and(checkoutPage.not()));menu.managedProperty().bind(menu.visibleProperty());
             header.setMinWidth(0);header.setAlignment(Pos.CENTER_LEFT);header.getStyleClass().add("store-header");
             Label announcement=Ui.label("GOOD FINDS. ZERO SHIPPING FEES.  /  Free shipping on every demo order","store-announcement");announcement.setMaxWidth(Double.MAX_VALUE);
-            shell.setTop(new VBox(header,categories,operation));updateCart();
+            shell.setTop(new VBox(header,headerNavigation,categories,operation));updateCart();
         }
         // Footer: two real labels pushed apart, instead of one label padded with spaces.
         Region footerSpace=new Region();HBox.setHgrow(footerSpace,Priority.ALWAYS);
         CheckBox motion=new CheckBox("Reduce motion");motion.setId("reduce-motion");motion.getStyleClass().add("motion-control");
         motion.selectedProperty().bindBidirectional(Motion.reducedProperty());
-        HBox footer=new HBox(16,Ui.label("FORGE · Good things, every day.","muted"),footerSpace,motion,link("About",this::showInfo),Ui.label("USD · Course demo · Simulated payments","muted"));
+        Label footerBrand=Ui.label("FORGE · Good things, every day.","muted");
+        footerBrand.visibleProperty().bind(window.widthProperty().greaterThanOrEqualTo(1100));footerBrand.managedProperty().bind(footerBrand.visibleProperty());
+        Label paymentNote=Ui.label("","muted");paymentNote.setWrapText(false);
+        paymentNote.textProperty().bind(javafx.beans.binding.Bindings.when(window.widthProperty().greaterThanOrEqualTo(1200)).then("USD · Course demo · Simulated payments").otherwise("USD · Demo store"));
+        HBox footer=new HBox(16,footerBrand,footerSpace,motion,link("About",this::showInfo),paymentNote);
         if(!user.canManageProducts()) {
             Button ask=link("FORGE AI",this::toggleAssistant);
             ask.setId("ask-forge");footer.getChildren().add(2,ask);
+            Button theme=Ui.button("",()->{});theme.setId("store-theme-toggle");theme.getStyleClass().add("store-theme-toggle");
+            Runnable syncTheme=()->{theme.setGraphic(StoreIcon.of(darkStore?"sun":"moon",16));theme.setAccessibleText(darkStore?"Switch to light theme":"Switch to Dark Obsidian theme");theme.setTooltip(new javafx.scene.control.Tooltip(theme.getAccessibleText()));};
+            syncTheme.run();theme.setOnAction(e->{darkStore=!darkStore;window.getStyleClass().remove("store-dark");if(darkStore)window.getStyleClass().add("store-dark");syncTheme.run();});
+            footer.getChildren().add(3,theme);
         }
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
         if(!user.canManageProducts())shell.setBottom(footer);stage.getScene().setRoot(window);
@@ -224,7 +234,7 @@ public final class ShopWindow {
         Alert info=new Alert(Alert.AlertType.INFORMATION,"Browse without an account. Sign in as a customer to place a simulated order.\n\nShipping is free and taxes are omitted in this demo. No real money or delivery is involved.\n\nAdmins manage descriptions, photos and inventory. Your cart is temporary; completed orders are saved.",ButtonType.OK);
         info.initOwner(stage);info.setTitle("About FORGE");info.setHeaderText("A small shop. Good things.");info.showAndWait();
     }
-    private void category(int index){catalogState.setCategoryIndex(index);catalogState.setScrollPosition(0);search.clear();showCatalog();}
+    private void category(int index){catalogState.setSpecificationFilters(java.util.Map.of());catalogState.setCategoryIndex(index);catalogState.setScrollPosition(0);search.clear();showCatalog();}
     private void show(Node page){assistantProduct=null;BorderPane target=adminWorkspace!=null&&user.canManageProducts()?adminWorkspace.pageHost():shell;if(target.getCenter() instanceof AiManagerView previous&&previous!=page)previous.dispose();if(target.getCenter() instanceof CatalogView previous&&previous!=page)previous.stopSearchSuggestions();dismissDrawer();stopFeedbackAnimations();if(headerNavigation!=null&&!(page instanceof CatalogView)){headerNavigation.setVisible(false);headerNavigation.setManaged(false);}target.setCenter(page instanceof AdminReportsView?Ui.scroll(page):page);if(!(page instanceof CatalogView)){search.setOnAction(e->{catalogState.setScrollPosition(0);showCatalog();});Motion.reveal(page);}updateNav();if(assistantPanel!=null)assistantPanel.refreshContext();}
 
     /** Highlights the header button for the current category, only while the storefront is showing. */

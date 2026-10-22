@@ -132,19 +132,28 @@ public final class AdminReportsView extends VBox {
     }
     private void resizeStats(FlowPane stats){double width=stats.getWidth();if(width<=0)return;int columns=width>=850?5:width>=650?3:2;double tileWidth=Math.floor((width-(columns-1)*14)/columns)-1;for(var child:stats.getChildren())((Region)child).setPrefWidth(tileWidth);}
     private void buildOrders() {
-        getChildren().addAll(Ui.label("CUSTOMER ORDERS", "page-title"),
-            Ui.label("Review checkouts, payment states, and order details.", "muted"), feedback);
-        TableView<AdminRepository.OrderRow> table = orderTable("admin-orders-table");
-        VBox card = new VBox(12, table);
-        card.getStyleClass().add("card");
-        getChildren().add(card);
-        Ui.async(this, "Loading orders…", () -> reports.orders(admin), rows -> {
-            table.setItems(FXCollections.observableArrayList(rows));
-            fitTable(table, rows.size());
-            table.setPlaceholder(Ui.label("No orders have been placed yet.", "muted"));
-        }, error -> Ui.failure(feedback, error));
+        getChildren().addAll(Ui.label("CUSTOMER ORDERS","page-title"),Ui.label("Process deliveries, record tracking details and manage cancellations.","muted"),feedback);
+        TableView<AdminRepository.OrderRow> table=orderTable("admin-orders-table");VBox detail=new VBox(16);detail.setId("admin-order-details");
+        Runnable[] reload=new Runnable[1];
+        java.util.function.Consumer<AdminRepository.OrderRow> select=row->{
+            if(row==null){detail.getChildren().clear();return;}
+            long id=row.id();detail.getChildren().setAll(Ui.skeletonRows(2));
+            Ui.readOnly(this,()->reports.orderProcessing().get(admin,id),order->{
+                if(table.getSelectionModel().getSelectedItem()!=null&&table.getSelectionModel().getSelectedItem().id()==id)detail.getChildren().setAll(new OrderProcessingView(admin,reports.orderProcessing(),order,reload[0]));
+            },error->Ui.failure(feedback,error));
+        };
+        reload[0]=()->{
+            Long chosen=table.getSelectionModel().getSelectedItem()==null?null:table.getSelectionModel().getSelectedItem().id();
+            Ui.async(this,"Loading orders…",()->reports.orders(admin),rows->{
+                table.setItems(FXCollections.observableArrayList(rows));fitTable(table,rows.size());table.setPlaceholder(Ui.label("No orders have been placed yet.","muted"));
+                if(!rows.isEmpty())table.getSelectionModel().select(rows.stream().filter(row->chosen!=null&&row.id()==chosen).findFirst().orElse(rows.getFirst()));else detail.getChildren().clear();
+            },error->Ui.failure(feedback,error));
+        };
+        table.getSelectionModel().selectedItemProperty().addListener((o,a,b)->select.accept(b));
+        table.setRowFactory(t->new TableRow<>());
+        Button refresh=Ui.button("Refresh orders",reload[0]);refresh.setId("admin-refresh-orders");
+        VBox card=new VBox(12,refresh,table);card.getStyleClass().add("card");getChildren().addAll(card,detail);reload[0].run();
     }
-
     private TableView<AdminRepository.OrderRow> orderTable(String id) {
         TableView<AdminRepository.OrderRow> table = Ui.table();
         table.setId(id);
@@ -155,7 +164,7 @@ public final class AdminReportsView extends VBox {
             Ui.column("CUSTOMER", AdminRepository.OrderRow::customer),
             Ui.column("DATE", row -> date(row.createdAt())),
             Ui.column("PAYMENT", row -> payment(row.paymentMethod()) + " · " + paymentStatus(row.paymentStatus())),
-            Ui.column("TOTAL", row -> Money.format(Money.amount(row.totalCents())))));
+            Ui.column("TOTAL", row -> Money.format(Money.amount(row.totalCents()))),Ui.column("DELIVERY",row->row.fulfillmentStatus().replace('_',' '))));
         @SuppressWarnings("unchecked") TableColumn<AdminRepository.OrderRow,String> paymentColumn=(TableColumn<AdminRepository.OrderRow,String>)table.getColumns().get(3);
         AdminWorkspace.badges(paymentColumn,value->value.endsWith("Paid")?"workspace-pill-active":"workspace-pill-muted");
         table.setMinHeight(130);
