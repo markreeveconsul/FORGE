@@ -176,3 +176,11 @@
 .forge-admin .workspace-delete-button { -fx-text-fill: #B91C1C; -fx-border-color: #FECACA; -fx-background-color: #FEF2F2; }
 .forge-admin.admin-dark .workspace-delete-button { -fx-text-fill: #FCA5A5; -fx-border-color: #713F3F; -fx-background-color: #3B1E1B; }
 .forge-admin.admin-dark .order-tracking .tracking-complete { -fx-text-fill: #86EFAC; -fx-background-color: #15352A; }
+/* Fixed inventory thumbnails do not depend on a virtual table row's first layout pass. */
+.forge-admin #admin-page #admin-table { -fx-fixed-cell-size: 72; }
+.forge-admin #admin-table .column-header { -fx-padding: 10 8; }
+.forge-admin #admin-table .column-header .label { -fx-padding: 0; }
+.forge-admin #admin-table .inventory-thumbnail { -fx-background-color: -admin-soft; -fx-background-radius: 9; }
+.forge-admin #admin-table .table-row-cell:selected { -fx-background-color: #FFF3E8; }
+.forge-admin.admin-dark #admin-table .table-row-cell:selected { -fx-background-color: #38271D; }
+.forge-admin #admin-table .table-row-cell:selected .table-cell { -fx-text-fill: -admin-text; }

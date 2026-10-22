@@ -220,7 +220,7 @@
 .table-row-cell { -fx-background-color: -surface; -fx-border-color: transparent transparent -line transparent; }
 .table-row-cell:hover { -fx-background-color: -tint; }
 .table-row-cell:selected { -fx-background-color: #E6E6E1; }
-.table-row-cell:selected .text { -fx-fill: -ink; }
+.table-row-cell:selected .table-cell { -fx-text-fill: -ink; }
 
 /* Quiet scrollbars retain scrolling and keyboard access. */
 .clean-scroll, .clean-scroll > .viewport { -fx-background-color: transparent; }

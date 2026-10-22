@@ -42,11 +42,12 @@ public final class AdminView extends VBox {
             @Override protected void updateItem(Product product,boolean empty) {
                 super.updateItem(product,empty);
                 if(empty||product==null){setGraphic(null);setText(null);return;}
-                ProductArtwork photo=new ProductArtwork(product,42,true);photo.setPrefWidth(48);photo.setMinWidth(48);photo.setMaxWidth(48);
+                ProductArtwork photo=new ProductArtwork(product,52);photo.setMinWidth(52);photo.setPrefWidth(52);photo.setMaxWidth(52);photo.getStyleClass().add("inventory-thumbnail");
                 Label name=Ui.label(product.getName(),"admin-product-name");name.setWrapText(false);name.setMaxWidth(Double.MAX_VALUE);name.setTooltip(new Tooltip(product.getName()));
                 Label price=Ui.label(Money.format(product.getPrice()),"admin-product-price");
-                VBox details=new VBox(2,name,price);HBox.setHgrow(details,Priority.ALWAYS);
-                HBox cell=new HBox(10,photo,details);cell.setAlignment(javafx.geometry.Pos.CENTER_LEFT);setGraphic(cell);setText(null);
+                VBox details=new VBox(2,name,price);details.setMinWidth(0);HBox.setHgrow(details,Priority.ALWAYS);
+                HBox cell=new HBox(12,photo,details);cell.setAlignment(javafx.geometry.Pos.CENTER_LEFT);cell.setMinWidth(0);cell.setMinHeight(52);cell.setMaxHeight(52);
+                cell.prefWidthProperty().bind(widthProperty().subtract(16));setGraphic(cell);setText(null);
             }
         });productColumn.setMinWidth(230);table.getColumns().add(productColumn);
         TableColumn<Product,String> categoryColumn=Ui.column("Category",p->Ui.category(p.getCategory()));categoryColumn.setMinWidth(125);categoryColumn.setPrefWidth(165);categoryColumn.setCellFactory(column->new TableCell<>(){@Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:item);setTooltip(empty||item==null?null:new Tooltip(item));}});table.getColumns().add(categoryColumn);
@@ -61,12 +62,12 @@ public final class AdminView extends VBox {
         contentColumn.setMinWidth(110);contentColumn.setPrefWidth(135);table.getColumns().add(contentColumn);
         table.widthProperty().addListener((o,a,b)->{
             boolean compact=b.doubleValue()<780;
-            idColumn.setMinWidth(compact?38:45);idColumn.setPrefWidth(compact?42:50);
+            idColumn.setMinWidth(compact?34:45);idColumn.setPrefWidth(compact?40:50);
             productColumn.setMinWidth(compact?165:230);productColumn.setPrefWidth(compact?185:245);
-            categoryColumn.setMinWidth(compact?90:125);categoryColumn.setPrefWidth(compact?112:165);
+            categoryColumn.setMinWidth(compact?80:125);categoryColumn.setPrefWidth(compact?100:165);
             priceColumn.setMinWidth(compact?68:82);priceColumn.setPrefWidth(compact?82:100);
             stockColumn.setMinWidth(compact?56:58);stockColumn.setPrefWidth(compact?62:70);
-            statusColumn.setMinWidth(compact?58:78);statusColumn.setPrefWidth(compact?72:90);
+            statusColumn.setMinWidth(compact?72:78);statusColumn.setPrefWidth(compact?86:90);
             contentColumn.setMinWidth(compact?82:110);contentColumn.setPrefWidth(compact?98:135);
         });
         search.setPromptText("Find a product"); search.setId("admin-search"); search.setAccessibleText("Search inventory"); HBox.setHgrow(search,Priority.ALWAYS);
