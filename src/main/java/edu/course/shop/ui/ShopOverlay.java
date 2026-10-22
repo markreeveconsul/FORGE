@@ -16,7 +16,7 @@ final class ShopOverlay {
   javafx.beans.value.ChangeListener<Node> focusGuard=(o,a,b)->{if(b!=null){Node parent=b;while(parent!=null&&parent!=panel)parent=parent.getParent();if(parent==null){List<Node> nodes=new ArrayList<>();collect(panel,nodes);if(!nodes.isEmpty())nodes.getFirst().requestFocus();}}};scene.focusOwnerProperty().addListener(focusGuard); boolean[] closed={false};Runnable close=()->{if(closed[0])return;closed[0]=true;scene.focusOwnerProperty().removeListener(focusGuard);root.getChildren().remove(overlay);restore.forEach(Runnable::run);if(wrapped){root.getChildren().remove(original);scene.setRoot(original);}dismissed.run();if(focus!=null)focus.requestFocus();};
   scrim.setOnMouseClicked(e->close.run());
   overlay.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED,e->{if(e.getCode()==KeyCode.ESCAPE){close.run();e.consume();}if(e.getCode()==KeyCode.TAB){List<Node> nodes=new ArrayList<>();collect(panel,nodes);if(!nodes.isEmpty()){int i=nodes.indexOf(owner.getScene().getFocusOwner());nodes.get(Math.floorMod(i+(e.isShiftDown()?-1:1),nodes.size())).requestFocus();}e.consume();}});
-  root.getChildren().add(overlay);javafx.application.Platform.runLater(()->{List<Node> nodes=new ArrayList<>();collect(panel,nodes);if(!nodes.isEmpty())nodes.getFirst().requestFocus();});return close;
+  root.getChildren().add(overlay);Motion.panel(panel);javafx.application.Platform.runLater(()->{List<Node> nodes=new ArrayList<>();collect(panel,nodes);if(!nodes.isEmpty())nodes.getFirst().requestFocus();});return close;
  }
  private static void collect(Node n,List<Node> nodes){if(!n.isVisible()||n.isDisabled())return;if(n.isFocusTraversable())nodes.add(n);if(n instanceof Parent p)for(Node child:p.getChildrenUnmodifiable())collect(child,nodes);}
 }

@@ -46,28 +46,40 @@ public final class Motion {
         reduced.addListener(new WeakInvalidationListener(update));
         trigger.getProperties().put("market.imageMotion",update);
     }
-    /** Short entrance only; callers exclude campaign nodes. */
-    public static void reveal(Node target) {
-        javafx.animation.FadeTransition fade=new javafx.animation.FadeTransition(Duration.millis(180),target);
-        if(isReduced()) {target.setOpacity(1);return;}
-        target.setOpacity(.25);fade.setToValue(1);fade.play();
-        InvalidationListener cancel=o->{if(target.getScene()==null||isReduced()){fade.stop();target.setOpacity(1);}};
-        target.sceneProperty().addListener(cancel);reduced.addListener(new WeakInvalidationListener(cancel));
-        target.getProperties().put("market.reveal",cancel);
-    }
+    public static void reveal(Node target) { transientEntrance(target,0,160); }
+    public static void dropIn(Node target) { transientEntrance(target,-18,200); }
 
-    /** Short top-down entrance for transient panels; reduced-motion users see the final state immediately. */
-    public static void dropIn(Node target) {
-        if(isReduced()) { target.setOpacity(1);target.setTranslateY(0);return; }
-        javafx.animation.FadeTransition fade=new javafx.animation.FadeTransition(Duration.millis(190),target);
-        fade.setFromValue(0);fade.setToValue(1);fade.setInterpolator(Interpolator.EASE_OUT);
-        TranslateTransition slide=new TranslateTransition(Duration.millis(210),target);
-        slide.setFromY(-22);slide.setToY(0);slide.setInterpolator(Interpolator.EASE_OUT);
-        javafx.animation.ParallelTransition entrance=new javafx.animation.ParallelTransition(fade,slide);
-        Runnable reset=()->{entrance.stop();target.setOpacity(1);target.setTranslateY(0);};
-        InvalidationListener cancel=o->{if(target.getScene()==null||isReduced())reset.run();};
-        target.sceneProperty().addListener(cancel);reduced.addListener(new WeakInvalidationListener(cancel));
-        entrance.setOnFinished(e->{target.sceneProperty().removeListener(cancel);target.setOpacity(1);target.setTranslateY(0);});
-        target.setOpacity(0);target.setTranslateY(-22);entrance.play();
+    /** Stable buttons: press feedback never shifts their row or hit target. */
+    public static void press(Node target) {
+        if(target.getProperties().containsKey("forge.press"))return;
+        ScaleTransition animation=new ScaleTransition(Duration.millis(100),target);
+        animation.setInterpolator(Interpolator.EASE_OUT);
+        InvalidationListener update=o->{
+            animation.stop();
+            if(target.getScene()==null||target.isDisabled()||isReduced()){target.setScaleX(1);target.setScaleY(1);return;}
+            double scale=target.isPressed()?.98:1;animation.setToX(scale);animation.setToY(scale);animation.play();
+        };
+        target.pressedProperty().addListener(update);target.disabledProperty().addListener(update);target.sceneProperty().addListener(update);
+        reduced.addListener(new WeakInvalidationListener(update));target.getProperties().put("forge.press",update);
     }
-}
+    /** Reusable popup entrance; hide/reopen always resets the previous transition. */
+    public static void popup(Node target) { transientEntrance(target,-6,160); }
+    public static void panel(Node target) { transientEntrance(target,-12,200); }
+    private static void transientEntrance(Node target,double offset,int duration) {
+        Runnable previous=(Runnable)target.getProperties().remove("forge.entrance");if(previous!=null)previous.run();
+        if(isReduced()){target.setOpacity(1);target.setTranslateY(0);return;}
+        javafx.animation.FadeTransition fade=new javafx.animation.FadeTransition(Duration.millis(duration),target);fade.setFromValue(0);fade.setToValue(1);
+        TranslateTransition slide=new TranslateTransition(Duration.millis(duration),target);slide.setFromY(offset);slide.setToY(0);
+        javafx.animation.ParallelTransition animation=new javafx.animation.ParallelTransition(fade,slide);animation.setInterpolator(Interpolator.EASE_OUT);
+        InvalidationListener[] listener={null};
+        Runnable reset=()->{animation.stop();target.setOpacity(1);target.setTranslateY(0);if(listener[0]!=null){target.sceneProperty().removeListener(listener[0]);target.visibleProperty().removeListener(listener[0]);reduced.removeListener(listener[0]);}target.getProperties().remove("forge.entrance");};
+        listener[0]=o->{if(isReduced()||target.getScene()==null||!target.isVisible())reset.run();};
+        target.sceneProperty().addListener(listener[0]);target.visibleProperty().addListener(listener[0]);reduced.addListener(listener[0]);
+        target.getProperties().put("forge.entrance",reset);animation.setOnFinished(e->reset.run());animation.play();
+    }
+    /** A quiet skeleton pulse, stopped whenever its content leaves the scene. */
+    public static void loading(Node target) {
+        javafx.animation.FadeTransition pulse=new javafx.animation.FadeTransition(Duration.millis(850),target);pulse.setFromValue(.60);pulse.setToValue(1);pulse.setAutoReverse(true);pulse.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        InvalidationListener sync=o->{pulse.stop();target.setOpacity(1);if(target.getScene()!=null&&target.isVisible()&&!isReduced())pulse.playFromStart();};
+        target.sceneProperty().addListener(sync);target.visibleProperty().addListener(sync);reduced.addListener(new WeakInvalidationListener(sync));target.getProperties().put("forge.loading",sync);sync.invalidated(null);
+    }}

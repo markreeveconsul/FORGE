@@ -20,7 +20,7 @@ public final class ProductCard extends VBox {
     private StackPane visualLayer;
     private final javafx.animation.PauseTransition confirmation=new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2.5));
     public void confirmAdded() {
-        confirmation.stop();quick.setText("Added ✓");quick.getStyleClass().add("added-confirmation");confirmation.playFromStart();
+        confirmation.stop();quick.setText("Added ✓");quick.getStyleClass().remove("added-confirmation");quick.getStyleClass().add("added-confirmation");Motion.reveal(quick);confirmation.playFromStart();
     }
     public ProductCard(Product product,Runnable add,Runnable details) {
         productForSaving=product;setId("product-"+product.getId());getStyleClass().add("product-card");setSpacing(0);setMinWidth(0);setMaxWidth(Double.MAX_VALUE);

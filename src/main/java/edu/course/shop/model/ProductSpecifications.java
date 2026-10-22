@@ -37,7 +37,22 @@ public final class ProductSpecifications {
     }
     public static String value(Product p,String key){return values(p.getSpecifications()).getOrDefault(canonical(key),"");}
     public static boolean matches(Product p,Map<String,String> filters){return filters.entrySet().stream().allMatch(e->value(p,e.getKey()).equalsIgnoreCase(e.getValue()));}
-    public static String validated(String text){
+    /** Strict parsing remains available when a calculation requires a known numeric format. */
+    public static String validated(String text){return normalize(text,true);}
+    /** Product listings accept free-form facts; known numeric formats are normalized when possible. */
+    public static String listingText(String text){return normalize(text,false);}
+    public record FormatWarning(String key,String message) { }
+    public static List<FormatWarning> formatWarnings(String text){
+        List<FormatWarning> warnings=new ArrayList<>();
+        if(text!=null)for(String line:text.lines().filter(s->!s.isBlank()).toList()){
+            int split=line.indexOf(':');if(split<1)continue;String key=canonical(line.substring(0,split));
+            try{validated(line);}catch(ValidationException error){String message=error.getMessage();
+                if(message.startsWith(key+":"))warnings.add(new FormatWarning(key,"For consistent filters, "+message.substring(key.length()+1).trim().replaceFirst("^Use","use")+" You can still save this value as entered."));
+            }
+        }
+        return List.copyOf(warnings);
+    }
+    private static String normalize(String text,boolean strict){
         if(text==null||text.isBlank())return "";
         if(text.length()>1000)throw new ValidationException("Specifications must be at most 1,000 characters.");
         StringJoiner output=new StringJoiner("\n");Set<String> seen=new HashSet<>();
@@ -47,10 +62,12 @@ public final class ProductSpecifications {
             if(key.length()>60||value.length()>200)throw new ValidationException("Keep each specification name within 60 characters and value within 200.");
             if(value.isEmpty())continue;
             if(!seen.add(key.toLowerCase(Locale.ROOT)))throw new ValidationException("Enter "+key+" only once.");
+            try{
             if(Set.of("RAM","VRAM","Storage").contains(key))value=quantity(key,value,"(?i)([0-9]+(?:\\.[0-9]+)?)\\s*(GB|TB|MB)","Use a positive capacity with a unit, such as 16 GB or 1 TB.",false);
             if(Set.of("Length","Maximum GPU length").contains(key))value=quantity(key,value,"(?i)([0-9]+(?:\\.[0-9]+)?)\\s*(mm|cm)","Use a positive length with mm or cm, such as 300 mm.",true);
             if(Set.of("Wattage","Recommended PSU").contains(key))value=quantity(key,value,"(?i)([0-9]+(?:\\.[0-9]+)?)\\s*(W)","Use a positive wattage, such as 650 W.",false);
             if(key.equals("Refresh rate"))value=quantity(key,value,"(?i)([0-9]+(?:\\.[0-9]+)?)\\s*(Hz)","Use a positive refresh rate, such as 144 Hz.",false);
+            }catch(ValidationException error){if(strict)throw error;}
             output.add(key+": "+value);
         }
         String result=output.toString();if(result.length()>1000)throw new ValidationException("Specifications must be at most 1,000 characters.");return result;

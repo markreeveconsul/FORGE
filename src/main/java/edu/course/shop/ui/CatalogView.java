@@ -214,12 +214,14 @@ public final class CatalogView extends VBox {
         javafx.scene.control.MenuButton more=new javafx.scene.control.MenuButton("More");more.setId("hero-category-more");
         for(int index=4;index<=Category.shopping().size();index++) {
             final int selection=index;
-            javafx.scene.control.MenuItem item=new javafx.scene.control.MenuItem(Ui.category(Category.shopping().get(index-1)));
+            javafx.scene.control.CheckMenuItem item=new javafx.scene.control.CheckMenuItem(Ui.category(Category.shopping().get(index-1)));
+            item.setId("more-category-"+index);item.setGraphic(StoreIcon.of(index==4?"phone":index==5?"headphones":"package",16));
+            Runnable checked=()->item.setSelected(category.getSelectionModel().getSelectedIndex()==selection);category.getSelectionModel().selectedIndexProperty().addListener((o,a,b)->checked.run());checked.run();
             item.setOnAction(e->browseCategory(selection));more.getItems().add(item);
         }
-        Runnable markMore=()->{more.getStyleClass().remove("category-active");if(category.getSelectionModel().getSelectedIndex()>3)more.getStyleClass().add("category-active");};
+        Runnable markMore=()->{more.getStyleClass().remove("category-active");if(category.getSelectionModel().getSelectedIndex()>3)more.getStyleClass().add("category-active");more.setAccessibleText(category.getSelectionModel().getSelectedIndex()>3?"More categories, selected "+category.getValue():"More categories");};
         category.getSelectionModel().selectedIndexProperty().addListener((o,a,b)->markMore.run());markMore.run();
-        more.visibleProperty().bind(fullNavigation.not());more.managedProperty().bind(more.visibleProperty());row.getChildren().add(more);
+        more.visibleProperty().bind(fullNavigation.not());more.managedProperty().bind(more.visibleProperty());row.getChildren().add(more);Interactions.categoryIndicator(row,category.getSelectionModel().selectedIndexProperty());
         return row;
     }
     private static VBox labeled(String title,javafx.scene.control.Control input) {

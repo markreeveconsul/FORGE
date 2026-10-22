@@ -184,3 +184,10 @@
 .forge-admin #admin-table .table-row-cell:selected { -fx-background-color: #FFF3E8; }
 .forge-admin.admin-dark #admin-table .table-row-cell:selected { -fx-background-color: #38271D; }
 .forge-admin #admin-table .table-row-cell:selected .table-cell { -fx-text-fill: -admin-text; }
+/* Keep short capacity units fully visible inside the product editor. */
+.forge-admin .combo-box.specification-unit { -fx-padding: 4 6; -fx-min-height: 38; -fx-pref-height: 38; -fx-max-height: 38; }
+.forge-admin .combo-box.specification-unit .list-cell { -fx-padding: 0 4; }
+.forge-admin .text-field.invalid { -fx-border-color: #B91C1C; -fx-border-width: 1.5; }
+.forge-admin.admin-dark .text-field.invalid { -fx-border-color: #FCA5A5; }
+.forge-admin .field-error.field-warning { -fx-text-fill: #92400E; }
+.forge-admin.admin-dark .field-error.field-warning { -fx-text-fill: #FDE68A; }

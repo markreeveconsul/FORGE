@@ -10,6 +10,7 @@ import java.util.List;
 
 public final class AdminView extends VBox {
     private long editingId;
+    private String originalSpecifications="";
     private final Label activeCount=Ui.label("","section-title"),lowCount=Ui.label("","section-title"),photoCount=Ui.label("","section-title");
 
     private List<Product> all=List.of();
@@ -103,18 +104,21 @@ public final class AdminView extends VBox {
         name.textProperty().addListener((o,a,b)->nameError.setText(""));
         price.textProperty().addListener((o,a,b)->priceError.setText(""));
         stock.textProperty().addListener((o,a,b)->stockError.setText(""));
-        VBox form=new VBox(16); form.getStyleClass().add("card"); form.setVisible(false); form.managedProperty().bind(form.visibleProperty());
-        Runnable clearErrors=()-> { nameError.setText(""); priceError.setText(""); stockError.setText(""); categoryError.setText(""); };
+        Label formFeedback=Ui.feedback("product-save-feedback"),descriptionError=Ui.feedback("description-error");formFeedback.setFocusTraversable(true);
+        javafx.beans.property.BooleanProperty saving=new javafx.beans.property.SimpleBooleanProperty();
+        description.textProperty().addListener((o,a,b)->descriptionError.setText(""));
+        VBox form=new VBox(16); form.getStyleClass().add("card"); form.setVisible(false); form.managedProperty().bind(form.visibleProperty());form.disableProperty().bind(saving);
+        Runnable clearErrors=()-> { nameError.setText(""); priceError.setText(""); stockError.setText(""); categoryError.setText("");descriptionError.setText("");formFeedback.setText("");specifications.clearErrors(); };
         Runnable refresh=()->Ui.async(this,"Loading inventory…",()->products.search(admin,"",null),rows->{all=rows;selected.clear();selectAll.setSelected(false);filter();updateSelection();},error->Ui.failure(feedback,error));reload=refresh;
         Runnable create=()-> {
             photos.setPhotos(null,List.of());photos.setFraming(PhotoFrame.AUTO); description.clear();specifications.clear();
-            replacementRequired.set(false);clearErrors.run(); editingId=0; name.clear(); price.clear(); stock.setText("0"); category.getSelectionModel().selectFirst(); active.setSelected(true);
+            replacementRequired.set(false);clearErrors.run();originalSpecifications="";feedback.setText(""); editingId=0; name.clear(); price.clear(); stock.setText("0"); category.getSelectionModel().selectFirst(); active.setSelected(true);
             title.setText("New product"); form.setVisible(true);AdminWorkspace.editProduct(this,form);name.requestFocus();
         };
         Runnable edit=()-> {
             Product p=table.getSelectionModel().getSelectedItem();
             if(p==null){feedback.setText("Select the product you want to edit.");return;}
-            photos.setPhotos(p.getPhoto(),p.getAdditionalPhotos());photos.setFraming(p.getPhotoFrame()); description.setText(p.getDescription());specifications.setText(p.getSpecifications());
+            photos.setPhotos(p.getPhoto(),p.getAdditionalPhotos());photos.setFraming(p.getPhotoFrame()); description.setText(p.getDescription());specifications.setText(p.getSpecifications());originalSpecifications=p.getSpecifications();feedback.setText("");
             clearErrors.run(); editingId=p.getId(); name.setText(p.getName()); price.setText(p.getPrice().toPlainString());
             stock.setText(Integer.toString(p.getStock()));replacementRequired.set(p.getCategory().isRetired());category.setValue(p.getCategory().isRetired()?null:p.getCategory()); active.setSelected(p.isActive());
             title.setText("Edit product #"+editingId); form.setVisible(true);AdminWorkspace.editProduct(this,form);name.requestFocus();
@@ -130,13 +134,14 @@ public final class AdminView extends VBox {
         });delete.setId("delete-product");delete.getStyleClass().add("workspace-delete-button");delete.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
         table.setRowFactory(t->{TableRow<Product> row=new TableRow<>();row.setOnMouseClicked(e->{if(e.getClickCount()==2&&!row.isEmpty()){Product p=row.getItem();table.getSelectionModel().select(p);AdminWorkspace.inspect(this,"PRODUCT",p.getName(),List.of(AdminWorkspace.detail("SKU / ID","#"+p.getId()),AdminWorkspace.detail("PRICE",Money.format(p.getPrice())),AdminWorkspace.detail("STOCK LEVEL",p.getStock()+" units"),AdminWorkspace.detail("DESCRIPTION",p.getDescription().isBlank()?"Not yet recorded":p.getDescription()),AdminWorkspace.detail("SPECIFICATIONS",p.getSpecifications().isBlank()?"Not yet recorded":p.getSpecifications())),edit);}});return row;});
         editButton.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
-        add.disableProperty().bind(form.visibleProperty()); search.disableProperty().bind(form.visibleProperty());
+        add.disableProperty().bind(form.visibleProperty().or(saving)); search.disableProperty().bind(form.visibleProperty());
         status.disableProperty().bind(form.visibleProperty()); filterCategory.disableProperty().bind(form.visibleProperty());
         table.visibleProperty().bind(form.visibleProperty().not()); table.managedProperty().bind(table.visibleProperty());
         Button save=Ui.primary("Save product",()-> {
 
             clearErrors.run(); feedback.setText(""); boolean valid=true;
-            if(description.getText().length()>1000){Ui.failure(feedback,new edu.course.shop.exception.ValidationException("Description must be at most 1,000 characters."));return;}
+            if(saving.get())return;
+            if(description.getText().length()>1000){descriptionError.setText("Description must be at most 1,000 characters.");Ui.focus(description);return;}
             if(name.getText().isBlank()||name.getText().trim().length()>80){nameError.setText("Enter a name of 1–80 characters.");valid=false;}
             BigDecimal amount=null;
             try {amount=Money.parse(price.getText());}catch(RuntimeException e){priceError.setText(Ui.message(e));valid=false;}
@@ -144,12 +149,14 @@ public final class AdminView extends VBox {
             try {quantity=Ui.integer(stock.getText());if(quantity<0||quantity>100000)throw new edu.course.shop.exception.ValidationException("Stock must be between 0 and 100,000.");}
             catch(RuntimeException e){stockError.setText(Ui.message(e));valid=false;}
             if(category.getValue()==null||category.getValue().isRetired()&&active.isSelected()){categoryError.setText("Choose a tech category before making this item available.");valid=false;category.requestFocus();}
-            if(!valid)return;
+            if(!valid){if(!nameError.getText().isBlank())Ui.focus(name);else if(!priceError.getText().isBlank())Ui.focus(price);else if(!stockError.getText().isBlank())Ui.focus(stock);return;}
+            try{if(editingId==0||!originalSpecifications.equals(specifications.getText()))specifications.validatedText();}
+            catch(edu.course.shop.exception.ValidationException error){Ui.failure(formFeedback,error);return;}
             long id=editingId;String value=name.getText();Category group=category.getValue();BigDecimal cost=amount;int qty=quantity;boolean enabled=active.isSelected();
             String details=description.getText(),specs=specifications.getText();byte[] selectedPhoto=photos.getPhoto();List<byte[]> angles=photos.getAdditionalPhotos();PhotoFrame frame=photos.getFraming();
-            Ui.async(this,"Saving product…",()->{products.save(admin,id,value,group,cost,qty,enabled,details,selectedPhoto,angles,specs,frame);return true;},done-> {
-                form.setVisible(false);AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"✓ "+value.trim()+" saved.");refresh.run();
-            },error->Ui.failure(feedback,error));
+            saving.set(true);Ui.async(this,"Saving product…",()->{products.save(admin,id,value,group,cost,qty,enabled,details,selectedPhoto,angles,specs,frame);return true;},done-> {
+                saving.set(false);form.setVisible(false);AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"✓ "+value.trim()+" saved."+(ProductSpecifications.formatWarnings(specs).isEmpty()?"":" Some specifications use a custom format; you can refine them later."));refresh.run();
+            },error->{saving.set(false);Ui.failure(formFeedback,error);Ui.focus(formFeedback);});
         });
         save.setId("save-product");
         GridPane fields=new GridPane();fields.setHgap(16);fields.setVgap(14);
@@ -157,7 +164,7 @@ public final class AdminView extends VBox {
         fields.getColumnConstraints().addAll(left,right);
         fields.add(Ui.field("Product name",name,nameError),0,0);fields.add(Ui.field("Category",category,categoryError),1,0);
         fields.add(Ui.field("Price (USD)",price,priceError),0,1);fields.add(Ui.field("Stock quantity",stock,stockError),1,1);
-        VBox information=new VBox(14,replacement,fields,Ui.field("Description",description,Ui.feedback("description-error")),new VBox(6,Ui.label("Specifications (optional)","field-label"),specifications),active,
+        VBox information=new VBox(14,replacement,fields,Ui.field("Description",description,descriptionError),new VBox(6,Ui.label("Specifications (optional)","field-label"),specifications),active,
             Ui.label("Deactivating a product hides it from the store and preserves existing receipts.","muted"));
         information.setMinWidth(0);HBox.setHgrow(information,Priority.ALWAYS);
         photos.setPrefWidth(240);photos.setMinWidth(210);photos.setMaxWidth(240);
@@ -167,10 +174,10 @@ public final class AdminView extends VBox {
                 Dialog<Void> dialog=new Dialog<>();dialog.setTitle("Product preview · Unsaved draft");dialog.initOwner(getScene().getWindow());dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
                 VBox content=new VBox(16,Ui.label(candidate.getName(),"page-title"),new ProductGallery(candidate),Ui.label(Money.format(candidate.getPrice()),"total"),Ui.label(candidate.getDescription(),"product-description"),Ui.label(candidate.getSpecifications(),"muted"));
                 javafx.scene.control.ScrollPane scroll=Ui.scroll(content);scroll.setPrefViewportWidth(650);scroll.setPrefViewportHeight(500);dialog.getDialogPane().setContent(scroll);dialog.showAndWait();
-            }catch(RuntimeException error){Ui.failure(feedback,error);}
+            }catch(RuntimeException error){Ui.failure(formFeedback,error);}
         });preview.setId("preview-product");
         form.getChildren().addAll(title,Ui.responsiveColumns(information,photos,800,20),
-            new HBox(12,preview,save,Ui.button("Cancel",()->form.setVisible(false))));
+            formFeedback,new HBox(12,preview,save,Ui.button("Cancel",()->form.setVisible(false))));
         HBox stats=new HBox(18,activeCount,lowCount,photoCount);stats.getStyleClass().add("admin-stats");
         stats.setVisible(false);
         stats.managedProperty().bind(stats.visibleProperty());
