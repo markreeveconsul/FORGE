@@ -19,6 +19,8 @@ public final class StoreIcon {
     }
     public static Group of(String name) {
         String path=switch(name) {
+            case "eye" -> "M2 12 Q12 -1 22 12 Q12 25 2 12 Z M15 12 A3 3 0 1 1 9 12 A3 3 0 1 1 15 12";
+            case "eye-off" -> "M2 12 Q7 5 12 5 Q17 5 22 12 Q19 17 15 18 M10 19 Q5 18 2 12 M10 10 A3 3 0 0 0 14 14 M3 3 L21 21";
             case "phone" -> "M7 2 H17 V22 H7 Z M10 18 H14";
             case "headphones" -> "M3 14 V11 A9 9 0 0 1 21 11 V14 M3 12 H7 V21 H3 Z M17 12 H21 V21 H17 Z";
             case "close" -> "M7 7 L17 17 M17 7 L7 17";
