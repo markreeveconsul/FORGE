@@ -57,6 +57,6 @@ public final class CartService {
             if(latest.getPrice().compareTo(line.product().getPrice())!=0)throw new ValidationException("A price changed. Review Buy again before adding items.");
             replacement.add(latest,line.quantity());
         }
-        cart.clear();for(CartItem item:replacement.getItems())cart.add(item.getProduct(),item.getQuantity());
+        cart.replaceWith(replacement);
     }
 }

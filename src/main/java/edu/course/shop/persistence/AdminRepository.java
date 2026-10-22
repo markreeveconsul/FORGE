@@ -11,7 +11,7 @@ import java.util.List;
 public final class AdminRepository {
     public record Summary(int activeProducts, int lowStockProducts, int orders, int customers, long recordedOrderCents) { }
     public record OrderRow(long id, String customer, String createdAt, String paymentMethod,
-                           String paymentStatus, int itemCount, long totalCents) { }
+                           String paymentStatus, int itemCount, long totalCents,String fulfillmentStatus) { }
     public record CustomerRow(long id, String username, String displayName, int orderCount, long orderCents) { }
     public record LowStockRow(long id, String name, String category, int stock) { }
 
@@ -43,7 +43,7 @@ public final class AdminRepository {
         List<OrderRow> rows = new ArrayList<>();
         try (PreparedStatement p = c.prepareStatement("""
             SELECT o.id, COALESCE(NULLIF(cp.display_name,''), u.username) AS customer,
-                   o.created_at, o.payment_method, o.payment_status,
+                   o.created_at, o.payment_method, o.payment_status,o.fulfillment_status,
                    COALESCE(SUM(oi.quantity),0) AS item_count, o.total_cents
             FROM orders o
             JOIN users u ON u.id=o.customer_id
@@ -54,7 +54,7 @@ public final class AdminRepository {
             """); ResultSet r = p.executeQuery()) {
             while (r.next()) rows.add(new OrderRow(r.getLong("id"), r.getString("customer"),
                 r.getString("created_at"), r.getString("payment_method"), r.getString("payment_status"),
-                r.getInt("item_count"), r.getLong("total_cents")));
+                r.getInt("item_count"), r.getLong("total_cents"),r.getString("fulfillment_status")));
         }
         return List.copyOf(rows);
     }

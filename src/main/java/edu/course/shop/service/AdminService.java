@@ -23,6 +23,7 @@ public final class AdminService {
         if (actor == null || !actor.canManageProducts()) throw new ValidationException("Administrator access is required.");
     }
 
+    public OrderService orderProcessing(){return new OrderService(database,new edu.course.shop.persistence.OrderRepository());}
     public AdminRepository.Summary summary(User actor) {
         requireAdmin(actor);
         try (Connection c = database.open()) { return reports.summary(c); }

@@ -65,12 +65,9 @@ public final class CatalogView extends VBox {
     private HBox navigation;
     private javafx.scene.layout.StackPane campaign;
     public void useHeaderNavigation(HBox host) {
-        Runnable place=()->{
-            javafx.scene.layout.Pane target=getWidth()>=1200?host:campaign;
-            if(navigation.getParent()!=target){if(navigation.getParent() instanceof javafx.scene.layout.Pane old)old.getChildren().remove(navigation);target.getChildren().add(navigation);}
-            host.setManaged(target==host);host.setVisible(target==host);
-        };
-        widthProperty().addListener((o,a,b)->place.run());place.run();
+        if(navigation.getParent() instanceof javafx.scene.layout.Pane old)old.getChildren().remove(navigation);
+        host.getChildren().setAll(navigation);host.setManaged(true);host.setVisible(true);
+        navigation.setMaxWidth(Double.MAX_VALUE);HBox.setHgrow(navigation,Priority.ALWAYS);
     }
     public HBox searchBar() { return searchBar; }
     private final User user;private final Cart cart;private final ProductService products;private final CartService carts;
@@ -151,8 +148,8 @@ public final class CatalogView extends VBox {
         toggle.setOnAction(e->openFilters());
         toggle.getStyleClass().add("catalog-outline-control");
         sort.getStyleClass().add("catalog-outline-control");
-        sort.setButtonCell(new javafx.scene.control.ListCell<>(){ @Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:"Sort by");} });
-        sort.setPrefWidth(105);
+        sort.setButtonCell(new javafx.scene.control.ListCell<>(){ @Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty||item==null?null:item.replace("Sort by: ",""));} });
+        sort.setPrefWidth(165);
 
         HBox tools=new HBox(12,toggle,sort);tools.setAlignment(Pos.BOTTOM_RIGHT);
         HBox toolbar=new HBox(20,collectionTitle,spacer,tools);toolbar.setAlignment(Pos.BOTTOM_LEFT);
@@ -204,7 +201,7 @@ public final class CatalogView extends VBox {
         HBox row=new HBox(6);row.setId("tech-category-nav");row.setAlignment(Pos.CENTER);
         row.getStyleClass().add("hero-category-nav");
         // Leave room for readable search and account controls before showing every category inline.
-        var fullNavigation=widthProperty().greaterThanOrEqualTo(user instanceof edu.course.shop.model.Guest?1320:1440);
+        var fullNavigation=widthProperty().greaterThanOrEqualTo(1000);
         for(int index=0;index<=Category.shopping().size();index++) {
             final int selection=index;
             Button tab=Ui.button(index==0?"Shop all":Ui.category(Category.shopping().get(index-1)),()->browseCategory(selection));
@@ -231,7 +228,7 @@ public final class CatalogView extends VBox {
     }
     private void syncToggle() {
         int count=(state.getCategoryIndex()>0?1:0)+(state.getBudgetIndex()>0?1:0)+(state.isInStockOnly()?1:0)
-            +(!state.getMinimumPrice().isBlank()||!state.getMaximumPrice().isBlank()?1:0);
+            +(!state.getMinimumPrice().isBlank()||!state.getMaximumPrice().isBlank()?1:0)+state.getSpecificationFilters().size();
         toggle.setText("Filters"+(count>0?" · "+count:"")+(filters.isVisible()?"  ⌃":"  ⌄"));
         toggle.setAccessibleText((filters.isVisible()?"Hide":"Show")+" product filters; "+count+" active");
     }
@@ -245,7 +242,7 @@ public final class CatalogView extends VBox {
             FilterDrawer.show(this,state,ceiling,matches,draft->{
                 clearing=true;
                 category.getSelectionModel().select(draft.category());available.setSelected(draft.inStock());
-                budget.getSelectionModel().selectFirst();minimum.setText(draft.minimum());maximum.setText(draft.maximum());
+                budget.getSelectionModel().selectFirst();minimum.setText(draft.minimum());maximum.setText(draft.maximum());state.setSpecificationFilters(draft.specifications());
                 clearing=false;filterChanged();
             });
         },error->Ui.failure(feedback,error));
@@ -298,10 +295,10 @@ public final class CatalogView extends VBox {
     }
     private void filterChanged() { if(clearing)return;state.setScrollPosition(0);refresh(); }
     private void browseCategory(int index) {
-        clearing=true;search.clear();category.getSelectionModel().select(index);clearing=false;filterChanged();
+        clearing=true;state.setSpecificationFilters(java.util.Map.of());search.clear();category.getSelectionModel().select(index);clearing=false;filterChanged();
     }
     private void clear() {
-        clearing=true;category.getSelectionModel().selectFirst();
+        clearing=true;state.setSpecificationFilters(java.util.Map.of());category.getSelectionModel().selectFirst();
         budget.getSelectionModel().selectFirst();minimum.clear();maximum.clear();state.setPriceRange("","");available.setSelected(false);clearing=false;filterChanged();
     }
     private void refresh() {
@@ -311,7 +308,8 @@ public final class CatalogView extends VBox {
         BigDecimal capPrice=cap==0?null:BigDecimal.valueOf(new int[]{0,25,50,100}[cap]);
         if(!validRange())return;
         BigDecimal lower=parseRange(minimum.getText()),upper=parseRange(maximum.getText());
-        state.setPriceRange(minimum.getText(),maximum.getText());rangeApplied.set(lower!=null||upper!=null);
+        state.setPriceRange(minimum.getText(),maximum.getText());rangeApplied.set(lower!=null||upper!=null||!state.getSpecificationFilters().isEmpty());
+        var specFilters=state.getSpecificationFilters();
         boolean inStock=available.isSelected();double previousScroll=state.getScrollPosition();
         state.setCategoryIndex(index);state.setSortIndex(ordering);state.setBudgetIndex(cap);state.setInStockOnly(inStock);
         syncToggle();
@@ -319,7 +317,7 @@ public final class CatalogView extends VBox {
         javafx.animation.PauseTransition loadingDelay=new javafx.animation.PauseTransition(javafx.util.Duration.millis(250));
         loadingDelay.setOnFinished(e->results.getChildren().setAll(Ui.skeleton()));loadingDelay.play();
         sceneProperty().addListener((o,a,b)->{if(b==null)loadingDelay.stop();});
-        Ui.async(this,"Finding products…",()->products.search(user,query,group,inStock,capPrice).stream().filter(p->lower==null||p.getPrice().compareTo(lower)>=0).filter(p->upper==null||p.getPrice().compareTo(upper)<=0).toList(),rows->{
+        Ui.async(this,"Finding products…",()->products.search(user,query,group,inStock,capPrice).stream().filter(p->edu.course.shop.model.ProductSpecifications.matches(p,specFilters)).filter(p->lower==null||p.getPrice().compareTo(lower)>=0).filter(p->upper==null||p.getPrice().compareTo(upper)<=0).toList(),rows->{
             loadingDelay.stop();List<Product> sorted=new ArrayList<>(rows);
             sorted.sort(Comparator.comparing(Product::getName,String.CASE_INSENSITIVE_ORDER).thenComparingLong(Product::getId));
             if(ordering==3)sorted.sort(Comparator.comparing(Product::getName,String.CASE_INSENSITIVE_ORDER).reversed().thenComparingLong(Product::getId));
@@ -331,6 +329,7 @@ public final class CatalogView extends VBox {
             result.setText(sorted.size()+(sorted.size()==1?" item":" items")+" · USD");feedback.setText("");
             results.getChildren().setAll(sorted.isEmpty()?Ui.empty("No products found","Try a different search or remove a filter.","Clear filters",this::clear):grid);
             chips.getChildren().clear();
+            state.getSpecificationFilters().forEach((key,value)->chip(key+": "+value,()->{var revised=new java.util.LinkedHashMap<>(state.getSpecificationFilters());revised.remove(key);state.setSpecificationFilters(revised);filterChanged();}));
             if(!query.isBlank())chip("Search: "+query,()->{search.clear();filterChanged();});
             if(index>0)chip(Ui.category(group),()->category.getSelectionModel().selectFirst());
             if(cap>0)chip(budget.getValue(),()->budget.getSelectionModel().selectFirst());

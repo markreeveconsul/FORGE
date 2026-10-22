@@ -28,7 +28,7 @@ public final class ProductCard extends VBox {
         // Photo: same box for every product, with rounded corners that match the card.
         ProductArtwork photo=new ProductArtwork(product,230,true);
         StackPane frame=new StackPane(photo);photoFrame=frame;frame.setMinWidth(0);
-        Rectangle clip=new Rectangle();clip.setArcWidth(4);clip.setArcHeight(4);
+        Rectangle clip=new Rectangle();clip.setArcWidth(24);clip.setArcHeight(24);
         frame.layoutBoundsProperty().addListener((o,a,b)->{clip.setWidth(b.getWidth());clip.setHeight(b.getHeight());});
         frame.setClip(clip);
         Button visual=Ui.button("",details);visual.setGraphic(frame);visual.setMaxWidth(Double.MAX_VALUE);
@@ -47,13 +47,13 @@ public final class ProductCard extends VBox {
         // Name: always two lines tall so every card lines up; longer names end in an ellipsis.
         Label name=Ui.label(product.getName(),"product-name");
         name.setMinHeight(42);name.setPrefHeight(42);name.setMaxHeight(42);name.setMaxWidth(Double.MAX_VALUE);
-        name.setTextOverrun(OverrunStyle.ELLIPSIS);
+        name.setTextOverrun(OverrunStyle.ELLIPSIS);name.setTooltip(new javafx.scene.control.Tooltip(product.getName()));
 
         // Price is the biggest thing in the body; stock is a small badge beside it (text, not color alone).
         boolean soldOut=product.getStock()==0,low=product.getStock()<=5;
-        Label availability=Ui.label(soldOut?"Sold out":low?"Only "+product.getStock()+" left":"In stock",soldOut?"stock-out":"stock");
+        Label availability=Ui.label(soldOut?"Sold out":low?"Only "+product.getStock()+" left":"In stock",soldOut?"stock-out":low?"stock-low":"stock");
         availability.setWrapText(false);availability.setMaxWidth(Region.USE_PREF_SIZE);
-        HBox priceRow=new HBox(10,Ui.label(Money.format(product.getPrice()),"price"),availability);priceRow.setAlignment(Pos.CENTER_LEFT);
+        javafx.scene.layout.FlowPane priceRow=new javafx.scene.layout.FlowPane(8,6,Ui.label(Money.format(product.getPrice()),"price"),availability);priceRow.setAlignment(Pos.CENTER_LEFT);priceRow.setMinHeight(28);
 
         // Actions: "+ Add" is the one solid button; "View product" is a quiet text link.
         Button view=Ui.link("View product",details);view.setId("view-"+product.getId());

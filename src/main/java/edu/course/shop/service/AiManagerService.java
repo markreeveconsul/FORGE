@@ -48,10 +48,19 @@ public final class AiManagerService {
                 .map(p->new ProductService.ManagerChange(p,null,null,target,"")).toList();
             return result(command,batch,changes,List.of(),null,offline,changes.isEmpty()?"These products already have the requested status.":"Review "+changes.size()+" status changes before applying."+(count>20?" This preview contains the first 20 matches; narrow your filters for a smaller selection.":""),count,aiIssue);
         }
+        // Prioritize fields this command can actually fill before applying the batch limit.
+        // Photo-only records and specs without research must not spend a generation request
+        // or prevent later products with missing descriptions from being reached.
+        String missingField=command.missingField();
+        List<Product> draftable=matched.stream().filter(p->
+            !missingField.equals("photo")&&(!missingField.equals("specifications")&&p.getDescription().isBlank()
+                ||research&&!missingField.equals("description")&&p.getSpecifications().isBlank())).toList();
+        if(!offline&&!draftable.isEmpty())batch=draftable.stream().limit(20).toList();
         List<ManagerAi.Draft> drafts=List.of();String message;
         if(batch.isEmpty())message="No products with missing content match this request.";
         else if(command.missingField().equals("photo"))message="These products need a photo upload in Products. AI Manager does not fabricate product photos.";
         else if(offline)message="Found "+count+" products needing content. AI drafting is offline; you can inspect these records and retry when connected.";
+        else if(draftable.isEmpty())message="These products need a photo upload or researched specifications. Upload missing photos in Products; enable Research missing specifications online for exact-model lookup. No drafting request was made.";
         else {
             try{drafts=ai.draft(batch,research);message="Review the proposed content. Existing fields are preserved; missing photos and unverified specifications still need attention.";}
             catch(IllegalStateException e){if(Thread.currentThread().isInterrupted())throw e;offline=true;aiIssue="Content drafting: "+e.getMessage();message="Content drafting is unavailable right now. Your matching products are below; nothing was changed.";}
@@ -62,7 +71,7 @@ public final class AiManagerService {
             String specs=!command.missingField().equals("description")&&p.getSpecifications().isBlank()&&!draft.specifications().isBlank()?draft.specifications():null;
             if(description!=null||specs!=null)changes.add(new ProductService.ManagerChange(p,description,specs,null,String.join("\n",draft.sources())));
         }
-        if(count>20)message+=" Showing the first 20 of "+count+" matches. Run a narrower request for the remaining products.";
+        if(count>batch.size())message+=" Showing "+batch.size()+" of "+count+" matching products. Photo-only records or specifications without research may require separate attention; narrower filters can select a smaller group.";
         return result(command,batch,changes,drafts,null,offline,message,count,aiIssue);
     }
     private Result result(ManagerCommand c,List<Product> p,List<ProductService.ManagerChange> changes,List<ManagerAi.Draft> drafts,Sales sales,boolean offline,String message,int count,String aiIssue){return new Result(UUID.randomUUID().toString(),c,p,changes,drafts,sales,offline,message,count,aiIssue);}

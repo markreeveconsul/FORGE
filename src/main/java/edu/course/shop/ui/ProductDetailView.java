@@ -37,9 +37,9 @@ public final class ProductDetailView extends VBox {
         TitledPane stock=section("Availability",product.getStock()+" units currently available. Items in a cart are not reserved; stock is checked again at checkout.");
 
         boolean soldOut=product.getStock()==0,low=product.getStock()<=5;
-        Label availability=Ui.label(soldOut?"Sold out":low?"Only "+product.getStock()+" left":"In stock · "+product.getStock()+" left",soldOut?"stock-out":"stock");
+        Label availability=Ui.label(soldOut?"Sold out":low?"Only "+product.getStock()+" left":"In stock · "+product.getStock()+" left",soldOut?"stock-out":low?"stock-low":"stock");
         availability.setWrapText(false);availability.setMaxWidth(Region.USE_PREF_SIZE);
-        HBox priceRow=new HBox(12,Ui.label(Money.format(product.getPrice()),"total"),availability);priceRow.setAlignment(Pos.CENTER_LEFT);
+        FlowPane priceRow=new FlowPane(12,6,Ui.label(Money.format(product.getPrice()),"total"),availability);priceRow.setAlignment(Pos.CENTER_LEFT);
         HBox quantityRow=new HBox(12,Ui.label("Quantity","field-label"),quantity);quantityRow.setAlignment(Pos.CENTER_LEFT);
         Button viewCart=Ui.link("View cart",openCart);viewCart.setId("detail-view-cart");
 
@@ -67,6 +67,17 @@ public final class ProductDetailView extends VBox {
         FlowPane navigation=new FlowPane(18,8,backButton,Ui.label("Shop / "+Ui.category(product.getCategory()),"breadcrumb"));navigation.setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(navigation,Ui.scroll(content));
         Platform.runLater(()->Ui.readOnly(this,()->products.search(user,"",product.getCategory()),rows->{
+            String brand=ProductSpecifications.value(product,"Brand"),model=ProductSpecifications.value(product,"Model");
+            List<Product> variants=brand.isBlank()||model.isBlank()?List.of():rows.stream().filter(p->brand.equalsIgnoreCase(ProductSpecifications.value(p,"Brand"))&&model.equalsIgnoreCase(ProductSpecifications.value(p,"Model"))).toList();
+            if(variants.size()>1){
+                ComboBox<Product> configurations=new ComboBox<>(javafx.collections.FXCollections.observableArrayList(variants));configurations.setId("product-configurations");configurations.setMaxWidth(Double.MAX_VALUE);configurations.setAccessibleText("Choose product configuration");
+                configurations.setConverter(new javafx.util.StringConverter<>(){
+                    public String toString(Product p){if(p==null)return "";String variant=ProductSpecifications.value(p,"Variant");return (variant.isBlank()?p.getName():variant)+" · "+Money.format(p.getPrice())+(p.getStock()==0?" · Sold out":"");}
+                    public Product fromString(String text){return null;}
+                });configurations.setValue(variants.stream().filter(p->p.getId()==product.getId()).findFirst().orElse(product));
+                configurations.setOnAction(e->{Product chosen=configurations.getValue();if(chosen!=null&&chosen.getId()!=product.getId())openProduct.accept(chosen);});
+                info.getChildren().add(3,new VBox(6,Ui.label("Configuration","field-label"),configurations));
+            }
             for(Product p:rows.stream().filter(p->p.getId()!=product.getId()).limit(4).toList()){
                 ProductCard card=new ProductCard(p,()->Ui.async(this,"Adding to cart…",()->{
                     carts.add(user,cart,p.getId(),1);return true;

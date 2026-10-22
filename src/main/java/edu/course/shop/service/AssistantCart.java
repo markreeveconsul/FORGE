@@ -56,7 +56,6 @@ public final class AssistantCart {
         Cart replacement = new Cart(cart.getCustomerId());
         for (CartItem item : cart.getItems()) replacement.add(item.getProduct(), item.getQuantity());
         for (Product p : validated) replacement.add(p, 1);
-        cart.clear();
-        for (CartItem item : replacement.getItems()) cart.add(item.getProduct(), item.getQuantity());
+        cart.replaceWith(replacement);
     }
 }

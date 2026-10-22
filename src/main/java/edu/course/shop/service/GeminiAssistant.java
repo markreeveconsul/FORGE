@@ -127,6 +127,9 @@ public final class GeminiAssistant {
                 case "SAFETY","BLOCKLIST","PROHIBITED_CONTENT","RECITATION"->"FORGE AI blocked this response ("+finish+"). Rephrase the command; nothing was changed.";
                 default->"FORGE AI returned an incomplete command response. Press Run to try again.";
             });
+            JsonObject content=candidate.has("content")&&candidate.get("content").isJsonObject()?candidate.getAsJsonObject("content"):null;
+            if(content==null||!content.has("parts")||!content.get("parts").isJsonArray()||content.getAsJsonArray("parts").isEmpty())
+                throw new IllegalStateException("FORGE AI returned an incomplete command response. No usable content was received; nothing was changed.");
             return root;
         }catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalStateException("AI request cancelled.");}
         catch(IOException e){throw new IllegalStateException("Gemini could not be reached. Check your connection.");}
@@ -148,7 +151,7 @@ public final class GeminiAssistant {
             case 400->"The AI service rejected the request. Check the model and supported tools/settings.";
             case 401,403->"AI access was rejected. Check your saved key, API restrictions and project permissions in AI Studio.";
             case 404->"The configured model "+config.model()+" is unavailable. Check FORGE_AI_MODEL and model access.";
-            case 429->"The AI quota or rate limit was reached. Wait at least 60 seconds and check your free-tier limits.";
+            case 429->"The AI quota or rate limit was reached. Check your free-tier limits and reset time in AI Studio. A daily quota must reset before generation can resume.";
             case 500,502,503,504->"The AI service is temporarily unavailable. Try again later.";
             default->"The AI request failed. Try again later.";
         };
