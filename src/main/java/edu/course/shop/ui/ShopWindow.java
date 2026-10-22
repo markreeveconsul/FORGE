@@ -115,6 +115,7 @@ public final class ShopWindow {
     }
     private Button link(String text,Runnable action){Button b=Ui.button(text,action);b.getStyleClass().add("header-link");return b;}
     private void buildShell(){
+        if(adminWorkspace!=null&&adminWorkspace.pageHost().getCenter() instanceof AiManagerView previous)previous.dispose();
         if(assistantPanel!=null)assistantPanel.stop();assistantPanel=null;assistantProduct=null;
         dismissDrawer();stopFeedbackAnimations();
         shell=new BorderPane();shell.setMinSize(0,0);adminWorkspace=null;

@@ -21,10 +21,12 @@ public final class AdminWorkspace extends StackPane {
     private final Runnable addProduct;
     private final Button theme;
     private StackPane modal;
+    private Runnable modalClosed;
     private boolean dark;
     public AdminWorkspace(User actor,Services services,Runnable overview,Runnable products,Runnable orders,Runnable customers,Runnable ai,Runnable addProduct,Runnable signOut){
         this.actor=actor;this.services=services;this.addProduct=addProduct;
         setId("admin-workspace");getStyleClass().add("forge-admin");setMinSize(0,0);
+        getStylesheets().add(AdminWorkspace.class.getResource("/admin-dashboard.css").toExternalForm());
         BorderPane frame=new BorderPane();getChildren().add(frame);
         Label monogram=Ui.label("F","workspace-monogram"),brand=Ui.label("FORGE","workspace-brand");brand.setId("admin-forge-logo");
         Region brandSpace=new Region();HBox.setHgrow(brandSpace,Priority.ALWAYS);
@@ -55,8 +57,8 @@ public final class AdminWorkspace extends StackPane {
     }
     public BorderPane pageHost(){return pageHost;}
     private Button nav(String title,String icon,String id,Runnable action,boolean count){
-        Button button=Ui.button("",()->{closeModal();action.run();});button.setId(id);button.getStyleClass().add("workspace-nav");button.setMaxWidth(Double.MAX_VALUE);
-        Label text=Ui.label(title,"workspace-nav-text");Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
+        Button button=Ui.button("",()->{closeModal();action.run();});button.setId(id);button.getStyleClass().add("workspace-nav");button.setMaxWidth(Double.MAX_VALUE);button.setMinHeight(46);button.setPrefHeight(46);button.setMaxHeight(46);
+        Label text=Ui.label(title,"workspace-nav-text");text.setWrapText(false);Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
         HBox graphic=new HBox(12,StoreIcon.of(icon,16),text,gap);graphic.setAlignment(Pos.CENTER_LEFT);graphic.setMinWidth(0);graphic.prefWidthProperty().bind(button.widthProperty().subtract(30));
         if(count){Label badge=Ui.label("—","workspace-nav-count");counts.put(id,badge);graphic.getChildren().add(badge);}
         if(id.equals("admin-nav-ai-manager"))graphic.getChildren().add(Ui.label("AI","workspace-ai-tag"));
@@ -84,7 +86,17 @@ public final class AdminWorkspace extends StackPane {
         closeModal();Region scrim=new Region();scrim.getStyleClass().add("workspace-scrim");scrim.setOnMouseClicked(e->closeModal());
         modal=new StackPane(scrim,card);modal.setId("admin-modal");getChildren().add(modal);if(drawer){StackPane.setAlignment(card,Pos.CENTER_RIGHT);Motion.reveal(card);}
     }
-    private void closeModal(){if(modal!=null){getChildren().remove(modal);modal=null;}}
+    private void closeModal(){if(modal!=null){getChildren().remove(modal);modal=null;}Runnable cleanup=modalClosed;modalClosed=null;if(cleanup!=null)cleanup.run();}
+    public static void editProduct(Node owner,VBox form){
+        Node ancestor=owner;while(ancestor!=null&&!(ancestor instanceof AdminWorkspace))ancestor=ancestor.getParent();if(!(ancestor instanceof AdminWorkspace workspace)||!(form.getParent() instanceof VBox parent))return;
+        workspace.closeModal();int index=parent.getChildren().indexOf(form);parent.getChildren().remove(form);
+        ScrollPane scroll=Ui.scroll(form);Button close=Ui.button("×",workspace::closeModal);close.setAccessibleText("Close product editor");Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
+        HBox header=new HBox(12,Ui.label("PRODUCT DETAILS","eyebrow"),gap,close);header.setAlignment(Pos.CENTER_LEFT);
+        VBox card=new VBox(12,header,scroll);card.setId("admin-product-modal");card.getStyleClass().add("workspace-command-card");card.setMaxWidth(960);card.setPrefHeight(Math.min(760,Math.max(400,workspace.getHeight()-100)));card.setMaxHeight(Region.USE_PREF_SIZE);VBox.setVgrow(scroll,Priority.ALWAYS);
+        workspace.showModal(card,false);StackPane.setMargin(card,new Insets(28));
+        javafx.beans.value.ChangeListener<Boolean> visible=(o,a,b)->{if(!b)workspace.closeModal();};form.visibleProperty().addListener(visible);
+        workspace.modalClosed=()->{form.visibleProperty().removeListener(visible);scroll.setContent(null);form.setVisible(false);parent.getChildren().add(Math.min(index,parent.getChildren().size()),form);};
+    }
     public static void inspect(Node owner,String type,String title,List<Node> fields,Runnable edit){
         Node ancestor=owner;while(ancestor!=null&&!(ancestor instanceof AdminWorkspace))ancestor=ancestor.getParent();if(!(ancestor instanceof AdminWorkspace workspace))return;
         VBox values=new VBox(16);values.getChildren().addAll(fields);Button close=Ui.button("Close",workspace::closeModal);
@@ -94,4 +106,7 @@ public final class AdminWorkspace extends StackPane {
         VBox drawer=new VBox(24,heading,Ui.scroll(values),space,actions);drawer.getStyleClass().add("workspace-drawer");drawer.setPrefWidth(410);drawer.setMaxWidth(410);VBox.setVgrow(drawer.getChildren().get(1),Priority.ALWAYS);workspace.showModal(drawer,true);
     }
     public static VBox detail(String label,String value){VBox field=new VBox(7,Ui.label(label,"eyebrow"),Ui.label(value,"workspace-detail-value"));field.getStyleClass().add("workspace-detail-field");return field;}
+    public static <T> void badges(TableColumn<T,String> column,java.util.function.Function<String,String> variant){
+        column.setCellFactory(c->new TableCell<>(){protected void updateItem(String value,boolean empty){super.updateItem(value,empty);setText(null);if(empty||value==null){setGraphic(null);return;}Label badge=Ui.label(value,"workspace-pill");badge.getStyleClass().add(variant.apply(value));badge.setWrapText(false);setGraphic(badge);}});
+    }
 }

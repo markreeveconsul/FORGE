@@ -1,0 +1,172 @@
+/* Native JavaFX interpretation of forge_store_dashboard_redesign.html. */
+.forge-admin {
+    -admin-bg: #FAFAF9; -admin-card: #FFFFFF; -admin-soft: #F5F5F4;
+    -admin-border: #E7E5E4; -admin-text: #1C1917; -admin-muted: #78716C;
+    -ink: -admin-text; -ink-muted: -admin-muted; -surface: -admin-card;
+    -canvas: -admin-bg; -tint: -admin-soft; -line: -admin-border;
+    -fx-base: -admin-card; -fx-control-inner-background: -admin-card;
+    -fx-background-color: -admin-bg; -fx-font-family: "Inter", "Segoe UI", "System"; -fx-font-size: 14px;
+}
+.forge-admin.admin-dark {
+    -admin-bg: #0C0A09; -admin-card: #1C1917; -admin-soft: #25211F;
+    -admin-border: #292524; -admin-text: #FAFAF9; -admin-muted: #A8A29E;
+    -fx-base: #1C1917; -fx-control-inner-background: #1C1917;
+}
+.forge-admin .workspace-main, .forge-admin .page, .forge-admin .scroll-pane,
+.forge-admin .scroll-pane > .viewport { -fx-background-color: -admin-bg; }
+.forge-admin .page { -fx-padding: 30 32; -fx-spacing: 22; }
+.forge-admin .page-title, .forge-admin .manager-title { -fx-font-family: "Inter", "Segoe UI", "System"; -fx-font-size: 30px; -fx-font-weight: 900; -fx-text-fill: -admin-text; }
+.forge-admin .section-title { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -admin-text; }
+.forge-admin .muted, .forge-admin .manager-subtitle { -fx-font-size: 13px; -fx-text-fill: -admin-muted; }
+.forge-admin .eyebrow, .forge-admin .field-label { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: -admin-muted; }
+.forge-admin .card, .forge-admin .admin-metric-tile, .forge-admin .manager-result-card {
+    -fx-background-color: -admin-card; -fx-background-radius: 16; -fx-border-color: -admin-border;
+    -fx-border-radius: 16; -fx-padding: 22; -fx-effect: dropshadow(gaussian,rgba(28,25,23,.025),3,0,0,1);
+}
+.forge-admin .button { -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 9 14; -fx-min-height: 36; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-text-fill: -admin-text; }
+.forge-admin .button:hover { -fx-background-color: -admin-soft; }
+.forge-admin .button.primary, .forge-admin .workspace-black-button { -fx-background-color: #1C1917; -fx-border-color: #1C1917; -fx-text-fill: white; }
+.forge-admin .button.primary:hover, .forge-admin .workspace-black-button:hover { -fx-background-color: #292524; }
+.forge-admin .workspace-orange-button, .forge-admin .manager-run { -fx-background-color: #EA580C; -fx-border-color: #EA580C; -fx-text-fill: white; -fx-background-radius: 11; -fx-border-radius: 11; }
+.forge-admin .workspace-orange-button:hover, .forge-admin .manager-run:hover { -fx-background-color: #C2410C; }
+.forge-admin .workspace-orange-button .store-icon, .forge-admin .workspace-black-button .store-icon { -fx-stroke: white; }
+.forge-admin .link-button { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #EA580C; -fx-font-size: 11px; -fx-padding: 4 0; }
+.forge-admin .text-field, .forge-admin .text-area, .forge-admin .combo-box { -fx-background-color: -admin-soft; -fx-border-color: -admin-border; -fx-background-radius: 10; -fx-border-radius: 10; -fx-text-fill: -admin-text; -fx-prompt-text-fill: -admin-muted; -fx-font-size: 12px; -fx-min-height: 38; -fx-padding: 8 12; }
+.forge-admin .text-field:focused, .forge-admin .text-area:focused { -fx-border-color: #F97316; }
+.forge-admin .text-area .content { -fx-background-color: -admin-soft; }
+.forge-admin .combo-box .list-cell { -fx-text-fill: -admin-text; -fx-font-size: 12px; }
+.forge-admin .store-icon { -fx-stroke: -admin-muted; }
+/* Full-height charcoal rail. */
+.forge-admin .workspace-sidebar { -fx-background-color: #0C0A09; -fx-border-color: transparent #292524 transparent transparent; -fx-border-width: 0 1 0 0; }
+.forge-admin .workspace-logo { -fx-padding: 22 24; -fx-border-color: transparent transparent #292524 transparent; -fx-border-width: 0 0 1 0; -fx-min-height: 81; }
+.forge-admin .workspace-brand { -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: 900; }
+.forge-admin .workspace-monogram { -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: 900; -fx-background-color: #EA580C; -fx-background-radius: 8; -fx-alignment: center; -fx-min-width: 32; -fx-pref-width: 32; -fx-min-height: 32; -fx-effect: dropshadow(gaussian,rgba(234,88,12,.24),12,0,0,4); }
+.forge-admin .workspace-pro { -fx-background-color: rgba(249,115,22,.17); -fx-text-fill: #FB923C; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 4 7; -fx-background-radius: 4; }
+.forge-admin #admin-navigation { -fx-padding: 22 16; -fx-spacing: 6; }
+.forge-admin .workspace-nav-caption { -fx-font-size: 10px; -fx-text-fill: #78716C; -fx-font-weight: bold; -fx-padding: 0 12 8 12; }
+.forge-admin #admin-navigation .workspace-nav { -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-width: 0 0 0 3; -fx-background-radius: 11; -fx-border-radius: 11; -fx-padding: 12 10; -fx-min-height: 46; -fx-alignment: center-left; }
+.forge-admin .workspace-nav-text { -fx-text-fill: #A8A29E; -fx-font-size: 14px; -fx-font-weight: 500; }
+.forge-admin .workspace-nav .store-icon { -fx-stroke: #78716C; }
+.forge-admin #admin-navigation .workspace-nav:hover { -fx-background-color: #181513; }
+.forge-admin #admin-navigation .workspace-nav.admin-nav-active { -fx-background-color: #1C1917; -fx-border-color: transparent transparent transparent #F97316; }
+.forge-admin .workspace-nav.admin-nav-active .workspace-nav-text { -fx-text-fill: white; -fx-font-weight: bold; }
+.forge-admin .workspace-nav.admin-nav-active .store-icon, .forge-admin #admin-nav-ai-manager .store-icon { -fx-stroke: #F97316; }
+.forge-admin .workspace-nav-count { -fx-background-color: #292524; -fx-text-fill: #A8A29E; -fx-font-size: 10px; -fx-padding: 3 8; -fx-background-radius: 12; }
+.forge-admin .workspace-ai-tag { -fx-background-color: rgba(249,115,22,.17); -fx-text-fill: #FB923C; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 3 6; -fx-background-radius: 4; }
+.forge-admin .workspace-utilities { -fx-padding: 16; -fx-border-color: #292524 transparent transparent transparent; -fx-border-width: 1 0 0 0; }
+.forge-admin .workspace-utility { -fx-background-color: #1C1917; -fx-border-color: #292524; -fx-text-fill: #A8A29E; -fx-font-size: 11px; -fx-alignment: center-left; -fx-graphic-text-gap: 10; }
+.forge-admin .workspace-utility:hover { -fx-background-color: #292524; }
+.forge-admin .workspace-utility .store-icon { -fx-stroke: #FB923C; }
+/* Main top and bottom bars. */
+.forge-admin .workspace-topbar { -fx-background-color: -admin-card; -fx-border-color: transparent transparent -admin-border transparent; -fx-border-width: 0 0 1 0; -fx-padding: 16 26; -fx-min-height: 81; }
+.forge-admin .workspace-section { -fx-font-size: 16px; -fx-font-weight: bold; }
+.forge-admin .workspace-separator { -fx-text-fill: #D6D3D1; }
+.forge-admin .workspace-context { -fx-background-color: -admin-soft; -fx-background-radius: 15; -fx-font-size: 10px; -fx-text-fill: -admin-muted; -fx-padding: 6 10; }
+.forge-admin .workspace-online { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #047857; -fx-background-color: #ECFDF5; -fx-border-color: #A7F3D0; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 6 10; }
+.forge-admin .workspace-footer { -fx-background-color: -admin-card; -fx-padding: 12 24; -fx-border-color: -admin-border transparent transparent transparent; -fx-border-width: 1 0 0 0; -fx-min-height: 50; }
+.forge-admin .workspace-footer-text { -fx-text-fill: -admin-muted; -fx-font-size: 10px; }
+/* Metrics and the real sales chart. */
+.forge-admin .admin-metric-tile { -fx-padding: 18; -fx-min-height: 145; }
+.forge-admin .admin-metric-value { -fx-font-size: 31px; -fx-font-weight: 900; -fx-text-fill: -admin-text; }
+.forge-admin .workspace-metric-note { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin .workspace-warning-metric .admin-metric-value, .forge-admin .workspace-warning-metric .workspace-metric-note { -fx-text-fill: #D97706; }
+.forge-admin .workspace-range { -fx-background-color: -admin-soft; -fx-background-radius: 10; -fx-padding: 4; }
+.forge-admin .workspace-period { -fx-background-color: transparent; -fx-text-fill: -admin-muted; -fx-padding: 6 12; -fx-background-radius: 7; -fx-font-size: 11px; }
+.forge-admin .workspace-period:selected { -fx-background-color: -admin-card; -fx-text-fill: -admin-text; }
+.forge-admin .chart { -fx-padding: 8 0 0 0; }
+.forge-admin .chart-plot-background { -fx-background-color: -admin-card; }
+.forge-admin .chart-vertical-grid-lines { -fx-stroke: transparent; }
+.forge-admin .chart-horizontal-grid-lines { -fx-stroke: -admin-border; -fx-stroke-dash-array: 4 5; }
+.forge-admin .default-color0.chart-series-area-line { -fx-stroke: #EA580C; -fx-stroke-width: 2.5; }
+.forge-admin .default-color0.chart-series-area-fill { -fx-fill: linear-gradient(to bottom,rgba(249,115,22,.20),rgba(249,115,22,.01)); }
+.forge-admin .axis { -fx-tick-label-fill: -admin-muted; -fx-tick-label-font-size: 10px; }
+.forge-admin .axis-tick-mark, .forge-admin .axis-minor-tick-mark { -fx-stroke: transparent; }
+/* Inventory and shared report tables. */
+.forge-admin #admin-page .inventory-filter-panel { -fx-padding: 20; -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-background-radius: 16; -fx-border-radius: 16; }
+.forge-admin .table-view { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-background-radius: 12; -fx-border-radius: 12; -fx-padding: 0; -fx-fixed-cell-size: 62; }
+.forge-admin .table-view .column-header-background, .forge-admin .table-view .column-header, .forge-admin .table-view .filler { -fx-background-color: -admin-soft; -fx-border-color: transparent; }
+.forge-admin .table-view .column-header { -fx-size: 43; -fx-padding: 10 12; }
+.forge-admin .table-view .column-header .label { -fx-text-fill: -admin-muted; -fx-font-size: 10px; -fx-font-weight: bold; -fx-alignment: center-left; }
+.forge-admin .table-row-cell, .forge-admin .table-row-cell:odd { -fx-background-color: -admin-card; -fx-border-color: transparent transparent -admin-border transparent; -fx-border-width: 0 0 1 0; }
+.forge-admin .table-row-cell:hover { -fx-background-color: -admin-soft; }
+.forge-admin .table-row-cell:selected { -fx-background-color: rgba(249,115,22,.09); }
+.forge-admin .table-cell { -fx-text-fill: -admin-text; -fx-font-size: 13px; -fx-border-color: transparent; -fx-padding: 10 12; -fx-alignment: center-left; }
+.forge-admin #admin-page .admin-product-name { -fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: -admin-text; }
+.forge-admin #admin-page .admin-product-price { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin .workspace-inline-field { -fx-background-color: -admin-soft; -fx-padding: 5 7; -fx-min-height: 29; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 7; -fx-border-radius: 7; }
+.forge-admin .workspace-bulk { -fx-background-color: #1C1917; -fx-background-radius: 14; -fx-padding: 12 18; }
+.forge-admin .workspace-bulk-count { -fx-text-fill: #E7E5E4; -fx-font-size: 11px; -fx-font-weight: bold; }
+.forge-admin .workspace-pill { -fx-background-color: #ECFDF5; -fx-text-fill: #047857; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 5 8; -fx-background-radius: 7; }
+.forge-admin .workspace-pill-muted { -fx-background-color: -admin-soft; -fx-text-fill: -admin-muted; }
+.forge-admin .workspace-pill-warning { -fx-background-color: #FFF1F2; -fx-text-fill: #BE123C; }
+/* AI command area and actual task activity, without simulated execution. */
+.forge-admin .ai-manager-page { -fx-background-color: -admin-bg; }
+.forge-admin .manager-content { -fx-padding: 30 32; -fx-background-color: -admin-bg; }
+.forge-admin .manager-scroll, .forge-admin .manager-scroll > .viewport { -fx-background-color: -admin-bg; }
+.forge-admin .manager-command-card { -fx-background-color: linear-gradient(to bottom right,-admin-card,-admin-bg); -fx-border-color: #FED7AA; -fx-border-radius: 24; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(gaussian,rgba(234,88,12,.04),12,0,0,3); }
+.forge-admin .manager-command-eyebrow { -fx-background-color: #FFF7ED; -fx-text-fill: #EA580C; -fx-background-radius: 14; -fx-padding: 6 11; -fx-font-size: 10px; -fx-font-weight: bold; }
+.forge-admin .ai-manager-page .button.manager-run { -fx-background-color: #EA580C; -fx-text-fill: white; -fx-border-color: #EA580C; -fx-background-radius: 13; -fx-border-radius: 13; -fx-min-height: 44; }
+.forge-admin .ai-manager-page .button.manager-chip { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-text-fill: -admin-text; -fx-background-radius: 10; -fx-border-radius: 10; -fx-font-size: 11px; }
+.forge-admin .ai-manager-page .text-field { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-text-fill: -admin-text; -fx-font-size: 13px; }
+.forge-admin .ai-manager-page .titled-pane > .title, .forge-admin .ai-manager-page .titled-pane > .content { -fx-background-color: -admin-card; -fx-border-color: -admin-border; }
+.forge-admin .ai-manager-page .titled-pane > .title .text { -fx-fill: -admin-text; }
+.forge-admin.admin-dark .manager-command-card { -fx-border-color: #78350F; }
+.forge-admin .manager-eyebrow { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: -admin-muted; }
+.forge-admin .manager-result-title { -fx-text-fill: -admin-text; -fx-font-size: 13px; }
+.forge-admin .manager-chip { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-text-fill: -admin-text; -fx-font-size: 11px; -fx-padding: 7 11; -fx-min-height: 33; -fx-background-radius: 9; -fx-border-radius: 9; }
+.forge-admin .manager-research { -fx-text-fill: -admin-muted; -fx-font-size: 11px; }
+.forge-admin .manager-terminal { -fx-background-color: #0C0A09; -fx-background-radius: 16; -fx-border-color: #292524; -fx-border-radius: 16; }
+.forge-admin .manager-terminal-header { -fx-padding: 15 20; -fx-background-color: #1C1917; -fx-background-radius: 16 16 0 0; -fx-border-color: transparent transparent #292524 transparent; }
+.forge-admin .manager-terminal-dots { -fx-text-fill: #F97316; -fx-font-size: 11px; }
+.forge-admin .manager-terminal-heading { -fx-text-fill: #D6D3D1; -fx-font-size: 10px; -fx-font-family: "Consolas"; -fx-font-weight: bold; }
+.forge-admin .manager-terminal-state { -fx-text-fill: #FB923C; -fx-font-size: 10px; -fx-font-family: "Consolas"; }
+.forge-admin .manager-terminal-lines { -fx-padding: 22; -fx-min-height: 210; }
+.forge-admin .manager-terminal-line { -fx-text-fill: #A7F3D0; -fx-font-family: "Consolas"; -fx-font-size: 11px; }
+.forge-admin .manager-empty { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 14; }
+.forge-admin .manager-empty-title { -fx-text-fill: -admin-text; }
+.forge-admin .manager-illustration { -fx-max-height: 75; }
+.forge-admin .manager-error { -fx-background-color: #FFF7ED; -fx-border-color: #FED7AA; }
+.forge-admin .manager-connection-detail { -fx-text-fill: #9A3412; }
+.forge-admin.admin-dark .manager-error { -fx-background-color: #38231A; -fx-border-color: #713F12; }
+.forge-admin.admin-dark .manager-connection-detail { -fx-text-fill: #FDBA74; }
+.forge-admin.admin-dark .manager-success { -fx-background-color: #163328; -fx-border-color: #255D43; }
+/* Command palette and inspection drawer. */
+.forge-admin .workspace-scrim { -fx-background-color: rgba(12,10,9,.58); }
+.forge-admin .workspace-command-card, .forge-admin .workspace-drawer { -fx-background-color: -admin-card; -fx-padding: 24; -fx-border-color: -admin-border; -fx-background-radius: 16; -fx-border-radius: 16; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.2),24,0,0,8); }
+.forge-admin .workspace-command-item { -fx-background-color: transparent; -fx-border-color: transparent; -fx-alignment: center-left; -fx-padding: 12; }
+.forge-admin .workspace-drawer { -fx-background-radius: 0; -fx-border-radius: 0; }
+.forge-admin .workspace-detail-field { -fx-background-color: -admin-soft; -fx-background-radius: 12; -fx-border-color: -admin-border; -fx-border-radius: 12; -fx-padding: 16; }
+.forge-admin .workspace-detail-value { -fx-font-size: 14px; -fx-font-weight: bold; }
+.forge-admin .scroll-bar { -fx-background-color: transparent; -fx-pref-width: 8; -fx-pref-height: 8; }
+.forge-admin .scroll-bar .track, .forge-admin .scroll-bar .increment-button, .forge-admin .scroll-bar .decrement-button { -fx-background-color: transparent; }
+.forge-admin .scroll-bar .thumb { -fx-background-color: #D6D3D1; -fx-background-radius: 20; }
+.forge-admin.admin-dark .scroll-bar .thumb { -fx-background-color: #44403C; }
+
+/* Revenue explorer: legible amounts, exact hover values, and a comparison without a second area fill. */
+.forge-admin .revenue-card { -fx-padding: 22 24; }
+.forge-admin .revenue-stats { -fx-padding: 12 0 8 0; }
+.forge-admin .revenue-total { -fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: -admin-text; }
+.forge-admin .revenue-stat-value { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -admin-text; }
+.forge-admin .revenue-change { -fx-font-size: 11px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-change.revenue-up { -fx-text-fill: #059669; }
+.forge-admin .revenue-change.revenue-down { -fx-text-fill: #E11D48; }
+.forge-admin .revenue-period-text { -fx-font-size: 11px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-note { -fx-font-size: 10px; -fx-text-fill: -admin-muted; -fx-line-spacing: 3; }
+.forge-admin .revenue-updated { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-compare { -fx-font-size: 11px; -fx-text-fill: -admin-muted; }
+.forge-admin .revenue-quiet-button { -fx-font-size: 11px; -fx-padding: 7 11; -fx-min-height: 32; }
+.forge-admin .revenue-card .workspace-period { -fx-cursor: hand; }
+.forge-admin .revenue-card .default-color0.chart-area-symbol { -fx-background-color: #EA580C, -admin-card; -fx-background-insets: 0, 2; -fx-padding: 3px; -fx-background-radius: 8; }
+.forge-admin .revenue-card .default-color1.chart-area-symbol { -fx-background-color: #A8A29E; -fx-padding: 2px; -fx-background-radius: 8; }
+.forge-admin .revenue-card .default-color1.chart-series-area-line { -fx-stroke: #A8A29E; -fx-stroke-width: 1.7; -fx-stroke-dash-array: 6 6; }
+.forge-admin .revenue-card .default-color1.chart-series-area-fill { -fx-fill: transparent; }
+.forge-admin .revenue-crosshair { -fx-stroke: #A8A29E; -fx-stroke-width: 1; -fx-stroke-dash-array: 4 5; }
+.forge-admin .revenue-hover-dot { -fx-fill: #EA580C; -fx-stroke: -admin-card; -fx-stroke-width: 2; }
+.forge-admin .revenue-hover-card { -fx-background-color: -admin-card; -fx-background-radius: 10; -fx-border-color: -admin-border; -fx-border-radius: 10; -fx-padding: 12 15; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.16),14,0,0,4); }
+.forge-admin .revenue-hover-date { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: -admin-text; }
+.forge-admin .revenue-hover-amount { -fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: #EA580C; }
+.forge-admin .revenue-hover-orders { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin #revenue-day-details { -fx-padding: 18 0 0 0; -fx-border-color: -admin-border transparent transparent transparent; -fx-border-width: 1 0 0 0; }
+.forge-admin #revenue-orders-table { -fx-fixed-cell-size: 48; }
+.forge-admin .revenue-card .date-picker { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-border-radius: 8; -fx-background-radius: 8; }
+.forge-admin .revenue-card .date-picker .arrow-button { -fx-background-color: -admin-soft; -fx-background-radius: 0 8 8 0; }

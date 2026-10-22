@@ -17,10 +17,24 @@ public final class AdminView extends VBox {
     private final TextField search=new TextField();
     private final ComboBox<String> status=new ComboBox<>(), filterCategory=new ComboBox<>();
     private final Label count=Ui.label("","muted");
+    private final java.util.Set<Long> selected=new java.util.HashSet<>();
+    private final HBox bulk=new HBox(12);
+    private final Label selectionCount=Ui.label("","workspace-bulk-count");
+    private final CheckBox selectAll=new CheckBox();
+    private Runnable reload;
+    private User actor;private ProductService productService;
 
     public AdminView(User admin,ProductService products) {
+        this(admin,products,command->{});
+    }
+    public AdminView(User admin,ProductService products,java.util.function.Consumer<String> aiCommand){
+        actor=admin;productService=products;
         getStyleClass().add("page"); setId("admin-page"); setSpacing(16);
         table.setId("admin-table"); table.setMinHeight(225); table.setPrefHeight(330);
+        TableColumn<Product,Product> selection=new TableColumn<>();selection.setGraphic(selectAll);selection.setMinWidth(38);selection.setMaxWidth(42);selection.setSortable(false);
+        selection.setCellValueFactory(r->new javafx.beans.property.ReadOnlyObjectWrapper<>(r.getValue()));
+        selection.setCellFactory(c->new TableCell<>(){protected void updateItem(Product p,boolean empty){super.updateItem(p,empty);if(empty||p==null){setGraphic(null);return;}CheckBox check=new CheckBox();check.setAccessibleText("Select "+p.getName());check.setSelected(selected.contains(p.getId()));check.setOnAction(e->{if(check.isSelected())selected.add(p.getId());else selected.remove(p.getId());updateSelection();});setGraphic(check);}});
+        selectAll.setAccessibleText("Select all visible products");selectAll.setOnAction(e->{for(Product p:table.getItems())if(selectAll.isSelected())selected.add(p.getId());else selected.remove(p.getId());table.refresh();updateSelection();});table.getColumns().add(selection);
         TableColumn<Product,String> idColumn=Ui.column("ID",p->Long.toString(p.getId()));idColumn.setMinWidth(45);idColumn.setPrefWidth(50);idColumn.setMaxWidth(65);table.getColumns().add(idColumn);
         TableColumn<Product,Product> productColumn=new TableColumn<>("Product");
         productColumn.setCellValueFactory(row->new javafx.beans.property.ReadOnlyObjectWrapper<>(row.getValue()));
@@ -38,10 +52,12 @@ public final class AdminView extends VBox {
         TableColumn<Product,String> categoryColumn=Ui.column("Category",p->Ui.category(p.getCategory()));categoryColumn.setMinWidth(125);categoryColumn.setPrefWidth(165);categoryColumn.setCellFactory(column->new TableCell<>(){@Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:item);setTooltip(empty||item==null?null:new Tooltip(item));}});table.getColumns().add(categoryColumn);
         TableColumn<Product,String> priceColumn=Ui.column("Price",p->Money.format(p.getPrice()));priceColumn.setMinWidth(82);priceColumn.setPrefWidth(100);table.getColumns().add(priceColumn);
         TableColumn<Product,String> stockColumn=Ui.column("Stock",p->Integer.toString(p.getStock()));stockColumn.setMinWidth(58);stockColumn.setPrefWidth(70);table.getColumns().add(stockColumn);
+        editable(priceColumn,true);editable(stockColumn,false);
         TableColumn<Product,String> statusColumn=Ui.column("Status",p->p.isActive()?"Active":"Inactive");statusColumn.setMinWidth(78);statusColumn.setPrefWidth(90);table.getColumns().add(statusColumn);
+        AdminWorkspace.badges(statusColumn,value->value.equals("Active")?"workspace-pill-active":"workspace-pill-muted");
         TableColumn<Product,String> contentColumn=new TableColumn<>("Content");
         contentColumn.setCellValueFactory(row->{Product p=row.getValue();int missing=(p.getPhoto()==null?1:0)+(p.getDescription().isBlank()?1:0)+(p.getSpecifications().isBlank()?1:0);return new javafx.beans.property.ReadOnlyStringWrapper(missing==0?"Complete":missing+" missing");});
-        contentColumn.setCellFactory(column->new TableCell<>(){@Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(empty?null:item);if(empty||getTableRow()==null||getTableRow().getItem()==null){setTooltip(null);return;}Product p=getTableRow().getItem();java.util.List<String> missing=new java.util.ArrayList<>();if(p.getPhoto()==null)missing.add("photo");if(p.getDescription().isBlank())missing.add("description");if(p.getSpecifications().isBlank())missing.add("specifications");setTooltip(new Tooltip(missing.isEmpty()?"Product photo, description, and specifications are present":"Missing: "+String.join(", ",missing)));}});
+        contentColumn.setCellFactory(column->new TableCell<>(){@Override protected void updateItem(String item,boolean empty){super.updateItem(item,empty);setText(null);if(empty||getTableRow()==null||getTableRow().getItem()==null){setGraphic(null);setTooltip(null);return;}Label badge=Ui.label(item,"workspace-pill");if(!item.equals("Complete"))badge.getStyleClass().add("workspace-pill-warning");setGraphic(badge);Product p=getTableRow().getItem();java.util.List<String> missing=new java.util.ArrayList<>();if(p.getPhoto()==null)missing.add("photo");if(p.getDescription().isBlank())missing.add("description");if(p.getSpecifications().isBlank())missing.add("specifications");setTooltip(new Tooltip(missing.isEmpty()?"Product photo, description, and specifications are present":"Missing: "+String.join(", ",missing)));}});
         contentColumn.setMinWidth(110);contentColumn.setPrefWidth(135);table.getColumns().add(contentColumn);
         table.widthProperty().addListener((o,a,b)->{
             boolean compact=b.doubleValue()<780;
@@ -88,11 +104,11 @@ public final class AdminView extends VBox {
         stock.textProperty().addListener((o,a,b)->stockError.setText(""));
         VBox form=new VBox(16); form.getStyleClass().add("card"); form.setVisible(false); form.managedProperty().bind(form.visibleProperty());
         Runnable clearErrors=()-> { nameError.setText(""); priceError.setText(""); stockError.setText(""); categoryError.setText(""); };
-        Runnable refresh=()->Ui.async(this,"Loading inventory…",()->products.search(admin,"",null),rows->{all=rows;filter();},error->Ui.failure(feedback,error));
+        Runnable refresh=()->Ui.async(this,"Loading inventory…",()->products.search(admin,"",null),rows->{all=rows;selected.clear();selectAll.setSelected(false);filter();updateSelection();},error->Ui.failure(feedback,error));reload=refresh;
         Runnable create=()-> {
             photos.setPhotos(null,List.of());photos.setFraming(PhotoFrame.AUTO); description.clear();specifications.clear();
             replacementRequired.set(false);clearErrors.run(); editingId=0; name.clear(); price.clear(); stock.setText("0"); category.getSelectionModel().selectFirst(); active.setSelected(true);
-            title.setText("New product"); form.setVisible(true); name.requestFocus();
+            title.setText("New product"); form.setVisible(true);AdminWorkspace.editProduct(this,form);name.requestFocus();
         };
         Runnable edit=()-> {
             Product p=table.getSelectionModel().getSelectedItem();
@@ -100,10 +116,11 @@ public final class AdminView extends VBox {
             photos.setPhotos(p.getPhoto(),p.getAdditionalPhotos());photos.setFraming(p.getPhotoFrame()); description.setText(p.getDescription());specifications.setText(p.getSpecifications());
             clearErrors.run(); editingId=p.getId(); name.setText(p.getName()); price.setText(p.getPrice().toPlainString());
             stock.setText(Integer.toString(p.getStock()));replacementRequired.set(p.getCategory().isRetired());category.setValue(p.getCategory().isRetired()?null:p.getCategory()); active.setSelected(p.isActive());
-            title.setText("Edit product #"+editingId); form.setVisible(true); name.requestFocus();
+            title.setText("Edit product #"+editingId); form.setVisible(true);AdminWorkspace.editProduct(this,form);name.requestFocus();
         };
         Button add=Ui.primary("+ Add product",create); add.setId("new-product");
         Button editButton=Ui.button("Edit selected",edit); editButton.setId("edit-product");
+        table.setRowFactory(t->{TableRow<Product> row=new TableRow<>();row.setOnMouseClicked(e->{if(e.getClickCount()==2&&!row.isEmpty()){Product p=row.getItem();table.getSelectionModel().select(p);AdminWorkspace.inspect(this,"PRODUCT",p.getName(),List.of(AdminWorkspace.detail("SKU / ID","#"+p.getId()),AdminWorkspace.detail("PRICE",Money.format(p.getPrice())),AdminWorkspace.detail("STOCK LEVEL",p.getStock()+" units"),AdminWorkspace.detail("DESCRIPTION",p.getDescription().isBlank()?"Not yet recorded":p.getDescription()),AdminWorkspace.detail("SPECIFICATIONS",p.getSpecifications().isBlank()?"Not yet recorded":p.getSpecifications())),edit);}});return row;});
         editButton.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
         add.disableProperty().bind(form.visibleProperty()); search.disableProperty().bind(form.visibleProperty());
         status.disableProperty().bind(form.visibleProperty()); filterCategory.disableProperty().bind(form.visibleProperty());
@@ -146,21 +163,29 @@ public final class AdminView extends VBox {
         });preview.setId("preview-product");
         form.getChildren().addAll(title,Ui.responsiveColumns(information,photos,800,20),
             new HBox(12,preview,save,Ui.button("Cancel",()->form.setVisible(false))));
-        HBox stats=new HBox(36,activeCount,lowCount,photoCount);stats.getStyleClass().add("admin-stats");
-        stats.visibleProperty().bind(form.visibleProperty().not());stats.managedProperty().bind(stats.visibleProperty());
+        HBox stats=new HBox(18,activeCount,lowCount,photoCount);stats.getStyleClass().add("admin-stats");
+        stats.setVisible(false);
+        stats.managedProperty().bind(stats.visibleProperty());
         count.visibleProperty().bind(form.visibleProperty().not());count.managedProperty().bind(count.visibleProperty());
         Button clearSearch=Ui.button("Clear",()->{search.clear();search.requestFocus();});clearSearch.setId("clear-admin-search");
         clearSearch.disableProperty().bind(search.textProperty().isEmpty());
         HBox inventorySearch=new HBox(8,search,clearSearch);inventorySearch.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         VBox searchField=new VBox(7,Ui.label("Search inventory","field-label"),inventorySearch);HBox.setHgrow(searchField,Priority.ALWAYS);search.setMinWidth(0);
         Label statusLabel=Ui.label("Status","field-label"),categoryLabel=Ui.label("Category","field-label");statusLabel.setLabelFor(status);categoryLabel.setLabelFor(filterCategory);
-        HBox filterBar=new HBox(16,searchField,new VBox(7,statusLabel,status),new VBox(7,categoryLabel,filterCategory)),actions=new HBox(12,add,editButton);
+        HBox filterBar=new HBox(16,searchField,new VBox(7,statusLabel,status),new VBox(7,categoryLabel,filterCategory)),actions=new HBox(12,editButton);
+        status.setMinWidth(140);filterCategory.setMinWidth(170);searchField.setMinWidth(100);
         filterBar.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);filterBar.getStyleClass().add("inventory-filter-panel");
         filterBar.visibleProperty().bind(form.visibleProperty().not());filterBar.managedProperty().bind(filterBar.visibleProperty());
         actions.visibleProperty().bind(form.visibleProperty().not());actions.managedProperty().bind(actions.visibleProperty());
-        VBox body=new VBox(18,table,form);
-        getChildren().addAll(Ui.label("STORE INVENTORY","page-title"),Ui.label("Keep the good things in stock. Edit products, descriptions and photos here.","muted"),stats,
-            filterBar,actions,count,feedback,Ui.scroll(body));
+        Button fix=Ui.button("✦ Bulk AI Fix",()->bulkCommand(aiCommand,"Fix missing content for products "));fix.setId("admin-bulk-ai");fix.getStyleClass().add("workspace-orange-button");
+        Button inactive=Ui.button("Set Inactive",()->bulkCommand(aiCommand,"Deactivate products "));inactive.setId("admin-bulk-inactive");
+        Button export=Ui.button("Export CSV",this::exportCsv);export.setId("admin-export-csv");Button clear=Ui.button("×",()->{selected.clear();selectAll.setSelected(false);table.refresh();updateSelection();});
+        bulk.getChildren().addAll(selectionCount,fix,inactive,export,clear);bulk.setAlignment(javafx.geometry.Pos.CENTER_LEFT);bulk.getStyleClass().add("workspace-bulk");bulk.setId("admin-bulk-actions");bulk.setVisible(false);bulk.managedProperty().bind(bulk.visibleProperty());
+        VBox body=new VBox(18,table,form,bulk);body.setMinWidth(0);
+        VBox heading=new VBox(5,Ui.label("STORE INVENTORY","page-title"),Ui.label("Manage items, edit stock inline, and prepare bulk content updates.","muted"));HBox pageHeading=new HBox(18,heading,new Region(),add);pageHeading.setAlignment(javafx.geometry.Pos.CENTER_LEFT);HBox.setHgrow(pageHeading.getChildren().get(1),Priority.ALWAYS);
+        HBox tableHeader=new HBox(12,count,new Region(),actions);HBox.setHgrow(tableHeader.getChildren().get(1),Priority.ALWAYS);tableHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        ScrollPane bodyScroll=Ui.scroll(body);VBox.setVgrow(bodyScroll,Priority.ALWAYS);
+        getChildren().addAll(pageHeading,stats,filterBar,tableHeader,feedback,bodyScroll);
         Platform.runLater(refresh);
     }
     private void filter() {
@@ -173,5 +198,25 @@ public final class AdminView extends VBox {
         lowCount.setText(all.stream().filter(p->p.isActive()&&p.getStock()<=5).count()+" LOW STOCK");
         photoCount.setText(all.stream().filter(p->p.getPhoto()==null||p.getDescription().isBlank()||p.getSpecifications().isBlank()).count()+" NEED CONTENT");
         table.setItems(FXCollections.observableArrayList(rows));count.setText(rows.size()+(rows.size()==1?" product · ":" products · ")+all.stream().filter(p->p.isActive()&&p.getStock()<=5).count()+" active products low on stock (5 or fewer)");
+        updateSelection();
     }
+    private void updateSelection(){selectionCount.setText(selected.size()+" items selected");bulk.setVisible(!selected.isEmpty());}
+    private void bulkCommand(java.util.function.Consumer<String> command,String prefix){if(selected.isEmpty())return;if(selected.size()>20){Ui.error(new edu.course.shop.exception.ValidationException("Select at most 20 products for one reviewed batch."));return;}command.accept(prefix+selected.stream().sorted().map(id->"#"+id).collect(java.util.stream.Collectors.joining(" ")));}
+    private void editable(TableColumn<Product,String> column,boolean price){
+        column.setCellFactory(c->new TableCell<>(){
+            final TextField field=new TextField();boolean updating;
+            {field.setMaxWidth(price?110:76);field.getStyleClass().add("workspace-inline-field");field.setOnAction(e->commit());field.focusedProperty().addListener((o,a,b)->{if(a&&!b)commit();});}
+            protected void updateItem(String value,boolean empty){super.updateItem(value,empty);updating=true;Product p=getTableRow()==null?null:getTableRow().getItem();field.setText(p==null?"":price?p.getPrice().toPlainString():Integer.toString(p.getStock()));field.setAccessibleText(price?"Product price":"Stock quantity");setGraphic(empty?null:field);updating=false;}
+            private void commit(){Product p=getTableRow()==null?null:getTableRow().getItem();if(updating||p==null||field.isDisabled())return;
+                try{BigDecimal amount=price?Money.parse(field.getText()):p.getPrice();int stock=price?p.getStock():Ui.integer(field.getText());if(amount.compareTo(p.getPrice())==0&&stock==p.getStock())return;
+                    field.setDisable(true);Ui.async(field,"Saving inventory…",()->{productService.updateInventoryNumbers(actor,p,amount,stock);return true;},v->{field.setDisable(false);reload.run();},e->{field.setDisable(false);field.setText(price?p.getPrice().toPlainString():Integer.toString(p.getStock()));Ui.error(e);});
+                }catch(RuntimeException e){Ui.error(e);updating=true;field.setText(price?p.getPrice().toPlainString():Integer.toString(p.getStock()));updating=false;}
+            }
+        });
+    }
+    private void exportCsv(){javafx.stage.FileChooser chooser=new javafx.stage.FileChooser();chooser.setTitle("Export selected inventory");chooser.setInitialFileName("forge-inventory.csv");chooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("CSV files","*.csv"));java.io.File file=chooser.showSaveDialog(getScene().getWindow());if(file==null)return;
+        StringBuilder csv=new StringBuilder("\uFEFFID,Product,Category,Price,Stock,Status\r\n");for(Product p:all)if(selected.contains(p.getId()))csv.append(p.getId()).append(',').append(csv(p.getName())).append(',').append(csv(p.getCategory().label())).append(',').append(p.getPrice().toPlainString()).append(',').append(p.getStock()).append(',').append(p.isActive()?"Active":"Inactive").append("\r\n");
+        try{java.nio.file.Files.writeString(file.toPath(),csv.toString(),java.nio.charset.StandardCharsets.UTF_8);}catch(java.io.IOException e){Ui.error(new IllegalStateException("The inventory export could not be saved."));}
+    }
+    private static String csv(String text){String safe=text.matches("^[\\s]*[=+@-].*")?"'"+text:text;return "\""+safe.replace("\"","\"\"")+"\"";}
 }

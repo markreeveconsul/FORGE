@@ -78,6 +78,16 @@ public final class ProductService {
         save(actor,id,name,category,price,stock,active,description,photo,
             photo==null||existing==null?List.of():existing.getAdditionalPhotos(),existing==null?"":existing.getSpecifications());
     }
+    /** Inline edits change only price/stock and reject stale values instead of overwriting another editor. */
+    public void updateInventoryNumbers(User actor,Product expected,BigDecimal price,int stock){
+        if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
+        if(expected==null||expected.getId()<=0)throw new ValidationException("Choose a saved product.");
+        BigDecimal valid=Money.price(price);if(stock<0||stock>100000)throw new ValidationException("Stock must be between 0 and 100,000.");
+        try(Connection c=database.open();var statement=c.prepareStatement("UPDATE products SET price_cents=?,stock=? WHERE id=? AND price_cents=? AND stock=?")){
+            statement.setLong(1,Money.cents(valid));statement.setInt(2,stock);statement.setLong(3,expected.getId());statement.setLong(4,Money.cents(expected.getPrice()));statement.setInt(5,expected.getStock());
+            if(statement.executeUpdate()!=1)throw new ValidationException("This product changed while you were editing. Refresh inventory and try again.");
+        }catch(SQLException e){throw new StorageException(e);}
+    }
     public void save(User actor,long id,String name,Category category,BigDecimal price,int stock,boolean active,String description,
                      byte[] photo,List<byte[]> additionalPhotos,String specifications) {
         if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
