@@ -1,0 +1,71 @@
+/* Reference-led account screen. All colors and surfaces stay local to login. */
+.login-background {
+    -ink: #F2F2F0; -ink-muted: #BDBDB9; -surface: #272625; -tint: #302C29;
+    -line: #5C5B58; -signal: #F4774C;
+    -fx-background-color: linear-gradient(to bottom right, #090A0C 0%, #101112 52%, #211714 100%);
+}
+.login-background .login-form-pane { -fx-background-color: transparent; -fx-padding: 0 16; }
+.login-background .login-glass-panel {
+    -fx-background-color: linear-gradient(to bottom right, rgba(70,72,73,.74), rgba(35,35,34,.90) 50%, rgba(45,37,34,.88));
+    -fx-background-radius: 14; -fx-border-radius: 14;
+    -fx-border-color: rgba(230,231,228,.30); -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian,rgba(0,0,0,.42),28,.12,0,12);
+}
+.login-background .login-card {
+    -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-width: 0;
+    -fx-background-radius: 14; -fx-border-radius: 14; -fx-padding: 32 38; -fx-spacing: 16; -fx-effect: null;
+}
+.login-background .login-card .label { -fx-text-fill: #EBEBE8; }
+.login-background .login-card .login-wordmark { -fx-font-family: "Segoe UI", "System"; -fx-font-size: 23px; -fx-font-weight: normal; -fx-text-fill: #F1F1EF; }
+.login-background .login-card .login-access-label { -fx-font-family: "Segoe UI", "System"; -fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #BDBDB9; }
+.login-background .login-card .page-title { -fx-font-family: "Archivo Black"; -fx-font-size: 29px; -fx-text-fill: #F4F4F1; }
+.login-background .login-card .muted { -fx-font-size: 12px; -fx-text-fill: #C5C5C1; }
+.login-background .login-card .field-label { -fx-font-family: "Segoe UI", "System"; -fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #E0E0DC; }
+.login-background .login-card .text-field {
+    -fx-background-color: rgba(17,18,18,.24); -fx-border-color: rgba(202,204,199,.28);
+    -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 9 12; -fx-font-size: 12px;
+    -fx-min-height: 40; -fx-pref-height: 40; -fx-max-height: 40;
+    -fx-text-fill: #F3F3F0; -fx-prompt-text-fill: #A7A7A3;
+}
+.login-background .login-card .text-field:focused { -fx-border-color: #FF9D76; -fx-effect: dropshadow(gaussian,rgba(239,92,40,.14),5,.1,0,0); }
+.login-background .login-card .login-password-shell { -fx-background-color: rgba(17,18,18,.24); -fx-border-color: rgba(202,204,199,.28); -fx-background-radius: 6; -fx-border-radius: 6; -fx-min-height: 40; -fx-max-height: 40; }
+.login-background .login-card .login-password-shell:input-focused { -fx-border-color: #FF9D76; }
+.login-background .login-card .login-password-shell .text-field { -fx-background-color: transparent; -fx-border-color: transparent; -fx-effect: null; -fx-min-height: 38; -fx-pref-height: 38; -fx-max-height: 38; }
+.login-background .login-card .button.password-toggle { -fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 5; -fx-border-radius: 5; -fx-padding: 0; -fx-min-width: 38; -fx-pref-width: 38; -fx-max-width: 38; -fx-min-height: 36; -fx-max-height: 36; -fx-effect: null; }
+.login-background .login-card .button.password-toggle:hover { -fx-background-color: rgba(255,255,255,.07); }
+.login-background .login-card .button.password-toggle:focused { -fx-border-color: #FF9D76; }
+.login-background .login-card .store-icon { -fx-stroke: #BDBFBA; }
+.login-background .login-card .button.login-forgot { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #D3D3CE; -fx-underline: true; -fx-font-size: 11px; -fx-padding: 0; -fx-min-height: 18; -fx-effect: null; }
+.login-background .login-card .button.login-forgot:hover { -fx-text-fill: #FFFFFF; }
+.login-background .login-card .button.login-forgot:focused { -fx-border-color: #FF9D76; -fx-border-radius: 3; }
+.login-background .login-card #login {
+    -fx-background-color: linear-gradient(to right,#F05A32,#EA4E2B); -fx-border-color: #F1613D;
+    -fx-text-fill: #18130F; -fx-background-radius: 24; -fx-border-radius: 24;
+    -fx-font-size: 13px; -fx-font-weight: bold; -fx-min-height: 44; -fx-pref-height: 44;
+    -fx-effect: dropshadow(gaussian,rgba(238,79,35,.24),16,.12,0,4);
+}
+.login-background .login-card #login:hover { -fx-background-color: #FF7045; -fx-border-color: #FF8A64; }
+.login-background .login-card #login:focused { -fx-border-color: #FFE0D3; -fx-border-width: 2; }
+.login-background .login-card #demo-accounts { -fx-background-color: transparent; -fx-border-color: rgba(220,220,213,.12) transparent transparent transparent; -fx-border-width: 1 0 0 0; -fx-padding: 4 0 0 0; }
+.login-background .login-card #demo-accounts > .title { -fx-background-color: transparent; -fx-padding: 9 0; }
+.login-background .login-card #demo-accounts > .title > .text { -fx-fill: #E0E0DC; -fx-font-size: 12px; }
+.login-background .login-card #demo-accounts > .title > .arrow-button .arrow { -fx-background-color: #BCBEB7; }
+.login-background .login-card #demo-accounts > .content { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 8 0 0 0; }
+.login-background .login-card #demo-accounts:focused > .title { -fx-border-color: #FF9D76; -fx-border-radius: 4; }
+.login-background .login-demo-content .link-button { -fx-text-fill: #FFD0BA; -fx-font-size: 11px; -fx-padding: 4 0; -fx-min-height: 28; }
+.login-background .login-card .feedback { -fx-background-color: rgba(255,255,255,.06); -fx-text-fill: #E3E3DD; -fx-background-radius: 6; -fx-padding: 10; -fx-font-size: 12px; }
+.login-background .login-card .field-error { -fx-background-color: transparent; -fx-text-fill: #FFB0A0; -fx-padding: 0; -fx-font-size: 11px; }
+.login-background .login-card .error-feedback { -fx-background-color: rgba(133,38,22,.28); -fx-text-fill: #FFD0C4; }
+.login-background .login-card .text-field.invalid { -fx-border-color: #FFB0A0; }
+.login-background .login-card #operation-status { -fx-background-color: transparent; -fx-padding: 0; -fx-text-fill: #FFD0BA; }
+.login-background.login-compact .login-card { -fx-padding: 24 28; -fx-spacing: 9; }
+.login-background.login-compact .login-heading { -fx-spacing: 5; }
+.login-background.login-compact .login-credentials { -fx-spacing: 8; }
+.login-background.login-compact .login-card .login-wordmark { -fx-font-size: 21px; }
+.login-background.login-compact .login-card .page-title { -fx-font-size: 25px; }
+.login-background.login-compact .login-card .text-field { -fx-font-size: 11px; -fx-min-height: 36; -fx-pref-height: 36; -fx-max-height: 36; -fx-padding: 7 10; }
+.login-background.login-compact .login-card .login-password-shell { -fx-min-height: 36; -fx-max-height: 36; }
+.login-background.login-compact .login-card .login-password-shell .text-field { -fx-min-height: 34; -fx-pref-height: 34; -fx-max-height: 34; }
+.login-background.login-compact .login-card .button.password-toggle { -fx-min-height: 32; -fx-max-height: 32; }
+.login-background.login-compact .login-card #login { -fx-min-height: 40; -fx-pref-height: 40; }
+.login-background.login-compact .login-card #demo-accounts > .title { -fx-padding: 6 0; }
