@@ -26,6 +26,8 @@ public final class AiManagerView extends BorderPane {
     private final CheckBox research=new CheckBox("Research missing specifications online");
     private final Button run=Ui.button("Run  ↗",this::run),cancel=Ui.button("Cancel",this::cancel);
     private final List<Review> reviews=new ArrayList<>();
+    private final VBox activity=new VBox(10);
+    private final Label activityStatus=Ui.label("○ IDLE","manager-terminal-state");
     private Task<?> pending,metricsTask;private Animation shimmer;private int generation,metricsGeneration;private boolean disposed,busy,applying;
     private record Review(ProductService.ManagerChange original,CheckBox included,TextArea description,TextArea specs) { }
 
@@ -33,8 +35,8 @@ public final class AiManagerView extends BorderPane {
         if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
         this.actor=actor;this.services=services;this.manager=new AiManagerService(services,gemini);
         setId("ai-manager-page");getStyleClass().add("ai-manager-page");setMinSize(0,0);
-        Label emblem=Ui.label("✦","manager-emblem");
-        VBox title=new VBox(4,Ui.label("AI Manager","manager-title"),Ui.label("A clearer way to run your store.","manager-subtitle"));title.setMinWidth(0);
+        Label emblem=Ui.label("✦","manager-emblem");emblem.setVisible(false);emblem.setManaged(false);
+        VBox title=new VBox(6,Ui.label("AI NEURAL MANAGER","manager-title"),Ui.label("Command your store with FORGE AI. Review every proposed change.","manager-subtitle"));title.setMinWidth(0);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
         HBox header=new HBox(14,emblem,title,gap,badge);header.setAlignment(Pos.CENTER_LEFT);header.getStyleClass().add("manager-header");
         badge.setId("ai-manager-status");setMode(!manager.configured());if(manager.configured())badge.setText("● AI ready");
@@ -46,8 +48,13 @@ public final class AiManagerView extends BorderPane {
         research.setId("ai-manager-research");research.getStyleClass().add("manager-research");
         Hyperlink privacy=new Hyperlink("How it works");privacy.setOnAction(e->showPrivacy());
         HBox options=new HBox(10,research,new Region(),privacy);HBox.setHgrow(options.getChildren().get(1),Priority.ALWAYS);options.setAlignment(Pos.CENTER_LEFT);
-        VBox commandCard=new VBox(14,Ui.label("YOUR STORE. ONE COMMAND.","manager-eyebrow"),composer,chips,options);commandCard.getStyleClass().add("manager-command-card");
-        VBox content=new VBox(22,header,metrics,commandCard,feedback,results);content.setMinWidth(0);content.getStyleClass().add("manager-content");
+        run.setText("Run Agent  ↗");
+        VBox commandCard=new VBox(18,Ui.label("YOUR STORE. ONE COMMAND.","manager-command-eyebrow"),Ui.label("What action would you like FORGE AI to execute?","section-title"),composer,chips,options);commandCard.getStyleClass().add("manager-command-card");
+        Region terminalGap=new Region();HBox.setHgrow(terminalGap,Priority.ALWAYS);
+        HBox terminalHeader=new HBox(12,Ui.label("●  ●  ●","manager-terminal-dots"),Ui.label("FORGE AI ACTIVITY","manager-terminal-heading"),terminalGap,activityStatus);terminalHeader.setAlignment(Pos.CENTER_LEFT);terminalHeader.getStyleClass().add("manager-terminal-header");
+        activity.getStyleClass().add("manager-terminal-lines");activity.setId("ai-manager-activity");
+        VBox terminal=new VBox(terminalHeader,activity);terminal.getStyleClass().add("manager-terminal");log("Ready. Enter a store command to begin.");
+        VBox content=new VBox(24,header,commandCard,terminal,feedback,results);content.setMinWidth(0);content.getStyleClass().add("manager-content");
         ScrollPane scroll=Ui.scroll(content);scroll.setId("ai-manager-scroll");scroll.getStyleClass().add("manager-scroll");setCenter(scroll);
         empty();Platform.runLater(this::loadMetrics);
     }
@@ -67,21 +74,18 @@ public final class AiManagerView extends BorderPane {
     private void resizeMetrics(){double width=metrics.getWidth();if(width<=0)return;int columns=width>=760?4:2;double tileWidth=Math.floor((width-(columns-1)*12)/columns);for(Node node:metrics.getChildren())((Region)node).setPrefWidth(tileWidth);}
     private Button chip(String title,String command,String id){Button chip=Ui.button(title,()->{input.setText(command);run();});chip.setId("ai-manager-chip-"+id);chip.getStyleClass().add("manager-chip");return chip;}
     private void empty(){
-        StackPane illustration=new StackPane();illustration.getStyleClass().add("manager-illustration");illustration.setMaxSize(130,100);
-        Region back=new Region();back.getStyleClass().add("manager-illustration-card");back.setMaxSize(86,65);back.setRotate(-12);back.setTranslateX(-12);
-        Region front=new Region();front.getStyleClass().add("manager-illustration-card-front");front.setMaxSize(86,65);front.setRotate(8);front.setTranslateX(12);
-        illustration.getChildren().addAll(back,front,Ui.label("✦","manager-illustration-spark"));
-        VBox state=new VBox(12,illustration,Ui.label("What can we take off your list?","manager-empty-title"),Ui.label("Try: Fix all products missing content","manager-subtitle"),Ui.label("Search inventory, draft content, check sales, or prepare status changes.","muted"));
-        state.setId("ai-manager-empty");state.setAlignment(Pos.CENTER);state.getStyleClass().add("manager-empty");results.getChildren().setAll(state);
+        results.getChildren().clear();
     }
     private void run(){
         if(busy||disposed)return;String command=input.getText().trim();if(command.isEmpty()){input.requestFocus();return;}
-        feedback.setText("");reviews.clear();int ticket=++generation;setBusy(true);loading();boolean useResearch=research.isSelected();
+        feedback.setText("");reviews.clear();int ticket=++generation;setBusy(true);log("Command received. Interpreting your request and checking store records…");loading();boolean useResearch=research.isSelected();
         Task<AiManagerService.Result> task=new Task<>(){@Override protected AiManagerService.Result call(){return manager.prepare(actor,command,useResearch);}};pending=task;
         task.setOnSucceeded(e->{if(disposed||ticket!=generation)return;finish();render(task.getValue());});
         task.setOnFailed(e->{if(disposed||ticket!=generation)return;finish();failure(task.getException());});start(task);
     }
-    private void setBusy(boolean value){busy=value;run.setDisable(value);input.setDisable(value);chips.setDisable(value);research.setDisable(value);cancel.setVisible(value&&!applying);}
+    public void submit(String command){if(disposed||busy)return;input.setText(command);run();}
+    private void log(String text){Label line=Ui.label(java.time.LocalTime.now().withNano(0)+"  "+text,"manager-terminal-line");activity.getChildren().add(line);while(activity.getChildren().size()>6)activity.getChildren().removeFirst();}
+    private void setBusy(boolean value){busy=value;activityStatus.setText(value?"● RUNNING":"○ IDLE");run.setDisable(value);input.setDisable(value);chips.setDisable(value);research.setDisable(value);cancel.setVisible(value&&!applying);}
     private void loading(){
         VBox skeleton=Ui.skeletonRows(3);Region sweep=new Region();sweep.getStyleClass().add("manager-shimmer-sweep");sweep.setMinWidth(150);sweep.setPrefWidth(150);sweep.setMaxWidth(150);sweep.setMouseTransparent(true);
         StackPane loading=new StackPane(skeleton,sweep);loading.setId("ai-manager-loading");StackPane.setAlignment(sweep,Pos.CENTER_LEFT);
@@ -93,6 +97,7 @@ public final class AiManagerView extends BorderPane {
     }
     private void finish(){if(shimmer!=null){shimmer.stop();shimmer=null;}applying=false;setBusy(false);pending=null;}
     private void render(AiManagerService.Result result){
+        log(result.aiIssue().isBlank()?"Completed: "+result.products().size()+" products returned; "+result.changes().size()+" changes ready for review.":"AI request failed. Local results remain available; see the connection details below.");
         setMode(result.offline());reviews.clear();
         Label route=Ui.label(result.command().intent().name().replace('_',' '),"manager-eyebrow");
         VBox summary=new VBox(9,route,Ui.label(result.message(),"manager-result-title"));summary.getStyleClass().add("manager-result-card");
@@ -156,10 +161,11 @@ public final class AiManagerView extends BorderPane {
         applying=true;setBusy(true);loading();int ticket=++generation;
         Task<List<Product>> task=new Task<>(){@Override protected List<Product> call(){manager.apply(actor,approved);return selected.stream().map(c->services.products().get(c.expected().getId())).toList();}};pending=task;
         task.setOnSucceeded(e->{if(disposed||ticket!=generation)return;finish();reviews.clear();
-            VBox success=new VBox(8,Ui.label("✓ Changes applied","manager-result-title"),Ui.label("Updated "+selected.size()+" products. Inventory and content counts have been refreshed.","muted"));success.getStyleClass().addAll("manager-result-card","manager-success");success.setId("ai-manager-success");results.getChildren().setAll(success,productTable(task.getValue(),task.getValue().size()));loadMetrics();
+            log("Saved "+selected.size()+" reviewed changes. Inventory refreshed.");VBox success=new VBox(8,Ui.label("✓ Changes applied","manager-result-title"),Ui.label("Updated "+selected.size()+" products. Inventory and content counts have been refreshed.","muted"));success.getStyleClass().addAll("manager-result-card","manager-success");success.setId("ai-manager-success");results.getChildren().setAll(success,productTable(task.getValue(),task.getValue().size()));loadMetrics();
         });task.setOnFailed(e->{if(disposed||ticket!=generation)return;finish();failure(task.getException());loadMetrics();});start(task);
     }
     private void failure(Throwable error){
+        log("Command could not finish. No unreviewed changes were applied.");
         VBox card=new VBox(10,Ui.label("We couldn't complete that command","manager-result-title"),Ui.label(AssistantPanel.friendly(error),"muted"));card.setId("ai-manager-error");card.getStyleClass().addAll("manager-result-card","manager-error");
         Button retry=Ui.button("Try again",this::run);retry.getStyleClass().add("manager-chip");card.getChildren().add(retry);results.getChildren().setAll(card);
     }

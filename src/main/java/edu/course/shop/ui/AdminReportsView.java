@@ -137,7 +137,7 @@ public final class AdminReportsView extends VBox {
         tile.setMinWidth(100);
         return tile;
     }
-    private void resizeStats(FlowPane stats){double width=stats.getWidth();if(width<=0)return;int columns=width>=1040?5:width>=670?3:2;double tileWidth=(width-(columns-1)*14)/columns;for(var child:stats.getChildren())((Region)child).setPrefWidth(tileWidth);}
+    private void resizeStats(FlowPane stats){double width=stats.getWidth();if(width<=0)return;int columns=width>=850?5:width>=650?3:2;double tileWidth=Math.floor((width-(columns-1)*14)/columns)-1;for(var child:stats.getChildren())((Region)child).setPrefWidth(tileWidth);}
     private void renderChart(AreaChart<String,Number> chart,List<AdminRepository.OrderRow> orders,int days){
         LocalDate today=LocalDate.now();var totals=new java.util.LinkedHashMap<LocalDate,Long>();for(int i=days-1;i>=0;i--)totals.put(today.minusDays(i),0L);
         for(var order:orders){if(!"PAID".equalsIgnoreCase(order.paymentStatus()))continue;try{LocalDate date=Instant.parse(order.createdAt()).atZone(ZoneId.systemDefault()).toLocalDate();if(totals.containsKey(date))totals.merge(date,order.totalCents(),Long::sum);}catch(RuntimeException ignored){}}
@@ -170,6 +170,8 @@ public final class AdminReportsView extends VBox {
             Ui.column("DATE", row -> date(row.createdAt())),
             Ui.column("PAYMENT", row -> payment(row.paymentMethod()) + " · " + paymentStatus(row.paymentStatus())),
             Ui.column("TOTAL", row -> Money.format(Money.amount(row.totalCents())))));
+        @SuppressWarnings("unchecked") TableColumn<AdminRepository.OrderRow,String> paymentColumn=(TableColumn<AdminRepository.OrderRow,String>)table.getColumns().get(3);
+        AdminWorkspace.badges(paymentColumn,value->value.endsWith("Paid")?"workspace-pill-active":"workspace-pill-muted");
         table.setMinHeight(130);
         table.setPrefHeight(130);
         table.setRowFactory(t->{var row=new javafx.scene.control.TableRow<AdminRepository.OrderRow>();row.setOnMouseClicked(e->{if(!row.isEmpty()&&e.getClickCount()==2){var order=row.getItem();AdminWorkspace.inspect(this,"ORDER","#MK-"+order.id(),List.of(AdminWorkspace.detail("CUSTOMER",order.customer()),AdminWorkspace.detail("DATE",date(order.createdAt())),AdminWorkspace.detail("PAYMENT",payment(order.paymentMethod())+" · "+paymentStatus(order.paymentStatus())),AdminWorkspace.detail("TOTAL",Money.format(Money.amount(order.totalCents()))),AdminWorkspace.detail("ITEMS",Integer.toString(order.itemCount()))),null);}});return row;});

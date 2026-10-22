@@ -51,6 +51,20 @@ class ShopTest {
     @Test void customersCannotEditProductsEvenOutsideGui() {
         assertThrows(ValidationException.class, () -> products.save(customer, 0, "Test", Category.PC_PARTS, BigDecimal.ONE, 1, true));
     }
+    @Test void inlineInventoryEditsRequireAdminAndPreserveContent(){
+        assertThrows(ValidationException.class,()->products.updateInventoryNumbers(customer,product,BigDecimal.TEN,2));
+        assertThrows(ValidationException.class,()->products.updateInventoryNumbers(null,product,BigDecimal.TEN,2));
+        assertThrows(ValidationException.class,()->products.updateInventoryNumbers(admin,product,new BigDecimal("0"),2));
+        assertThrows(ValidationException.class,()->products.updateInventoryNumbers(admin,product,product.getPrice(),-1));
+        products.updateInventoryNumbers(admin,product,new BigDecimal("25.50"),9);
+        Product updated=products.get(product.getId());assertEquals(new BigDecimal("25.50"),updated.getPrice());assertEquals(9,updated.getStock());
+        assertEquals(product.getDescription(),updated.getDescription());assertEquals(product.getSpecifications(),updated.getSpecifications());assertArrayEquals(product.getPhoto(),updated.getPhoto());assertEquals(product.isActive(),updated.isActive());
+    }
+    @Test void staleInlineInventoryEditsDoNotOverwriteNewerValues(){
+        products.updateInventoryNumbers(admin,product,product.getPrice(),17);
+        assertThrows(ValidationException.class,()->products.updateInventoryNumbers(admin,product,BigDecimal.ONE,2));
+        assertEquals(17,products.get(product.getId()).getStock());assertEquals(product.getPrice(),products.get(product.getId()).getPrice());
+    }
     @Test void adminCreatesEditsAndDeactivatesProducts() {
         products.save(admin, 0, "Test item", Category.PC_PARTS, new BigDecimal("1.25"), 3, true);
         Product p = products.search(customer, "TEST ITEM", Category.PC_PARTS).getFirst();
