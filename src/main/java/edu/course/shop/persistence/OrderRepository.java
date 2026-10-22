@@ -41,7 +41,7 @@ public final class OrderRepository {
         return new Order(id,r.getLong("customer_id"),r.getString("created_at"),r.getString("address"),r.getString("payment_method"),r.getString("payment_status"),Money.amount(r.getLong("total_cents")),items(c,id),FulfillmentStatus.valueOf(r.getString("fulfillment_status")),r.getString("carrier"),r.getString("tracking_number"),events);
     }
     public void event(Connection c,long id,FulfillmentStatus status,String time,String note,long actor)throws SQLException{
-        try(var p=c.prepareStatement("INSERT INTO order_events(order_id,status,created_at,note,actor_id) VALUES(?,?,?,?,?,?)")){p.setLong(1,id);p.setString(2,status.name());p.setString(3,time);p.setString(4,note);p.setLong(5,actor);p.executeUpdate();}
+        try(var p=c.prepareStatement("INSERT INTO order_events(order_id,status,created_at,note,actor_id) VALUES(?,?,?,?,?)")){p.setLong(1,id);p.setString(2,status.name());p.setString(3,time);p.setString(4,note);p.setLong(5,actor);p.executeUpdate();}
     }
     private List<OrderItem> items(Connection c, long id) throws SQLException {
         List<OrderItem> items = new ArrayList<>();

@@ -170,3 +170,9 @@
 .forge-admin #revenue-orders-table { -fx-fixed-cell-size: 48; }
 .forge-admin .revenue-card .date-picker { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-border-radius: 8; -fx-background-radius: 8; }
 .forge-admin .revenue-card .date-picker .arrow-button { -fx-background-color: -admin-soft; -fx-background-radius: 0 8 8 0; }
+
+.forge-admin .order-tracking .tracking-complete { -fx-background-color: #ECFDF5; -fx-text-fill: #166534; }
+.forge-admin .order-tracking .tracking-upcoming { -fx-background-color: -admin-soft; -fx-text-fill: -admin-muted; }
+.forge-admin .workspace-delete-button { -fx-text-fill: #B91C1C; -fx-border-color: #FECACA; -fx-background-color: #FEF2F2; }
+.forge-admin.admin-dark .workspace-delete-button { -fx-text-fill: #FCA5A5; -fx-border-color: #713F3F; -fx-background-color: #3B1E1B; }
+.forge-admin.admin-dark .order-tracking .tracking-complete { -fx-text-fill: #86EFAC; -fx-background-color: #15352A; }

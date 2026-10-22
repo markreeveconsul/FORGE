@@ -22,6 +22,16 @@ public final class OrderService {
         try(Connection c=database.open()){authorize(c,customer,null,false);return orders.forCustomer(c,customer.getId());}catch(SQLException e){throw new StorageException(e);}
     }
     public Order get(User actor,long id){try(Connection c=database.open()){Order order=orders.find(c,id);authorize(c,actor,order,false);return order;}catch(SQLException e){throw new StorageException(e);}}
+    public Order recordDeliveryPayment(User admin,long id){
+        try(Connection c=database.open()){
+            c.setAutoCommit(false);try{
+                Order order=orders.find(c,id);authorize(c,admin,order,true);
+                if(order.fulfillmentStatus()!=FulfillmentStatus.DELIVERED||!order.paymentStatus().equals("PENDING")||!order.paymentMethod().toLowerCase(java.util.Locale.ROOT).contains("cash"))throw new ValidationException("Only a delivered cash-on-delivery order can have its payment collected here.");
+                try(var p=c.prepareStatement("UPDATE orders SET payment_status='PAID' WHERE id=? AND payment_status='PENDING' AND fulfillment_status='DELIVERED'")){p.setLong(1,id);if(p.executeUpdate()!=1)throw new ValidationException("The order changed. Refresh before recording payment.");}
+                orders.event(c,id,FulfillmentStatus.DELIVERED,Instant.now().toString(),"Cash-on-delivery payment collected · simulated",admin.getId());Order updated=orders.find(c,id);c.commit();return updated;
+            }catch(SQLException|RuntimeException e){c.rollback();throw e;}
+        }catch(SQLException e){throw new StorageException(e);}
+    }
     public Order update(User admin,long id,FulfillmentStatus expected,FulfillmentStatus next,String carrier,String tracking){return change(admin,id,expected,next,carrier,tracking,false);}
     public Order cancel(User customer,long id,FulfillmentStatus expected){
         if(!(customer instanceof Customer))throw new ValidationException("Customer access is required.");

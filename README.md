@@ -1,4 +1,4 @@
-# Market — Java OOP E-commerce System
+# FORGE — Java OOP E-commerce System
 
 A small JavaFX desktop store with SQLite persistence. Built as a readable course project, not a production commerce service.
 
@@ -35,10 +35,12 @@ These are public demonstration credentials. Password hashes, rather than plainte
 - Per-item cart controls, live cart counts, removal with Undo, and responsive shared order summaries.
 - Cash on delivery and simulated wallet approval/decline.
 - Transactional checkout: order and stock changes commit together.
-- Customer-specific order cards, purchase-time receipts, and reviewed Buy again with current stock/prices.
+- Customer-specific order cards, delivery timelines, manual tracking, cancellation and reviewed Buy again with current stock/prices.
+- Admin order processing, independent simulated payment collection, category-specific specifications/configurations, and receipt-preserving product deletion.
+- Persistent customer carts with guest merging and price/stock revalidation on restoration.
 - SQLite persistence at `data/shop.db`, created on first launch.
 
-Prices use **USD** as a demonstration choice. Shipping is free; taxes are omitted. No real payment is processed. Cart contents are temporary. Guest selections transfer on customer sign-in; customer logout or app exit discards the cart.
+Prices use **USD** as a demonstration choice. Shipping is free; taxes are omitted. No real payment is processed. Guest carts last for the current session. Customer carts persist across sign-out and restart; guest selections merge on sign-in. Restored carts report price/availability adjustments and do not reserve stock.
 
 ## Verify
 
@@ -67,6 +69,8 @@ All Java paths above are under `src/main/java/edu/course/shop`.
 
 ## Deliverables
 
+- [Order processing, structured specifications, saved carts and product deletion](docs/SHOPPING-WORKFLOWS.md)
+
 - [Approved next UI implementation and verification](docs/NEXT-UI.md)
 
 - [Nike-inspired design elevation](docs/DESIGN-ELEVATION.md)
@@ -83,7 +87,7 @@ Keep the UML and guide updated when you change class signatures or business rule
 
 ## Boundaries
 
-Single running application, small local catalog, trusted desktop environment. No registration, network server, real payment integration, refunds, discounts, multi-currency, or fulfillment processing. SQLite is local persistence, not a remote security boundary. Users who can alter the source or database can alter this demo.
+Single running application, small local catalog, trusted desktop environment. No registration, network server, real payment integration, real refunds, discounts, multi-currency, or live carrier tracking. Local fulfillment states and simulated cancellation/refund records are supported. SQLite is local persistence, not a remote security boundary. Users who can alter the source or database can alter this demo.
 
 Product/category designs deliberately avoid an artificial product inheritance tree: categories are an enum, while the user hierarchy has real permission behavior. Layouts are written in Java to ease the transition from Swing; FXML is optional and not required for separation of responsibilities.
 

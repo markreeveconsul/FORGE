@@ -16,6 +16,7 @@ public final class PersistentCartService {
     }
     public Restored restore(User user,Cart guest){
         if(guest!=null&&guest.getCustomerId()!=0)throw new ValidationException("Only a guest cart can be merged.");
+        if(!(user instanceof Customer))throw new ValidationException("Customer access is required.");
         Cart restored=new Cart(user.getId());List<String> notices=new ArrayList<>();
         try(Connection c=database.open()){
             customer(c,user);
@@ -41,6 +42,7 @@ public final class PersistentCartService {
             c.setAutoCommit(false);try{
                 customer(c,user);
                 try(var p=c.prepareStatement("DELETE FROM customer_cart_items WHERE customer_id=?")){p.setLong(1,user.getId());p.executeUpdate();}
+                for(CartItem item:rows)try(var exists=c.prepareStatement("SELECT 1 FROM products WHERE id=? AND deleted=0")){exists.setLong(1,item.getProduct().getId());try(var r=exists.executeQuery()){if(!r.next())throw new ValidationException("A product was removed from inventory. Remove it from your cart before changing other items.");}}
                 try(var p=c.prepareStatement("INSERT INTO customer_cart_items(customer_id,product_id,quantity,unit_price_cents) VALUES(?,?,?,?)")){
                     for(CartItem item:rows){p.setLong(1,user.getId());p.setLong(2,item.getProduct().getId());p.setInt(3,item.getQuantity());p.setLong(4,Money.cents(item.getProduct().getPrice()));p.addBatch();}p.executeBatch();
                 }c.commit();

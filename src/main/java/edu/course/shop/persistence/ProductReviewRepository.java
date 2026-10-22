@@ -11,7 +11,7 @@ import java.util.List;
 
 public final class ProductReviewRepository {
     public boolean hasPurchased(Connection c, long customerId, long productId) throws SQLException {
-        try (PreparedStatement p = c.prepareStatement("SELECT 1 FROM orders o JOIN order_items i ON i.order_id=o.id WHERE o.customer_id=? AND i.product_id=? LIMIT 1")) {
+        try (PreparedStatement p = c.prepareStatement("SELECT 1 FROM orders o JOIN order_items i ON i.order_id=o.id WHERE o.customer_id=? AND i.product_id=? AND o.fulfillment_status<>'CANCELLED' LIMIT 1")) {
             p.setLong(1, customerId); p.setLong(2, productId);
             try (ResultSet r = p.executeQuery()) { return r.next(); }
         }

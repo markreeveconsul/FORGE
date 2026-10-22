@@ -771,3 +771,9 @@
 .manager-success { -fx-background-color: #EAF4EC; -fx-border-color: #B9D8C0; }
 .manager-error { -fx-background-color: #FFF0E9; -fx-border-color: #E9C2AE; }
 .manager-shimmer-sweep { -fx-background-color: linear-gradient(to right, transparent, rgba(255,255,255,.72), transparent); }
+
+/* Order progress is shared by the local customer and admin workflows. */
+.order-tracking { -fx-spacing: 12; -fx-padding: 14 0; }
+.order-tracking .order-status { -fx-padding: 6 10; -fx-background-radius: 14; -fx-font-size: 11px; }
+.forge-store .tracking-complete { -fx-background-color: -store-good-bg; -fx-text-fill: -store-good-text; }
+.forge-store .tracking-upcoming { -fx-background-color: -tint; -fx-text-fill: -ink-muted; }
