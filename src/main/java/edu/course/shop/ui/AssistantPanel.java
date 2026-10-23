@@ -35,6 +35,7 @@ public final class AssistantPanel extends BorderPane {
     private CatalogAssistant.Memory memory = CatalogAssistant.Memory.empty();
     private Task<?> pending;
     private Node thinking;
+    private final RobotAvatar robot=new RobotAvatar(44);
     private Timeline dots;
     private int generation;
     private boolean consent, busy;
@@ -47,13 +48,13 @@ public final class AssistantPanel extends BorderPane {
         this.savedPreferences=preferenceStore.load(user.getId());this.consent=preferenceStore.hasGeminiConsent(user.getId());
         this.retrieval=new CatalogAssistant(services);this.viewProduct=viewProduct;this.cartChanged=cartChanged;this.savedItems=savedItems;
         setId("assistant-panel");getStyleClass().add("forge-chat");setMinSize(0,0);setPrefWidth(420);setMaxWidth(420);
-        Label spark=Ui.label("✦","chat-spark");
+        robot.setId("assistant-robot");
         Label subtitle=Ui.label(gemini.configurationProblem().isBlank()?"AI BUILD HELPER":"AI OFFLINE · CATALOG SEARCH STILL WORKS","chat-subtitle");subtitle.setId("assistant-status");
         VBox title=new VBox(2,Ui.label("FORGE AI","chat-title"),subtitle);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
         Button fresh=Ui.button("New chat",this::newChat);fresh.setId("assistant-new-chat");fresh.getStyleClass().add("chat-header-button");
         Button dismiss=Ui.button("×",close);dismiss.setId("assistant-close");dismiss.setAccessibleText("Close assistant");dismiss.getStyleClass().add("chat-header-button");
-        HBox header=new HBox(9,spark,title,gap,fresh,dismiss);header.setAlignment(Pos.CENTER_LEFT);header.getStyleClass().add("chat-header");
+        HBox header=new HBox(9,robot,title,gap,fresh,dismiss);header.setAlignment(Pos.CENTER_LEFT);header.getStyleClass().add("chat-header");
         Button change=Ui.button("Change",()->{
             stop();
             memory=CatalogAssistant.Memory.empty();context.setText("Browsing the catalog");
@@ -95,7 +96,7 @@ public final class AssistantPanel extends BorderPane {
     }
     private void newChat() {
         stop();memory=CatalogAssistant.Memory.empty();messages.getChildren().clear();lastFailed=null;input.clear();refreshContext();
-        Label spark=Ui.label("✦","chat-welcome-spark");
+        RobotAvatar spark=new RobotAvatar(68);spark.setAnimated(false);spark.setId("assistant-welcome-robot");
         VBox welcome=new VBox(12,spark,wrap("What are we forging?","chat-welcome-title"),
             wrap("Tell me what you want to play or build. I'll find listed products and explain what to check.","chat-muted"));
         welcome.setId("assistant-welcome");welcome.getStyleClass().add("chat-welcome");
@@ -140,7 +141,7 @@ public final class AssistantPanel extends BorderPane {
         }
         input.clear();if(!retry)userBubble(question);lastFailed=null;
         List<CartItem> snapshot=cart.get().getItems();Product currentPage=page.get();var previous=memory;
-        int ticket=++generation;setBusy(true);showThinking();
+        int ticket=++generation;setBusy(true);showThinking("Checking FORGE records…");robot.setState(RobotAvatar.State.SEARCHING);
         Task<CatalogAssistant.Plan> task=new Task<>() {@Override protected CatalogAssistant.Plan call() {
             return retrieval.prepare(user,snapshot,currentPage,previous,effectiveQuestion,orderApproved);
         }};
@@ -151,7 +152,7 @@ public final class AssistantPanel extends BorderPane {
             if(!consent) {showAiConsent(plan,effectiveQuestion,previous);return;}
             startGemini(plan,effectiveQuestion,previous);
         });
-        task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
+        task.setOnFailed(e->{if(ticket!=generation)return;finish();robot.react(RobotAvatar.State.ERROR);lastFailed=question;
             VBox error=bot(friendly(task.getException()));error.setId("assistant-error");error.getStyleClass().add("chat-error");
             error.getChildren().add(wrap("Your message is saved in this chat. Browsing and checkout still work.","chat-muted"));
             Button again=Ui.button("Try again",()->{error.setDisable(true);submit(question,orderApproved,true);});again.getStyleClass().add("chat-dark-button");error.getChildren().add(again);
@@ -164,8 +165,8 @@ public final class AssistantPanel extends BorderPane {
             if(busy)return;int ticket=++generation;card.setDisable(true);setBusy(true);
             Task<Boolean> task=new Task<>() {@Override protected Boolean call(){AssistantCart.applyEdit(user,cart.get(),edit,services.products());return true;}};
             pending=task;
-            task.setOnSucceeded(e->{if(ticket!=generation)return;finish();cartChanged.run();refreshContext();bot(edit.removes()?edit.productName()+" was removed from your cart.":"Updated "+edit.productName()+" to quantity "+edit.quantity()+".");});
-            task.setOnFailed(e->{if(ticket!=generation)return;finish();bot(friendly(task.getException()));});
+            task.setOnSucceeded(e->{if(ticket!=generation)return;finish();robot.react(RobotAvatar.State.HAPPY);cartChanged.run();refreshContext();bot(edit.removes()?edit.productName()+" was removed from your cart.":"Updated "+edit.productName()+" to quantity "+edit.quantity()+".");});
+            task.setOnFailed(e->{if(ticket!=generation)return;finish();robot.react(RobotAvatar.State.ERROR);bot(friendly(task.getException()));});
             start(task);
         });
         Button cancel=Ui.button("Keep my cart",()->{card.setDisable(true);bot("No cart changes were made.");});
@@ -187,10 +188,10 @@ public final class AssistantPanel extends BorderPane {
         choices.getChildren().addAll(allow,cancel);notice.getChildren().add(choices);
     }
     private void startGemini(CatalogAssistant.Plan plan, String question, CatalogAssistant.Memory previous) {
-        int ticket=++generation;setBusy(true);showThinking();
+        int ticket=++generation;setBusy(true);showThinking("Preparing your answer…");robot.setState(RobotAvatar.State.THINKING);
         Task<String> task=new Task<>() {@Override protected String call(){return gemini.answer(question,plan.facts());}};pending=task;
         task.setOnSucceeded(e->{if(ticket!=generation)return;finish();renderAnswer(plan,previous,question,task.getValue());});
-        task.setOnFailed(e->{if(ticket!=generation)return;finish();lastFailed=question;
+        task.setOnFailed(e->{if(ticket!=generation)return;finish();robot.react(RobotAvatar.State.ERROR);lastFailed=question;
             VBox error=bot(friendly(task.getException()));error.setId("assistant-error");error.getStyleClass().add("chat-error");
             error.getChildren().add(wrap("Your message is saved in this chat. Browsing and checkout still work.","chat-muted"));
             if(!isSetupFailure(task.getException())) {
@@ -199,7 +200,7 @@ public final class AssistantPanel extends BorderPane {
         });start(task);
     }
     private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text) {
-        memory=CatalogAssistant.remember(previous,plan,question,text);context.setText(plan.context());VBox bubble=bot(text);
+        robot.react(RobotAvatar.State.HAPPY);memory=CatalogAssistant.remember(previous,plan,question,text);context.setText(plan.context());VBox bubble=bot(text);
         appendProductCards(bubble,plan);
         scrollDown();
     }
@@ -271,8 +272,8 @@ public final class AssistantPanel extends BorderPane {
         Button confirm=Ui.button("Add to cart",()->{
             if(busy)return;int ticket=++generation;setBusy(true);card.setDisable(true);
             Task<List<Product>> task=new Task<>() {@Override protected List<Product> call(){return AssistantCart.validate(products,services.products());}};pending=task;
-            task.setOnSucceeded(e->{if(ticket!=generation)return;finish();try{AssistantCart.apply(user,cart.get(),task.getValue());cartChanged.run();bot("Added to your cart. You can review quantities before checkout.");refreshContext();}catch(RuntimeException failure){bot(friendly(failure));}});
-            task.setOnFailed(e->{if(ticket!=generation)return;finish();bot(friendly(task.getException()));});start(task);
+            task.setOnSucceeded(e->{if(ticket!=generation)return;finish();try{AssistantCart.apply(user,cart.get(),task.getValue());cartChanged.run();robot.react(RobotAvatar.State.HAPPY);bot("Added to your cart. You can review quantities before checkout.");refreshContext();}catch(RuntimeException failure){robot.react(RobotAvatar.State.ERROR);bot(friendly(failure));}});
+            task.setOnFailed(e->{if(ticket!=generation)return;finish();robot.react(RobotAvatar.State.ERROR);bot(friendly(task.getException()));});start(task);
         });confirm.getStyleClass().add("chat-orange");confirm.setId("assistant-confirm-add");
         Button cancel=Ui.button("Not now",()->{card.setDisable(true);bot("Nothing was added.");});cancel.getStyleClass().add("chat-prompt");
         card.getChildren().addAll(confirm,cancel,wrap("Nothing is added until you confirm.","chat-muted"));card.setId("assistant-confirmation");scrollDown();
@@ -282,9 +283,9 @@ public final class AssistantPanel extends BorderPane {
         boolean wasBusy=busy;finish();if(wasBusy)bot("Stopped. You can ask another question.");
     }
     private void finish(){setBusy(false);if(dots!=null){dots.stop();dots=null;}if(thinking!=null){messages.getChildren().remove(thinking);thinking=null;}}
-    private void setBusy(boolean value){busy=value;input.setDisable(value);send.setDisable(value);if(!value)input.requestFocus();}
-    private void showThinking(){
-        Label status=wrap("Checking stock and prices…","chat-muted");Label animation=Ui.label("●  ●  ●","chat-muted");
+    private void setBusy(boolean value){robot.setState(value?RobotAvatar.State.WORKING:RobotAvatar.State.IDLE);busy=value;input.setDisable(value);send.setDisable(value);if(!value)input.requestFocus();}
+    private void showThinking(String message){
+        Label status=wrap(message,"chat-muted");Label animation=Ui.label("●  ●  ●","chat-muted");
         Button stop=Ui.button("Stop",this::stop);stop.setId("assistant-stop");stop.getStyleClass().add("chat-prompt");
         VBox box=new VBox(8,animation,status,stop);box.getStyleClass().add("chat-bubble");box.setId("assistant-thinking");thinking=box;messages.getChildren().add(box);
         if(!Motion.isReduced()){dots=new Timeline(new KeyFrame(Duration.ZERO,new KeyValue(animation.opacityProperty(),.35)),new KeyFrame(Duration.millis(650),new KeyValue(animation.opacityProperty(),1)));dots.setAutoReverse(true);dots.setCycleCount(Animation.INDEFINITE);dots.play();}scrollDown();

@@ -59,7 +59,8 @@ public final class AdminWorkspace extends StackPane {
     private Button nav(String title,String icon,String id,Runnable action,boolean count){
         Button button=Ui.button("",()->{closeModal();action.run();});button.setId(id);button.getStyleClass().add("workspace-nav");button.setMaxWidth(Double.MAX_VALUE);button.setMinHeight(46);button.setPrefHeight(46);button.setMaxHeight(46);
         Label text=Ui.label(title,"workspace-nav-text");text.setWrapText(false);Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
-        HBox graphic=new HBox(12,StoreIcon.of(icon,16),text,gap);graphic.setAlignment(Pos.CENTER_LEFT);graphic.setMinWidth(0);graphic.prefWidthProperty().bind(button.widthProperty().subtract(30));
+        Node symbol=StoreIcon.of(icon,16);if(icon.equals("sparkles")){RobotAvatar avatar=new RobotAvatar(24);avatar.setAnimated(false);symbol=avatar;}
+        HBox graphic=new HBox(12,symbol,text,gap);graphic.setAlignment(Pos.CENTER_LEFT);graphic.setMinWidth(0);graphic.prefWidthProperty().bind(button.widthProperty().subtract(30));
         if(count){Label badge=Ui.label("—","workspace-nav-count");counts.put(id,badge);graphic.getChildren().add(badge);}
         if(id.equals("admin-nav-ai-manager"))graphic.getChildren().add(Ui.label("AI","workspace-ai-tag"));
         button.setGraphic(graphic);button.setAccessibleText(title);navigation.put(id,button);return button;

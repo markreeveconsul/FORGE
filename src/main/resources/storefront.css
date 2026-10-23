@@ -249,3 +249,5 @@
 .forge-store .forge-chat .chat-spark, .forge-store .forge-chat .chat-welcome-spark, .forge-store .forge-chat .chat-best-match { -fx-border-color: transparent; }
 .forge-store .forge-chat .button.chat-send { -fx-background-radius: 24; -fx-border-radius: 24; -fx-padding: 0; }
 .forge-store .separator .line { -fx-border-color: -line; -fx-border-width: 1 0 0 0; }
+/* The robot carries the brand mark; keep its launcher compact. */
+.forge-store .button.assistant-launcher { -fx-padding: 8 16; -fx-graphic-text-gap: 9; -fx-min-height: 48; }

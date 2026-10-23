@@ -192,7 +192,7 @@ public final class AdminView extends VBox {
         filterBar.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);filterBar.getStyleClass().add("inventory-filter-panel");
         filterBar.visibleProperty().bind(form.visibleProperty().not());filterBar.managedProperty().bind(filterBar.visibleProperty());
         actions.visibleProperty().bind(form.visibleProperty().not());actions.managedProperty().bind(actions.visibleProperty());
-        Button fix=Ui.button("✦ Bulk AI Fix",()->bulkCommand(aiCommand,"Fix missing content for products "));fix.setId("admin-bulk-ai");fix.getStyleClass().add("workspace-orange-button");
+        Button fix=Ui.button("Bulk AI Fix",()->bulkCommand(aiCommand,"Fix missing content for products "));RobotAvatar fixIcon=new RobotAvatar(20);fixIcon.setAnimated(false);fix.setGraphic(fixIcon);fix.setId("admin-bulk-ai");fix.getStyleClass().add("workspace-orange-button");
         Button inactive=Ui.button("Set Inactive",()->bulkCommand(aiCommand,"Deactivate products "));inactive.setId("admin-bulk-inactive");
         Button export=Ui.button("Export CSV",this::exportCsv);export.setId("admin-export-csv");Button clear=Ui.button("×",()->{selected.clear();selectAll.setSelected(false);table.refresh();updateSelection();});
         bulk.getChildren().addAll(selectionCount,fix,inactive,export,clear);bulk.setAlignment(javafx.geometry.Pos.CENTER_LEFT);bulk.getStyleClass().add("workspace-bulk");bulk.setId("admin-bulk-actions");bulk.setVisible(false);bulk.managedProperty().bind(bulk.visibleProperty());
