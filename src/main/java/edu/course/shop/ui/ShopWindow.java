@@ -212,7 +212,7 @@ public final class ShopWindow {
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
         if(!user.canManageProducts())shell.setBottom(footer);stage.getScene().setRoot(window);
         if(!user.canManageProducts()) {
-            assistantLauncher=Ui.button("✦  FORGE AI",this::toggleAssistant);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
+            assistantLauncher=Ui.button("FORGE AI",this::toggleAssistant);RobotAvatar launcherRobot=new RobotAvatar(32);launcherRobot.setId("assistant-launcher-robot");assistantLauncher.setGraphic(launcherRobot);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
             assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,18,74,0));
             assistantPanel=new AssistantPanel(services,user,()->cart,()->assistantProduct,assistant,this::showDetails,this::updateCart,saved,this::toggleAssistant);
             assistantPanel.setVisible(false);assistantPanel.managedProperty().bind(assistantPanel.visibleProperty());

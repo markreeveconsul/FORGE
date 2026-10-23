@@ -1,0 +1,34 @@
+{
+  "source": "https://github.com/fayazara/robot-heads",
+  "shape": "square",
+  "shell": "#f44d00",
+  "trim": "#272a2d",
+  "led": "#93ffac",
+  "box": 160,
+  "frameWidth": 162,
+  "frameHeight": 234,
+  "padSide": 1,
+  "padTop": 53,
+  "frames": 64,
+  "columns": 8,
+  "states": {
+    "idle": {
+      "fps": 16
+    },
+    "thinking": {
+      "fps": 30
+    },
+    "searching": {
+      "fps": 30
+    },
+    "working": {
+      "fps": 30
+    },
+    "happy": {
+      "fps": 30
+    },
+    "error": {
+      "fps": 30
+    }
+  }
+}

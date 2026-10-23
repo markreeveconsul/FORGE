@@ -57,7 +57,7 @@ public final class AdminReportsView extends VBox {
     }
 
     private void buildOverview() {
-        Button ai=Ui.button("Run AI Diagnostics",viewAi);ai.setGraphic(StoreIcon.of("sparkles",14));ai.getStyleClass().add("workspace-orange-button");ai.setId("overview-ai");
+        Button ai=Ui.button("Run AI Diagnostics",viewAi);RobotAvatar emblem=new RobotAvatar(20);emblem.setAnimated(false);ai.setGraphic(emblem);ai.getStyleClass().add("workspace-orange-button");ai.setId("overview-ai");
         Button add=Ui.button("Add Product",addProduct);add.getStyleClass().add("workspace-black-button");add.setId("overview-add-product");
         VBox heading=new VBox(6,Ui.label("OVERVIEW","page-title"),Ui.label("Real-time store metrics, sales analytics, and low stock warnings.","muted"));
         HBox actions=new HBox(10,ai,add);actions.setAlignment(Pos.CENTER_RIGHT);
