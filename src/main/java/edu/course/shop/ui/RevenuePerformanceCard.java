@@ -37,6 +37,7 @@ public final class RevenuePerformanceCard extends VBox {
     private int hovered=-1,pinned=-1;
     private final NumberAxis dates=new NumberAxis(),amounts=new NumberAxis();
     private final AreaChart<Number,Number> chart=new AreaChart<>(dates,amounts);
+    private final RevenueDraw drawing=new RevenueDraw(chart);
     private final Label total=Ui.label("—","revenue-total"),change=Ui.label("","revenue-change"),orderCount=Ui.label("—","revenue-stat-value"),average=Ui.label("—","revenue-stat-value");
     private final Label periodText=Ui.label("","revenue-period-text"),note=Ui.label("Loading order values…","revenue-note"),updated=Ui.label("","revenue-updated"),error=Ui.feedback("revenue-error");
     private final Label totalLabel=Ui.label("PAID REVENUE","eyebrow"),countLabel=Ui.label("PAID ORDERS","eyebrow");
@@ -116,7 +117,7 @@ public final class RevenuePerformanceCard extends VBox {
             int days=report.current().days().size();dates.setLowerBound(days==1?-.5:0);dates.setUpperBound(days==1?.5:days-1);dates.setTickUnit(Math.max(1,Math.ceil((days-1)/6.0)));
             XYChart.Series<Number,Number> current=new XYChart.Series<>();current.setName(metric.label());XYChart.Series<Number,Number> previous=new XYChart.Series<>();previous.setName("Previous period");
             for(int i=0;i<days;i++){Day day=report.current().days().get(i);current.getData().add(new XYChart.Data<>(i,day.cents(metric)/100.0));Day old=report.previous().days().get(i);previous.getData().add(new XYChart.Data<>(i,old.cents(metric)/100.0));}
-            chart.getData().setAll(compare.isSelected()?List.of(current,previous):List.of(current));
+            chart.getData().setAll(compare.isSelected()?List.of(current,previous):List.of(current));drawing.request();
             periodText.setText(start.format(FULL)+"  –  "+end.format(FULL)+(end.equals(report.today())?"  ·  Today is in progress":"")+(compare.isSelected()?"  |  Dashed: previous "+days+" days":""));
             int excluded=report.current().count(Metric.ORDER_VALUE)-report.current().count(Metric.PAID_REVENUE);
             String basis=metric==Metric.PAID_REVENUE?"Paid orders only · "+excluded+" unpaid orders excluded":"All payment statuses included · order value is not collected revenue";
@@ -125,6 +126,7 @@ public final class RevenuePerformanceCard extends VBox {
     }
     private boolean insidePlot(double sceneX,double sceneY){Node plot=chart.lookup(".chart-plot-background");return plot!=null&&plot.getBoundsInLocal().contains(plot.sceneToLocal(sceneX,sceneY));}
     private void inspect(int index){
+        drawing.complete();
         if(report==null)return;hovered=Math.max(0,Math.min(index,report.current().days().size()-1));Day day=report.current().days().get(hovered);Node plot=chart.lookup(".chart-plot-background");if(plot==null||chart.getScene()==null)return;
         hoverDate.setText(day.date().format(FULL));hoverAmount.setText(money(day.cents(metric)));hoverOrders.setText(day.count(metric)+" "+(metric==Metric.PAID_REVENUE?"paid":"recorded")+" orders");
         Day previous=report.previous().days().get(hovered);hoverPrevious.setText(compare.isSelected()?previous.date().format(SHORT)+": "+money(previous.cents(metric)):"Click to inspect orders");

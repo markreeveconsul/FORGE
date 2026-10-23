@@ -191,3 +191,19 @@
 .forge-admin.admin-dark .text-field.invalid { -fx-border-color: #FCA5A5; }
 .forge-admin .field-error.field-warning { -fx-text-fill: #92400E; }
 .forge-admin.admin-dark .field-error.field-warning { -fx-text-fill: #FDE68A; }
+
+/* Functional admin feedback and motion. */
+.forge-admin #admin-navigation .workspace-nav.admin-nav-active { -fx-border-color: transparent; }
+.forge-admin .workspace-nav-indicator { -fx-background-color: #F97316; -fx-background-radius: 4; }
+.forge-admin .workspace-inline-feedback { -fx-font-size: 10px; -fx-text-fill: -admin-muted; }
+.forge-admin .workspace-inline-feedback.workspace-inline-saved { -fx-text-fill: #059669; }
+.forge-admin .workspace-inline-feedback.workspace-inline-error { -fx-text-fill: #DC2626; }
+.forge-admin.admin-dark .workspace-inline-feedback.workspace-inline-saved { -fx-text-fill: #6EE7B7; }
+.forge-admin.admin-dark .workspace-inline-feedback.workspace-inline-error { -fx-text-fill: #FDA4AF; }
+.forge-admin .workspace-toast { -fx-padding: 14 16; -fx-background-color: -admin-card; -fx-background-radius: 12; -fx-border-color: #059669; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian,rgba(0,0,0,.17),18,0,0,5); }
+.forge-admin .workspace-toast-text { -fx-text-fill: -admin-text; -fx-font-size: 12px; }
+.forge-admin .manager-before, .forge-admin .manager-after { -fx-background-color: -admin-soft; -fx-padding: 12; -fx-background-radius: 12; }
+.forge-admin .manager-before-text { -fx-text-fill: -admin-muted; -fx-font-size: 12px; }
+.forge-admin .manager-after { -fx-border-color: rgba(249,115,22,.4); -fx-border-radius: 12; }
+
+.forge-admin .workspace-toast.workspace-toast-error { -fx-border-color: #DC2626; }

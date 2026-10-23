@@ -28,6 +28,7 @@ public final class AiManagerView extends BorderPane {
     private final Button run=Ui.button("Run  ↗",this::run),cancel=Ui.button("Cancel",this::cancel);
     private final List<Review> reviews=new ArrayList<>();
     private final VBox activity=new VBox(10);
+    private final AdminMotion.Dots terminalDots=new AdminMotion.Dots();
     private final Label activityStatus=Ui.label("○ IDLE","manager-terminal-state");
     private Task<?> pending,metricsTask;private Animation shimmer;private int generation,metricsGeneration;private boolean disposed,busy,applying;
     private record Review(ProductService.ManagerChange original,CheckBox included,TextArea description,TextArea specs) { }
@@ -35,7 +36,7 @@ public final class AiManagerView extends BorderPane {
     public AiManagerView(User actor,Services services,GeminiAssistant gemini){
         if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
         this.actor=actor;this.services=services;this.manager=new AiManagerService(services,gemini);
-        setId("ai-manager-page");getStyleClass().add("ai-manager-page");setMinSize(0,0);
+        results.setId("ai-manager-results");setId("ai-manager-page");getStyleClass().add("ai-manager-page");setMinSize(0,0);
         robot.setId("ai-manager-robot");robot.setSleepAfter(Duration.seconds(45));robot.watchInput(input,()->busy);
         VBox title=new VBox(6,Ui.label("AI NEURAL MANAGER","manager-title"),Ui.label("Command your store with FORGE AI. Review every proposed change.","manager-subtitle"));title.setMinWidth(0);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
@@ -52,7 +53,7 @@ public final class AiManagerView extends BorderPane {
         run.setText("Run Agent  ↗");
         VBox commandCard=new VBox(18,Ui.label("YOUR STORE. ONE COMMAND.","manager-command-eyebrow"),Ui.label("What action would you like FORGE AI to execute?","section-title"),composer,chips,options);commandCard.getStyleClass().add("manager-command-card");
         Region terminalGap=new Region();HBox.setHgrow(terminalGap,Priority.ALWAYS);
-        HBox terminalHeader=new HBox(12,Ui.label("●  ●  ●","manager-terminal-dots"),Ui.label("FORGE AI ACTIVITY","manager-terminal-heading"),terminalGap,activityStatus);terminalHeader.setAlignment(Pos.CENTER_LEFT);terminalHeader.getStyleClass().add("manager-terminal-header");
+        HBox terminalHeader=new HBox(12,terminalDots,Ui.label("FORGE AI ACTIVITY","manager-terminal-heading"),terminalGap,activityStatus);terminalHeader.setAlignment(Pos.CENTER_LEFT);terminalHeader.getStyleClass().add("manager-terminal-header");
         activity.getStyleClass().add("manager-terminal-lines");activity.setId("ai-manager-activity");
         VBox terminal=new VBox(terminalHeader,activity);terminal.getStyleClass().add("manager-terminal");log("Ready. Enter a store command to begin.");
         VBox content=new VBox(24,header,commandCard,terminal,feedback,results);content.setMinWidth(0);content.getStyleClass().add("manager-content");
@@ -80,13 +81,13 @@ public final class AiManagerView extends BorderPane {
     private void run(){
         if(busy||disposed)return;String command=input.getText().trim();if(command.isEmpty()){input.requestFocus();return;}
         feedback.setText("");reviews.clear();int ticket=++generation;setBusy(true);log("Command received. Interpreting your request and checking store records…");loading();boolean useResearch=research.isSelected();
-        Task<AiManagerService.Result> task=new Task<>(){@Override protected AiManagerService.Result call(){return manager.prepare(actor,command,useResearch);}};pending=task;
+        Task<AiManagerService.Result> task=new Task<>(){@Override protected AiManagerService.Result call(){return manager.prepare(actor,command,useResearch,stage->Platform.runLater(()->{if(!disposed&&ticket==generation&&busy){log(stage);robot.setState(stage.startsWith("Checking")||stage.startsWith("Calculating")?RobotAvatar.State.SEARCHING:RobotAvatar.State.THINKING);}}));}};pending=task;
         task.setOnSucceeded(e->{if(disposed||ticket!=generation)return;finish();render(task.getValue());});
         task.setOnFailed(e->{if(disposed||ticket!=generation)return;finish();failure(task.getException());});start(task);
     }
     public void submit(String command){if(disposed||busy)return;input.setText(command);run();}
     private void log(String text){Label line=Ui.label(java.time.LocalTime.now().withNano(0)+"  "+text,"manager-terminal-line");activity.getChildren().add(line);while(activity.getChildren().size()>6)activity.getChildren().removeFirst();}
-    private void setBusy(boolean value){busy=value;if(value)robot.setState(applying?RobotAvatar.State.WORKING:RobotAvatar.State.THINKING);else robot.returnToRest();activityStatus.setText(value?"● RUNNING":"○ IDLE");run.setDisable(value);input.setDisable(value);chips.setDisable(value);research.setDisable(value);cancel.setVisible(value&&!applying);}
+    private void setBusy(boolean value){busy=value;terminalDots.setRunning(value);if(value)robot.setState(applying?RobotAvatar.State.WORKING:RobotAvatar.State.THINKING);else robot.returnToRest();activityStatus.setText(value?"● RUNNING":"○ IDLE");run.setDisable(value);input.setDisable(value);chips.setDisable(value);research.setDisable(value);cancel.setVisible(value&&!applying);}
     private void loading(){
         VBox skeleton=Ui.skeletonRows(3);Region sweep=new Region();sweep.getStyleClass().add("manager-shimmer-sweep");sweep.setMinWidth(150);sweep.setPrefWidth(150);sweep.setMaxWidth(150);sweep.setMouseTransparent(true);
         StackPane loading=new StackPane(skeleton,sweep);loading.setId("ai-manager-loading");StackPane.setAlignment(sweep,Pos.CENTER_LEFT);
@@ -121,13 +122,13 @@ public final class AiManagerView extends BorderPane {
         }
         if(!result.products().isEmpty())results.getChildren().add(productTable(result.products(),result.totalMatches()));
         if(!result.changes().isEmpty()){
-            VBox proposed=new VBox(10,Ui.label("Review proposed changes","manager-result-title"),Ui.label("Select the products to update. Changes are saved together only when you apply them.","muted"));proposed.getStyleClass().add("manager-result-card");
+            VBox proposed=new VBox(10,Ui.label("Review proposed changes","manager-result-title"),Ui.label("Select the products to update. Changes are saved together only when you apply them.","muted"));proposed.setId("ai-manager-review");proposed.getStyleClass().add("manager-result-card");
             Accordion accordion=new Accordion();accordion.setId("ai-manager-drafts");
             for(ProductService.ManagerChange change:result.changes()){
                 CheckBox included=new CheckBox("Include this product");included.setSelected(true);
                 VBox fields=new VBox(12,included);Product product=change.expected();
-                TextArea desc=change.description()==null?null:editor(change.description(),"Description draft",fields);
-                TextArea specs=change.specifications()==null?null:editor(change.specifications(),"Specifications draft",fields);
+                TextArea desc=change.description()==null?null:editor(product.getDescription(),change.description(),"Description",fields);
+                TextArea specs=change.specifications()==null?null:editor(product.getSpecifications(),change.specifications(),"Specifications",fields);
                 if(change.active()!=null)fields.getChildren().add(Ui.label((product.isActive()?"Active":"Inactive")+"  →  "+(change.active()?"Active":"Inactive"),"manager-state-change"));
                 result.drafts().stream().filter(d->d.id()==product.getId()).findFirst().ifPresent(d->{
                     if(!d.note().isBlank())fields.getChildren().add(Ui.label(d.note(),"muted"));
@@ -143,8 +144,21 @@ public final class AiManagerView extends BorderPane {
         }else if(c.intent()==ManagerCommand.Intent.FIX_CONTENT&&!result.drafts().isEmpty()){
             results.getChildren().add(Ui.label("No verified new fields were found to apply. Add an exact model or review the product in Products.","muted"));
         }
+        revealResults();
     }
-    private TextArea editor(String value,String title,VBox parent){TextArea field=new TextArea(value);field.setWrapText(true);field.setPrefRowCount(3);field.setTextFormatter(new TextFormatter<String>(c->c.getControlNewText().length()<=1000?c:null));parent.getChildren().addAll(Ui.label(title,"field-label"),field);return field;}
+    private void revealResults(){
+        Platform.runLater(()->{if(disposed||!AdminMotion.showing(this))return;ScrollPane scroll=(ScrollPane)lookup("#ai-manager-scroll");if(scroll==null||results.getChildren().isEmpty())return;
+            scroll.getContent().applyCss();((Region)scroll.getContent()).layout();double range=scroll.getContent().getLayoutBounds().getHeight()-scroll.getViewportBounds().getHeight();
+            Node review=results.lookup("#ai-manager-review");double target=results.getBoundsInParent().getMinY()+(review==null?0:review.getBoundsInParent().getMinY());if(range>0)scroll.setVvalue(Math.max(0,Math.min(1,(target-16)/range)));Motion.reveal(results);
+        });
+    }
+    private TextArea editor(String before,String value,String title,VBox parent){
+        TextArea field=new TextArea(value);field.setWrapText(true);field.setPrefRowCount(4);field.setTextFormatter(new TextFormatter<String>(c->c.getControlNewText().length()<=1000?c:null));field.setAccessibleText("Proposed "+title.toLowerCase(Locale.ROOT));
+        Label original=Ui.label(before.isBlank()?"No "+title.toLowerCase(Locale.ROOT)+" recorded.":before,"manager-before-text");original.setWrapText(true);original.setMinWidth(0);original.setMaxWidth(Double.MAX_VALUE);
+        VBox old=new VBox(8,Ui.label("BEFORE","manager-eyebrow"),original);old.getStyleClass().add("manager-before");old.setMinWidth(0);
+        VBox proposed=new VBox(8,Ui.label("PROPOSED · EDITABLE","manager-eyebrow"),field);proposed.getStyleClass().add("manager-after");proposed.setMinWidth(0);
+        parent.getChildren().addAll(Ui.label(title,"field-label"),Ui.responsiveColumns(old,proposed,670,12));return field;
+    }
     private void filter(FlowPane row,String value){Label label=Ui.label(value,"manager-filter-chip");row.getChildren().add(label);}
     private VBox salesMetric(String label,String value){VBox box=new VBox(6,Ui.label(label,"manager-eyebrow"),Ui.label(value,"manager-metric-number"));box.setMinWidth(0);HBox.setHgrow(box,Priority.ALWAYS);return box;}
     private VBox productTable(List<Product> products,int total){
@@ -163,17 +177,17 @@ public final class AiManagerView extends BorderPane {
         applying=true;setBusy(true);loading();int ticket=++generation;
         Task<List<Product>> task=new Task<>(){@Override protected List<Product> call(){manager.apply(actor,approved);return selected.stream().map(c->services.products().get(c.expected().getId())).toList();}};pending=task;
         task.setOnSucceeded(e->{if(disposed||ticket!=generation)return;finish();reviews.clear();
-            robot.react(RobotAvatar.State.HAPPY);log("Saved "+selected.size()+" reviewed changes. Inventory refreshed.");VBox success=new VBox(8,Ui.label("✓ Changes applied","manager-result-title"),Ui.label("Updated "+selected.size()+" products. Inventory and content counts have been refreshed.","muted"));success.getStyleClass().addAll("manager-result-card","manager-success");success.setId("ai-manager-success");results.getChildren().setAll(success,productTable(task.getValue(),task.getValue().size()));loadMetrics();
+            robot.react(RobotAvatar.State.HAPPY);AdminWorkspace.notice(this,"Updated "+selected.size()+" products.",null);log("Saved "+selected.size()+" reviewed changes. Inventory refreshed.");VBox success=new VBox(8,Ui.label("✓ Changes applied","manager-result-title"),Ui.label("Updated "+selected.size()+" products. Inventory and content counts have been refreshed.","muted"));success.getStyleClass().addAll("manager-result-card","manager-success");success.setId("ai-manager-success");results.getChildren().setAll(success,productTable(task.getValue(),task.getValue().size()));revealResults();loadMetrics();
         });task.setOnFailed(e->{if(disposed||ticket!=generation)return;finish();failure(task.getException());loadMetrics();});start(task);
     }
     private void failure(Throwable error){
         robot.react(RobotAvatar.State.ERROR);
         log("Command could not finish. No unreviewed changes were applied.");
         VBox card=new VBox(10,Ui.label("We couldn't complete that command","manager-result-title"),Ui.label(AssistantPanel.friendly(error),"muted"));card.setId("ai-manager-error");card.getStyleClass().addAll("manager-result-card","manager-error");
-        Button retry=Ui.button("Try again",this::run);retry.getStyleClass().add("manager-chip");card.getChildren().add(retry);results.getChildren().setAll(card);
+        Button retry=Ui.button("Try again",this::run);retry.getStyleClass().add("manager-chip");card.getChildren().add(retry);results.getChildren().setAll(card);revealResults();
     }
     private void cancel(){if(applying)return;generation++;if(pending!=null)pending.cancel(true);finish();reviews.clear();empty();feedback.setText("Command cancelled. No changes were applied.");}
-    public void dispose(){robot.setAnimated(false);disposed=true;generation++;metricsGeneration++;if(pending!=null&&!applying)pending.cancel(true);if(metricsTask!=null)metricsTask.cancel(true);if(shimmer!=null)shimmer.stop();}
+    public void dispose(){terminalDots.dispose();robot.setAnimated(false);disposed=true;generation++;metricsGeneration++;if(pending!=null&&!applying)pending.cancel(true);if(metricsTask!=null)metricsTask.cancel(true);if(shimmer!=null)shimmer.stop();}
     private void showPrivacy(){Alert info=new Alert(Alert.AlertType.INFORMATION,"FORGE AI uses Google Gemini to interpret your command and draft public product content. Online specification research sends product names and catalog text for web lookup. Customer names, addresses and order rows are not sent. Free-tier content may help improve Google's products. Queries and sales totals run locally. All edits require your review before saving.",ButtonType.OK);info.setTitle("About AI Manager");info.setHeaderText("Your store, your approval");if(getScene()!=null)info.initOwner(getScene().getWindow());info.showAndWait();}
     private void openSource(String source){try{java.awt.Desktop.getDesktop().browse(java.net.URI.create(source));}catch(Exception e){feedback.setText("Could not open the source: "+source);}}
     private static void start(Task<?> task){Thread thread=new Thread(task,"forge-ai-manager");thread.setDaemon(true);thread.start();}

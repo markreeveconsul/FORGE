@@ -23,7 +23,10 @@ public final class AdminView extends VBox {
     private final Label selectionCount=Ui.label("","workspace-bulk-count");
     private final CheckBox selectAll=new CheckBox();
     private Runnable reload;
-    private User actor;private ProductService productService;
+        private User actor;private ProductService productService;
+    private record EditFeedback(String message,boolean pending,boolean error) { }
+    private final java.util.Map<String,EditFeedback> editFeedback=new java.util.HashMap<>();
+    private final java.util.Map<String,String> drafts=new java.util.HashMap<>();
 
     public AdminView(User admin,ProductService products) {
         this(admin,products,command->{});
@@ -130,7 +133,7 @@ public final class AdminView extends VBox {
             ButtonType remove=new ButtonType("Delete product",ButtonBar.ButtonData.OK_DONE);
             Alert confirm=new Alert(Alert.AlertType.CONFIRMATION,"Delete “"+chosen.getName()+"”?\n\nIt will be removed from the storefront, saved items and inventory list. Past order receipts are preserved.",remove,ButtonType.CANCEL);
             confirm.setTitle("Delete product");confirm.setHeaderText("Delete product #"+chosen.getId());confirm.initOwner(getScene().getWindow());
-            if(confirm.showAndWait().orElse(ButtonType.CANCEL)==remove)Ui.async(this,"Deleting product…",()->{products.delete(admin,chosen);return true;},done->{selected.remove(chosen.getId());AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"Deleted "+chosen.getName()+". Past receipts are preserved.");refresh.run();},error->Ui.failure(feedback,error));
+            if(confirm.showAndWait().orElse(ButtonType.CANCEL)==remove)Ui.async(this,"Deleting product…",()->{products.delete(admin,chosen);return true;},done->{selected.remove(chosen.getId());AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"Deleted "+chosen.getName()+". Past receipts are preserved.");AdminWorkspace.notice(this,"Deleted "+chosen.getName()+".",null);refresh.run();},error->Ui.failure(feedback,error));
         });delete.setId("delete-product");delete.getStyleClass().add("workspace-delete-button");delete.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
         table.setRowFactory(t->{TableRow<Product> row=new TableRow<>();row.setOnMouseClicked(e->{if(e.getClickCount()==2&&!row.isEmpty()){Product p=row.getItem();table.getSelectionModel().select(p);AdminWorkspace.inspect(this,"PRODUCT",p.getName(),List.of(AdminWorkspace.detail("SKU / ID","#"+p.getId()),AdminWorkspace.detail("PRICE",Money.format(p.getPrice())),AdminWorkspace.detail("STOCK LEVEL",p.getStock()+" units"),AdminWorkspace.detail("DESCRIPTION",p.getDescription().isBlank()?"Not yet recorded":p.getDescription()),AdminWorkspace.detail("SPECIFICATIONS",p.getSpecifications().isBlank()?"Not yet recorded":p.getSpecifications())),edit);}});return row;});
         editButton.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull().or(form.visibleProperty()));
@@ -155,7 +158,7 @@ public final class AdminView extends VBox {
             long id=editingId;String value=name.getText();Category group=category.getValue();BigDecimal cost=amount;int qty=quantity;boolean enabled=active.isSelected();
             String details=description.getText(),specs=specifications.getText();byte[] selectedPhoto=photos.getPhoto();List<byte[]> angles=photos.getAdditionalPhotos();PhotoFrame frame=photos.getFraming();
             saving.set(true);Ui.async(this,"Saving product…",()->{products.save(admin,id,value,group,cost,qty,enabled,details,selectedPhoto,angles,specs,frame);return true;},done-> {
-                saving.set(false);form.setVisible(false);AdminWorkspace.inventoryChanged(this);Ui.success(feedback,"✓ "+value.trim()+" saved."+(ProductSpecifications.formatWarnings(specs).isEmpty()?"":" Some specifications use a custom format; you can refine them later."));refresh.run();
+                saving.set(false);form.setVisible(false);AdminWorkspace.inventoryChanged(this);AdminWorkspace.notice(this,value.trim()+" saved.",null);Ui.success(feedback,"✓ "+value.trim()+" saved."+(ProductSpecifications.formatWarnings(specs).isEmpty()?"":" Some specifications use a custom format; you can refine them later."));refresh.run();
             },error->{saving.set(false);Ui.failure(formFeedback,error);Ui.focus(formFeedback);});
         });
         save.setId("save-product");
@@ -195,12 +198,12 @@ public final class AdminView extends VBox {
         Button fix=Ui.button("Bulk AI Fix",()->bulkCommand(aiCommand,"Fix missing content for products "));RobotAvatar fixIcon=new RobotAvatar(20);fixIcon.setAnimated(false);fix.setGraphic(fixIcon);fix.setId("admin-bulk-ai");fix.getStyleClass().add("workspace-orange-button");
         Button inactive=Ui.button("Set Inactive",()->bulkCommand(aiCommand,"Deactivate products "));inactive.setId("admin-bulk-inactive");
         Button export=Ui.button("Export CSV",this::exportCsv);export.setId("admin-export-csv");Button clear=Ui.button("×",()->{selected.clear();selectAll.setSelected(false);table.refresh();updateSelection();});
-        bulk.getChildren().addAll(selectionCount,fix,inactive,export,clear);bulk.setAlignment(javafx.geometry.Pos.CENTER_LEFT);bulk.getStyleClass().add("workspace-bulk");bulk.setId("admin-bulk-actions");bulk.setVisible(false);bulk.managedProperty().bind(bulk.visibleProperty());
-        VBox body=new VBox(18,table,form,bulk);body.setMinWidth(0);
+        bulk.getChildren().addAll(selectionCount,fix,inactive,export,clear);bulk.setAlignment(javafx.geometry.Pos.CENTER_LEFT);bulk.getStyleClass().add("workspace-bulk");bulk.setId("admin-bulk-actions");bulk.heightProperty().addListener((o,a,b)->Platform.runLater(()->AdminWorkspace.placeNotice(this)));bulk.visibleProperty().addListener((o,a,b)->Platform.runLater(()->AdminWorkspace.placeNotice(this)));bulk.setVisible(false);bulk.managedProperty().bind(bulk.visibleProperty());
+        VBox body=new VBox(18,table,form);body.setMinWidth(0);
         VBox heading=new VBox(5,Ui.label("STORE INVENTORY","page-title"),Ui.label("Manage items, edit stock inline, and prepare bulk content updates.","muted"));HBox pageHeading=new HBox(18,heading,new Region(),add);pageHeading.setAlignment(javafx.geometry.Pos.CENTER_LEFT);HBox.setHgrow(pageHeading.getChildren().get(1),Priority.ALWAYS);
         HBox tableHeader=new HBox(12,count,new Region(),actions);HBox.setHgrow(tableHeader.getChildren().get(1),Priority.ALWAYS);tableHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         ScrollPane bodyScroll=Ui.scroll(body);VBox.setVgrow(bodyScroll,Priority.ALWAYS);
-        getChildren().addAll(pageHeading,stats,filterBar,tableHeader,feedback,bodyScroll);
+        getChildren().addAll(pageHeading,stats,filterBar,tableHeader,feedback,bodyScroll,bulk);
         Platform.runLater(refresh);
     }
     private void filter() {
@@ -215,17 +218,37 @@ public final class AdminView extends VBox {
         table.setItems(FXCollections.observableArrayList(rows));count.setText(rows.size()+(rows.size()==1?" product · ":" products · ")+all.stream().filter(p->p.isActive()&&p.getStock()<=5).count()+" active products low on stock (5 or fewer)");
         updateSelection();
     }
-    private void updateSelection(){selectionCount.setText(selected.size()+" items selected");bulk.setVisible(!selected.isEmpty());}
+    private void updateSelection(){selectionCount.setText(selected.size()+(selected.size()==1?" item selected":" items selected"));AdminMotion.disclose(bulk,!selected.isEmpty());}
     private void bulkCommand(java.util.function.Consumer<String> command,String prefix){if(selected.isEmpty())return;if(selected.size()>20){Ui.error(new edu.course.shop.exception.ValidationException("Select at most 20 products for one reviewed batch."));return;}command.accept(prefix+selected.stream().sorted().map(id->"#"+id).collect(java.util.stream.Collectors.joining(" ")));}
+    private void replaceProduct(Product updated){
+        all=all.stream().map(p->p.getId()==updated.getId()?updated:p).toList();
+        for(int i=0;i<table.getItems().size();i++)if(table.getItems().get(i).getId()==updated.getId()){table.getItems().set(i,updated);break;}
+        table.sort();activeCount.setText(all.stream().filter(Product::isActive).count()+" ACTIVE");lowCount.setText(all.stream().filter(p->p.isActive()&&p.getStock()<=5).count()+" LOW STOCK");
+        count.setText(table.getItems().size()+(table.getItems().size()==1?" product · ":" products · ")+all.stream().filter(p->p.isActive()&&p.getStock()<=5).count()+" active products low on stock (5 or fewer)");
+    }
+    private void undoInventory(AdminWorkspace workspace,Product before,Product after){
+        Ui.async(this,"Restoring inventory…",()->{productService.updateInventoryNumbers(actor,after,before.getPrice(),before.getStock());return productService.get(before.getId());},restored->{replaceProduct(restored);editFeedback.remove(before.getId()+":true");editFeedback.remove(before.getId()+":false");table.refresh();AdminWorkspace.notice(workspace,"Restored the previous price and stock for "+before.getName()+".",null);},failure->AdminWorkspace.failure(workspace,"Could not undo: "+failure.getMessage()));
+    }
     private void editable(TableColumn<Product,String> column,boolean price){
         column.setCellFactory(c->new TableCell<>(){
-            final TextField field=new TextField();boolean updating;
-            {field.setMaxWidth(price?110:76);field.getStyleClass().add("workspace-inline-field");field.setOnAction(e->commit());field.focusedProperty().addListener((o,a,b)->{if(a&&!b)commit();});}
-            protected void updateItem(String value,boolean empty){super.updateItem(value,empty);updating=true;Product p=getTableRow()==null?null:getTableRow().getItem();field.setText(p==null?"":price?p.getPrice().toPlainString():Integer.toString(p.getStock()));field.setAccessibleText(price?"Product price":"Stock quantity");setGraphic(empty?null:field);updating=false;}
-            private void commit(){Product p=getTableRow()==null?null:getTableRow().getItem();if(updating||p==null||field.isDisabled())return;
-                try{BigDecimal amount=price?Money.parse(field.getText()):p.getPrice();int stock=price?p.getStock():Ui.integer(field.getText());if(amount.compareTo(p.getPrice())==0&&stock==p.getStock())return;
-                    field.setDisable(true);Ui.async(field,"Saving inventory…",()->{productService.updateInventoryNumbers(actor,p,amount,stock);return true;},v->{field.setDisable(false);reload.run();},e->{field.setDisable(false);field.setText(price?p.getPrice().toPlainString():Integer.toString(p.getStock()));Ui.error(e);});
-                }catch(RuntimeException e){Ui.error(e);updating=true;field.setText(price?p.getPrice().toPlainString():Integer.toString(p.getStock()));updating=false;}
+            final TextField field=new TextField();final Label hint=new Label();final VBox box=new VBox(3,field,hint);boolean updating;
+            {field.setMaxWidth(price?110:76);field.getStyleClass().add("workspace-inline-field");hint.getStyleClass().add("workspace-inline-feedback");hint.setWrapText(false);hint.setMinWidth(0);hint.setMaxWidth(price?110:90);hint.managedProperty().bind(hint.visibleProperty());field.setOnAction(e->commit());field.focusedProperty().addListener((o,a,b)->{if(a&&!b)commit();});
+                field.textProperty().addListener((o,a,b)->{Product p=getTableRow()==null?null:getTableRow().getItem();if(!updating&&p!=null){drafts.put(key(p),b);EditFeedback feedback=editFeedback.get(key(p));if(feedback==null||!feedback.pending()){editFeedback.remove(key(p));hint.setVisible(false);}}});}
+            private String key(Product p){return p.getId()+":"+price;}
+            private void showHint(EditFeedback feedback){hint.setText(feedback==null?"":feedback.error()?"Not saved":feedback.message());hint.setAccessibleText(feedback==null?"":feedback.message());hint.setTooltip(feedback!=null&&feedback.error()?new Tooltip(feedback.message()):null);hint.setVisible(feedback!=null);hint.getStyleClass().removeAll("workspace-inline-error","workspace-inline-saved");if(feedback!=null)hint.getStyleClass().add(feedback.error()?"workspace-inline-error":feedback.pending()?"workspace-inline-pending":"workspace-inline-saved");}
+            protected void updateItem(String value,boolean empty){super.updateItem(value,empty);updating=true;Product p=getTableRow()==null?null:getTableRow().getItem();
+                EditFeedback feedback=p==null?null:editFeedback.get(key(p));field.setText(p==null?"":drafts.getOrDefault(key(p),price?p.getPrice().toPlainString():Integer.toString(p.getStock())));field.setAccessibleText(price?"Product price":"Stock quantity");field.setDisable(feedback!=null&&feedback.pending());showHint(feedback);setGraphic(empty?null:box);updating=false;}
+            private void commit(){
+                Product p=getTableRow()==null?null:getTableRow().getItem();if(updating||p==null||field.isDisabled())return;String key=key(p);
+                try{
+                    BigDecimal amount=price?Money.parse(field.getText()):p.getPrice();int stock=price?p.getStock():Ui.integer(field.getText());if(amount.compareTo(p.getPrice())==0&&stock==p.getStock()){drafts.remove(key);editFeedback.remove(key);showHint(null);return;}
+                    EditFeedback pending=new EditFeedback("Saving…",true,false);editFeedback.put(key,pending);showHint(pending);field.setDisable(true);AdminWorkspace workspace=AdminWorkspace.find(AdminView.this);
+                    Ui.async(AdminView.this,"Saving inventory…",()->{productService.updateInventoryNumbers(actor,p,amount,stock);return productService.get(p.getId());},updated->{
+                        drafts.remove(key);editFeedback.put(key,new EditFeedback("Saved ✓",false,false));replaceProduct(updated);
+                        AdminWorkspace.notice(workspace,(price?"Price":"Stock")+" updated for "+p.getName()+".",()->undoInventory(workspace,p,updated));
+                        if(getTableRow()!=null&&getTableRow().getItem()!=null&&getTableRow().getItem().getId()==p.getId()&&!Motion.isReduced()){javafx.animation.FadeTransition pulse=new javafx.animation.FadeTransition(javafx.util.Duration.millis(240),box);pulse.setFromValue(.7);pulse.setToValue(1);pulse.play();}
+                    },failure->{EditFeedback error=new EditFeedback(failure.getMessage(),false,true);editFeedback.put(key,error);AdminWorkspace.failure(workspace,(price?"Price":"Stock")+" was not saved: "+failure.getMessage());if(getTableRow()!=null&&getTableRow().getItem()!=null&&getTableRow().getItem().getId()==p.getId()){field.setDisable(false);showHint(error);}});
+                }catch(RuntimeException failure){EditFeedback error=new EditFeedback(failure.getMessage(),false,true);editFeedback.put(key,error);showHint(error);AdminWorkspace.failure(AdminView.this,(price?"Price":"Stock")+" was not saved: "+failure.getMessage());}
             }
         });
     }
