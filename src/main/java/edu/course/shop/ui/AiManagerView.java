@@ -36,7 +36,7 @@ public final class AiManagerView extends BorderPane {
         if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
         this.actor=actor;this.services=services;this.manager=new AiManagerService(services,gemini);
         setId("ai-manager-page");getStyleClass().add("ai-manager-page");setMinSize(0,0);
-        robot.setId("ai-manager-robot");
+        robot.setId("ai-manager-robot");robot.setSleepAfter(Duration.seconds(45));robot.watchInput(input,()->busy);
         VBox title=new VBox(6,Ui.label("AI NEURAL MANAGER","manager-title"),Ui.label("Command your store with FORGE AI. Review every proposed change.","manager-subtitle"));title.setMinWidth(0);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
         HBox header=new HBox(14,robot,title,gap,badge);header.setAlignment(Pos.CENTER_LEFT);header.getStyleClass().add("manager-header");
@@ -86,7 +86,7 @@ public final class AiManagerView extends BorderPane {
     }
     public void submit(String command){if(disposed||busy)return;input.setText(command);run();}
     private void log(String text){Label line=Ui.label(java.time.LocalTime.now().withNano(0)+"  "+text,"manager-terminal-line");activity.getChildren().add(line);while(activity.getChildren().size()>6)activity.getChildren().removeFirst();}
-    private void setBusy(boolean value){robot.setState(value?(applying?RobotAvatar.State.WORKING:RobotAvatar.State.THINKING):RobotAvatar.State.IDLE);busy=value;activityStatus.setText(value?"● RUNNING":"○ IDLE");run.setDisable(value);input.setDisable(value);chips.setDisable(value);research.setDisable(value);cancel.setVisible(value&&!applying);}
+    private void setBusy(boolean value){busy=value;if(value)robot.setState(applying?RobotAvatar.State.WORKING:RobotAvatar.State.THINKING);else robot.returnToRest();activityStatus.setText(value?"● RUNNING":"○ IDLE");run.setDisable(value);input.setDisable(value);chips.setDisable(value);research.setDisable(value);cancel.setVisible(value&&!applying);}
     private void loading(){
         VBox skeleton=Ui.skeletonRows(3);Region sweep=new Region();sweep.getStyleClass().add("manager-shimmer-sweep");sweep.setMinWidth(150);sweep.setPrefWidth(150);sweep.setMaxWidth(150);sweep.setMouseTransparent(true);
         StackPane loading=new StackPane(skeleton,sweep);loading.setId("ai-manager-loading");StackPane.setAlignment(sweep,Pos.CENTER_LEFT);
@@ -98,7 +98,7 @@ public final class AiManagerView extends BorderPane {
     }
     private void finish(){if(shimmer!=null){shimmer.stop();shimmer=null;}applying=false;setBusy(false);pending=null;}
     private void render(AiManagerService.Result result){
-        robot.react(result.aiIssue().isBlank()?RobotAvatar.State.HAPPY:RobotAvatar.State.ERROR);
+        if(result.aiIssue().isBlank())robot.replyPresented();else robot.react(RobotAvatar.State.ERROR);
         log(result.aiIssue().isBlank()?"Completed: "+result.products().size()+" products returned; "+result.changes().size()+" changes ready for review.":"AI request failed. Local results remain available; see the connection details below.");
         setMode(result.offline());reviews.clear();
         Label route=Ui.label(result.command().intent().name().replace('_',' '),"manager-eyebrow");

@@ -251,3 +251,22 @@
 .forge-store .separator .line { -fx-border-color: -line; -fx-border-width: 1 0 0 0; }
 /* The robot carries the brand mark; keep its launcher compact. */
 .forge-store .button.assistant-launcher { -fx-padding: 8 16; -fx-graphic-text-gap: 9; -fx-min-height: 48; }
+
+/* A transparent, keyboard-accessible hit target. Only the floating robot is painted. */
+.forge-store .button.assistant-launcher,
+.forge-store .button.assistant-launcher:hover,
+.forge-store .button.assistant-launcher:armed {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-background-insets: 0;
+    -fx-border-insets: 6;
+    -fx-background-radius: 50;
+    -fx-border-radius: 50;
+    -fx-padding: 6;
+    -fx-graphic-text-gap: 0;
+    -fx-effect: null;
+    -fx-cursor: hand;
+}
+.forge-store .button.assistant-launcher:focused { -fx-border-color: #FB923C; }
+.forge-store .button.assistant-launcher:hover .forge-ai-robot { -fx-effect: dropshadow(gaussian,rgba(249,115,22,.32),18,.12,0,2); }

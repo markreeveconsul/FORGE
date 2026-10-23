@@ -48,7 +48,7 @@ public final class AssistantPanel extends BorderPane {
         this.savedPreferences=preferenceStore.load(user.getId());this.consent=preferenceStore.hasGeminiConsent(user.getId());
         this.retrieval=new CatalogAssistant(services);this.viewProduct=viewProduct;this.cartChanged=cartChanged;this.savedItems=savedItems;
         setId("assistant-panel");getStyleClass().add("forge-chat");setMinSize(0,0);setPrefWidth(420);setMaxWidth(420);
-        robot.setId("assistant-robot");
+        robot.setId("assistant-robot");robot.setSleepAfter(Duration.seconds(45));robot.watchInput(input,()->busy);
         Label subtitle=Ui.label(gemini.configurationProblem().isBlank()?"AI BUILD HELPER":"AI OFFLINE · CATALOG SEARCH STILL WORKS","chat-subtitle");subtitle.setId("assistant-status");
         VBox title=new VBox(2,Ui.label("FORGE AI","chat-title"),subtitle);
         Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
@@ -74,6 +74,7 @@ public final class AssistantPanel extends BorderPane {
         setBottom(new VBox(composer,footer));
         newChat();
     }
+    public void greet(){if(!busy)robot.react(RobotAvatar.State.HAPPY);}
     public void refreshContext() {
         Product p=page.get();
         context.setText(p!=null?"Viewing · "+p.getName():"Browsing the catalog · Cart: "+cart.get().getItems().size()+" products"+preferenceSuffix());
@@ -200,7 +201,7 @@ public final class AssistantPanel extends BorderPane {
         });start(task);
     }
     private void renderAnswer(CatalogAssistant.Plan plan, CatalogAssistant.Memory previous, String question, String text) {
-        robot.react(RobotAvatar.State.HAPPY);memory=CatalogAssistant.remember(previous,plan,question,text);context.setText(plan.context());VBox bubble=bot(text);
+        robot.replyPresented();memory=CatalogAssistant.remember(previous,plan,question,text);context.setText(plan.context());VBox bubble=bot(text);
         appendProductCards(bubble,plan);
         scrollDown();
     }
@@ -283,7 +284,7 @@ public final class AssistantPanel extends BorderPane {
         boolean wasBusy=busy;finish();if(wasBusy)bot("Stopped. You can ask another question.");
     }
     private void finish(){setBusy(false);if(dots!=null){dots.stop();dots=null;}if(thinking!=null){messages.getChildren().remove(thinking);thinking=null;}}
-    private void setBusy(boolean value){robot.setState(value?RobotAvatar.State.WORKING:RobotAvatar.State.IDLE);busy=value;input.setDisable(value);send.setDisable(value);if(!value)input.requestFocus();}
+    private void setBusy(boolean value){busy=value;if(value)robot.setState(RobotAvatar.State.WORKING);else robot.returnToRest();input.setDisable(value);send.setDisable(value);if(!value)input.requestFocus();}
     private void showThinking(String message){
         Label status=wrap(message,"chat-muted");Label animation=Ui.label("●  ●  ●","chat-muted");
         Button stop=Ui.button("Stop",this::stop);stop.setId("assistant-stop");stop.getStyleClass().add("chat-prompt");
