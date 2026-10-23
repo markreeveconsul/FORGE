@@ -221,7 +221,7 @@ public final class GuiSmoke {
                 "Navigation during drawer closing cancels motion and keeps the destination usable");
             press("checkout");
             check(fx(()->scene.lookup("#login")!=null),"Guest checkout requires login");
-            login("customer","customer123");waitFor(()->scene.lookup("#cart-items")!=null&&!scene.getRoot().isDisabled());
+            login("customer","customer123");catalog();press("nav-cart");press("drawer-review");waitFor(()->scene.lookup("#cart-items")!=null&&!scene.getRoot().isDisabled());
             check(fx(()->((TextField)scene.lookup("#cart-quantity-4")).getText()).equals("2"),"Sign-in preserves guest quantities");
             press("remove-4");click("Browse products");catalog();
             check(fx(()->((Button)scene.lookup("#add-6")).isDisabled()),"Sold-out product must be disabled");

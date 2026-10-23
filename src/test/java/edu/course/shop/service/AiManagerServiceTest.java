@@ -31,7 +31,7 @@ class AiManagerServiceTest {
         abundant=add("Abundant GPU",Category.PC_PARTS,"10",8,true);laptop=add("Hidden Laptop",Category.LAPTOPS,"900",4,false);
     }
     Product add(String name,Category category,String price,int stock,boolean active){services.products().save(admin,0,name,category,new BigDecimal(price),stock,active);return services.products().search(admin,name,null).getFirst();}
-    GeminiAssistant client(GeminiAssistant.Sender sender){return new GeminiAssistant(new GeminiAssistant.Config("test-fixture","gemini-test",true),sender);}
+    GeminiAssistant client(GeminiAssistant.Sender sender){return new GeminiAssistant(new GeminiAssistant.Config("test-fixture","gemini-test",true),sender,ms->{},System::nanoTime,e->{});}
     AiManagerService offline(){return new AiManagerService(services,new GeminiAssistant(new GeminiAssistant.Config("",null,true),r->{throw new AssertionError("Offline mode must not call Google");}));}
     static GeminiAssistant.Reply call(String name,String args){JsonObject fc=new JsonObject();fc.addProperty("name",name);fc.add("args",JsonParser.parseString(args));return response(new Gson().toJsonTree(List.of(Map.of("functionCall",fc))).getAsJsonArray(),null);}
     static GeminiAssistant.Reply response(JsonArray parts,JsonObject grounding){JsonObject c=new JsonObject();c.addProperty("finishReason","STOP");c.add("content",new Gson().toJsonTree(Map.of("parts",parts)));if(grounding!=null)c.add("groundingMetadata",grounding);return new GeminiAssistant.Reply(200,new Gson().toJson(Map.of("candidates",List.of(c))));}
@@ -132,7 +132,7 @@ class AiManagerServiceTest {
     @Test void providerOutageFallsBackToLocalRetrievalButDoesNotFabricateDrafts(){
         var manager=new AiManagerService(services,client(r->new GeminiAssistant.Reply(503,"{}")));
         var read=manager.prepare(admin,"Show low stock",false);assertTrue(read.offline());assertEquals(2,read.products().size());
-        var content=manager.prepare(admin,"Fix missing content",false);assertTrue(content.offline());assertTrue(content.changes().isEmpty());assertTrue(content.message().contains("offline"));
+        var content=manager.prepare(admin,"Fix missing content",false);assertTrue(content.offline());assertTrue(content.changes().isEmpty());assertTrue(content.message().contains("unavailable"));
         assertTrue(content.aiIssue().contains("Command interpretation: HTTP 503"));
     }
     @Test void rejectedRequestKeepsSafeProviderDetailsInsteadOfSilentlyGoingOffline(){
@@ -147,8 +147,8 @@ class AiManagerServiceTest {
     @Test void draftStageFailureIsDistinctAndDoesNotPermanentlyDisableTheConnection(){
         AtomicInteger requests=new AtomicInteger();
         var manager=new AiManagerService(services,client(r->switch(requests.getAndIncrement()){
-            case 0,2->call("fix_content","{\"ids\":["+gpu.getId()+"]}");
-            case 1->new GeminiAssistant.Reply(503,"{}");
+            case 0,4->call("fix_content","{\"ids\":["+gpu.getId()+"]}");
+            case 1,2,3->new GeminiAssistant.Reply(503,"{}");
             default->draft(gpu.getId(),"A graphics card from the catalog.","","",false);
         }));
         var failed=manager.prepare(admin,"Fix missing content",false);
@@ -254,7 +254,7 @@ class AiManagerServiceTest {
     }
     @Test void dailyQuotaExhaustedDuringDraftingNeverSavesPartialChanges()throws Exception{
         AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->requests.getAndIncrement()==0?call("fix_content","{\"ids\":["+gpu.getId()+"]}"):new GeminiAssistant.Reply(429,"{\"error\":{\"message\":\"Daily free request quota exceeded.\"}}")));
-        var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().contains("Content drafting: HTTP 429"));assertTrue(preview.aiIssue().contains("Daily free request quota"));assertEquals(0,auditCount());assertTrue(preview.changes().isEmpty());assertTrue(services.products().get(gpu.getId()).getDescription().isBlank());
+        var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().contains("Content drafting: HTTP 429"));assertTrue(preview.aiIssue().contains("daily AI quota"));assertEquals(0,auditCount());assertTrue(preview.changes().isEmpty());assertTrue(services.products().get(gpu.getId()).getDescription().isBlank());
         manager.prepare(admin,"Fix content",false);assertEquals(2,requests.get());
     }
     @Test void malformedDuplicateAndUnknownDraftsAreRejectedBeforeSaving()throws Exception{

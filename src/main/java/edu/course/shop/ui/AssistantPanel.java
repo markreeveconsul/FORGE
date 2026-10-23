@@ -96,7 +96,7 @@ public final class AssistantPanel extends BorderPane {
         return recommendation?AssistantPreferences.apply(question,savedPreferences):question;
     }
     private void newChat() {
-        stop();memory=CatalogAssistant.Memory.empty();messages.getChildren().clear();lastFailed=null;input.clear();refreshContext();
+        stop();gemini.clearCaches();memory=CatalogAssistant.Memory.empty();messages.getChildren().clear();lastFailed=null;input.clear();refreshContext();
         RobotAvatar spark=new RobotAvatar(68);spark.setAnimated(false);spark.setId("assistant-welcome-robot");
         VBox welcome=new VBox(12,spark,wrap("What are we forging?","chat-welcome-title"),
             wrap("Tell me what you want to play or build. I'll find listed products and explain what to check.","chat-muted"));
@@ -298,6 +298,7 @@ public final class AssistantPanel extends BorderPane {
     private void scrollDown(){javafx.application.Platform.runLater(()->{messages.applyCss();messages.layout();scroll.setVvalue(1);});}
     private static void start(Task<?> task){Thread thread=new Thread(task,"forge-chat");thread.setDaemon(true);thread.start();}
     static String friendly(Throwable error){
+        if(error instanceof AiFailure failure)return failure.getMessage().replaceFirst("^HTTP \\d+: ","");
         String msg=error.getMessage()==null?"":error.getMessage();
         if(msg.contains("GEMINI_API_KEY")||msg.contains("FORGE_AI")||msg.contains("rejected access"))return "FORGE AI is unavailable right now. You can still browse products and use your cart.";
         if(msg.contains("quota")||msg.contains("rate limit"))return "FORGE AI has reached its current usage limit. Please try again later. You can still browse and search the catalog.";
@@ -307,5 +308,5 @@ public final class AssistantPanel extends BorderPane {
         if(error instanceof IllegalArgumentException||error instanceof IllegalStateException||error instanceof edu.course.shop.exception.ValidationException)return msg;
         return "FORGE AI couldn't complete that request. Please try again.";
     }
-    private static boolean isSetupFailure(Throwable error){String msg=error.getMessage()==null?"":error.getMessage();return msg.contains("GEMINI_API_KEY")||msg.contains("FORGE_AI")||msg.contains("rejected access");}
+    private static boolean isSetupFailure(Throwable error){if(error instanceof AiFailure failure)return failure.kind()==AiFailure.Kind.ACCESS||failure.kind()==AiFailure.Kind.MODEL;String msg=error.getMessage()==null?"":error.getMessage();return msg.contains("GEMINI_API_KEY")||msg.contains("FORGE_AI")||msg.contains("rejected access");}
 }

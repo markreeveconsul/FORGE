@@ -61,7 +61,7 @@ public final class AiManagerService {
         List<ManagerAi.Draft> drafts=List.of();String message;
         if(batch.isEmpty())message="No products with missing content match this request.";
         else if(command.missingField().equals("photo"))message="These products need a photo upload in Products. AI Manager does not fabricate product photos.";
-        else if(offline)message="Found "+count+" products needing content. AI drafting is offline; you can inspect these records and retry when connected.";
+        else if(offline)message="Found "+count+" products needing content. AI drafting is unavailable; local records remain available. Check the error details before retrying.";
         else if(draftable.isEmpty())message="These products need a photo upload or researched specifications. Upload missing photos in Products; enable Research missing specifications online for exact-model lookup. No drafting request was made.";
         else {
             progress.accept("Drafting content for "+batch.size()+" products"+(research?" with source research":"")+"…");

@@ -35,6 +35,10 @@
 .forge-admin .text-field:focused, .forge-admin .text-area:focused { -fx-border-color: #F97316; }
 .forge-admin .text-area .content { -fx-background-color: -admin-soft; }
 .forge-admin .combo-box .list-cell { -fx-text-fill: -admin-text; -fx-font-size: 12px; }
+/* The collapsed value must fit even when the layout uses the 38px minimum height.
+   Keep popup row spacing separate from the selected-value cell. */
+.forge-admin .combo-box { -fx-padding: 0 6; -fx-pref-height: 38; }
+.forge-admin .combo-box > .list-cell { -fx-padding: 0 6; -fx-alignment: center-left; -fx-background-color: transparent; }
 .forge-admin .store-icon { -fx-stroke: -admin-muted; }
 /* Full-height charcoal rail. */
 .forge-admin .workspace-sidebar { -fx-background-color: #0C0A09; -fx-border-color: transparent #292524 transparent transparent; -fx-border-width: 0 1 0 0; }

@@ -70,17 +70,20 @@ public final class AiManagerUiSmoke {
             snapshot(root.resolve("05-applied.png"),1280);
             var attempts=new java.util.concurrent.atomic.AtomicInteger();
             GeminiAssistant unavailable=new GeminiAssistant(new GeminiAssistant.Config("test-fixture","gemini-test",true),request->{
-                if(attempts.getAndIncrement()==0)return new GeminiAssistant.Reply(503,"{}");
+                if(attempts.getAndIncrement()<3)return new GeminiAssistant.Reply(503,"{}");
                 return reply(Map.of("functionCall",Map.of("name","find_low_stock","args",Map.of())));
             });
             fx(()->{AiManagerView old=(AiManagerView)scene.lookup("#ai-manager-page");BorderPane shell=(BorderPane)old.getParent();old.dispose();shell.setCenter(new AiManagerView(admin,services,unavailable));return null;});
             waitFor(()->scene.lookup("#ai-manager-chip-stock")!=null);press("ai-manager-chip-stock");
             waitFor(()->scene.lookup("#ai-manager-connection-issue")!=null);
-            fx(()->{check(((RobotAvatar)scene.lookup("#ai-manager-robot")).getState()==RobotAvatar.State.ERROR,"Robot signals the failed online request during fallback");check(((Label)scene.lookup("#ai-manager-connection-detail")).getText().contains("Command interpretation: HTTP 503"),"Fallback shows the failed stage and actual HTTP status");check(((Label)scene.lookup("#ai-manager-status")).getText().contains("Local fallback"),"Provider failures are distinguished from an unconfigured AI");return null;});
+            fx(()->{check(((RobotAvatar)scene.lookup("#ai-manager-robot")).getState()==RobotAvatar.State.ERROR,"Robot signals the failed online request during fallback");check(((Label)scene.lookup("#ai-manager-connection-detail")).getText().contains("Command interpretation: HTTP 503"),"Fallback shows the failed stage and actual HTTP status");check(((Label)scene.lookup("#ai-manager-status")).getText().contains("Local results"),"Provider failures are distinguished from an unconfigured AI");return null;});
             snapshot(root.resolve("06-connection-error.png"),1280);press("ai-manager-retry");
             waitFor(()->scene.lookup("#ai-manager-connection-issue")==null&&scene.lookup("#ai-manager-products")!=null);
             fx(()->{check(((Label)scene.lookup("#ai-manager-status")).getText().contains("AI Active"),"Retry reconnects successfully and clears the old error");return null;});
             fx(()->{((AiManagerView)scene.lookup("#ai-manager-page")).dispose();return null;});
+            fx(()->{((Hyperlink)scene.lookup("#ai-manager-diagnostics")).fire();return null;});
+            waitFor(()->javafx.stage.Window.getWindows().stream().anyMatch(w->w.isShowing()&&w.getScene().lookup("#ai-diagnostic-history")!=null));
+            fx(()->{var popup=javafx.stage.Window.getWindows().stream().filter(w->w.isShowing()&&w.getScene().lookup("#ai-diagnostic-history")!=null).findFirst().orElseThrow();String history=((TextArea)popup.getScene().lookup("#ai-diagnostic-history")).getText();check(history.contains("feature=manager"),"Admin diagnostics shows request outcomes and timing");check(!history.contains("test-fixture")&&!history.contains("Fix missing content"),"Diagnostics excludes keys and command text");((Button)((DialogPane)popup.getScene().getRoot()).lookupButton(ButtonType.CLOSE)).fire();return null;});
             System.out.println("AI Manager UI checks passed: "+checks);
         }finally{Platform.exit();}
     }

@@ -49,7 +49,8 @@ public final class AiManagerView extends BorderPane {
         HBox composer=new HBox(10,input,run,cancel);composer.setAlignment(Pos.CENTER_LEFT);HBox.setHgrow(input,Priority.ALWAYS);
         research.setId("ai-manager-research");research.getStyleClass().add("manager-research");
         Hyperlink privacy=new Hyperlink("How it works");privacy.setOnAction(e->showPrivacy());
-        HBox options=new HBox(10,research,new Region(),privacy);HBox.setHgrow(options.getChildren().get(1),Priority.ALWAYS);options.setAlignment(Pos.CENTER_LEFT);
+        Hyperlink diagnostics=new Hyperlink("AI diagnostics");diagnostics.setId("ai-manager-diagnostics");diagnostics.setOnAction(e->showDiagnostics());
+        HBox options=new HBox(10,research,new Region(),diagnostics,privacy);HBox.setHgrow(options.getChildren().get(1),Priority.ALWAYS);options.setAlignment(Pos.CENTER_LEFT);
         run.setText("Run Agent  ↗");
         VBox commandCard=new VBox(18,Ui.label("YOUR STORE. ONE COMMAND.","manager-command-eyebrow"),Ui.label("What action would you like FORGE AI to execute?","section-title"),composer,chips,options);commandCard.getStyleClass().add("manager-command-card");
         Region terminalGap=new Region();HBox.setHgrow(terminalGap,Priority.ALWAYS);
@@ -60,7 +61,7 @@ public final class AiManagerView extends BorderPane {
         ScrollPane scroll=Ui.scroll(content);scroll.setId("ai-manager-scroll");scroll.getStyleClass().add("manager-scroll");setCenter(scroll);
         empty();Platform.runLater(this::loadMetrics);
     }
-    private void setMode(boolean offline){badge.setText(offline?(manager.configured()?"● Local fallback":"● Offline mode"):"● AI Active");badge.getStyleClass().remove("manager-status-offline");if(offline)badge.getStyleClass().add("manager-status-offline");}
+    private void setMode(boolean offline){badge.setText(offline?(manager.configured()?"● Local results":"● AI not configured"):"● AI Active");badge.getStyleClass().remove("manager-status-offline");if(offline)badge.getStyleClass().add("manager-status-offline");}
     private void loadMetrics(){
         if(disposed)return;
         int ticket=++metricsGeneration;
@@ -100,7 +101,7 @@ public final class AiManagerView extends BorderPane {
     private void finish(){if(shimmer!=null){shimmer.stop();shimmer=null;}applying=false;setBusy(false);pending=null;}
     private void render(AiManagerService.Result result){
         if(result.aiIssue().isBlank())robot.replyPresented();else robot.react(RobotAvatar.State.ERROR);
-        log(result.aiIssue().isBlank()?"Completed: "+result.products().size()+" products returned; "+result.changes().size()+" changes ready for review.":"AI request failed. Local results remain available; see the connection details below.");
+        log(result.aiIssue().isBlank()?"Completed: "+result.products().size()+" products returned; "+result.changes().size()+" changes ready for review.":"AI request failed. Local results remain available; see the error details below.");
         setMode(result.offline());reviews.clear();
         Label route=Ui.label(result.command().intent().name().replace('_',' '),"manager-eyebrow");
         VBox summary=new VBox(9,route,Ui.label(result.message(),"manager-result-title"));summary.getStyleClass().add("manager-result-card");
@@ -188,6 +189,10 @@ public final class AiManagerView extends BorderPane {
     }
     private void cancel(){if(applying)return;generation++;if(pending!=null)pending.cancel(true);finish();reviews.clear();empty();feedback.setText("Command cancelled. No changes were applied.");}
     public void dispose(){terminalDots.dispose();robot.setAnimated(false);disposed=true;generation++;metricsGeneration++;if(pending!=null&&!applying)pending.cancel(true);if(metricsTask!=null)metricsTask.cancel(true);if(shimmer!=null)shimmer.stop();}
+    private void showDiagnostics(){
+        TextArea history=new TextArea(AiDiagnostics.recent().stream().map(AiDiagnostics.Event::line).collect(java.util.stream.Collectors.joining("\n")));history.setEditable(false);history.setWrapText(true);history.setPrefSize(700,360);history.setId("ai-diagnostic-history");
+        Dialog<Void> dialog=new Dialog<>();dialog.setTitle("FORGE AI diagnostics");dialog.setHeaderText("Recent request outcomes · metadata only");dialog.getDialogPane().setContent(new VBox(12,Ui.label("Shows timing, payload size, retry attempts and error categories. Questions, images, customer details and API keys are never logged. Saved locally in data/ai-diagnostics.log.","muted"),history));dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);if(getScene()!=null)dialog.initOwner(getScene().getWindow());dialog.show();
+    }
     private void showPrivacy(){Alert info=new Alert(Alert.AlertType.INFORMATION,"FORGE AI uses Google Gemini to interpret your command and draft public product content. Online specification research sends product names and catalog text for web lookup. Customer names, addresses and order rows are not sent. Free-tier content may help improve Google's products. Queries and sales totals run locally. All edits require your review before saving.",ButtonType.OK);info.setTitle("About AI Manager");info.setHeaderText("Your store, your approval");if(getScene()!=null)info.initOwner(getScene().getWindow());info.showAndWait();}
     private void openSource(String source){try{java.awt.Desktop.getDesktop().browse(java.net.URI.create(source));}catch(Exception e){feedback.setText("Could not open the source: "+source);}}
     private static void start(Task<?> task){Thread thread=new Thread(task,"forge-ai-manager");thread.setDaemon(true);thread.start();}
