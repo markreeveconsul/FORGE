@@ -212,8 +212,8 @@ public final class ShopWindow {
         footer.getStyleClass().add("store-footer");footer.setAlignment(Pos.CENTER_LEFT);
         if(!user.canManageProducts())shell.setBottom(footer);stage.getScene().setRoot(window);
         if(!user.canManageProducts()) {
-            assistantLauncher=Ui.button("FORGE AI",this::toggleAssistant);RobotAvatar launcherRobot=new RobotAvatar(32);launcherRobot.setId("assistant-launcher-robot");assistantLauncher.setGraphic(launcherRobot);assistantLauncher.setId("assistant-launcher");assistantLauncher.getStyleClass().add("assistant-launcher");
-            assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,18,74,0));
+            assistantLauncher=new RobotLauncher(this::toggleAssistant);
+            assistantLauncher.setMaxSize(Region.USE_PREF_SIZE,Region.USE_PREF_SIZE);StackPane.setAlignment(assistantLauncher,Pos.BOTTOM_RIGHT);StackPane.setMargin(assistantLauncher,new Insets(0,16,64,0));
             assistantPanel=new AssistantPanel(services,user,()->cart,()->assistantProduct,assistant,this::showDetails,this::updateCart,saved,this::toggleAssistant);
             assistantPanel.setVisible(false);assistantPanel.managedProperty().bind(assistantPanel.visibleProperty());
             assistantPanel.prefWidthProperty().bind(javafx.beans.binding.Bindings.min(420,window.widthProperty()));
@@ -227,7 +227,7 @@ public final class ShopWindow {
     private void toggleAssistant(){
         if(assistantPanel==null)return;
         boolean open=!assistantPanel.isVisible();assistantPanel.setVisible(open);assistantLauncher.setVisible(!open);
-        if(open){assistantPanel.refreshContext();assistantPanel.toFront();assistantPanel.setTranslateX(0);if(!Motion.isReduced()){TranslateTransition slide=new TranslateTransition(Duration.millis(210),assistantPanel);slide.setFromX(420);slide.setToX(0);slide.setInterpolator(Interpolator.EASE_OUT);slide.play();}}
+        if(open){assistantPanel.refreshContext();assistantPanel.greet();assistantPanel.toFront();assistantPanel.setTranslateX(0);if(!Motion.isReduced()){TranslateTransition slide=new TranslateTransition(Duration.millis(210),assistantPanel);slide.setFromX(420);slide.setToX(0);slide.setInterpolator(Interpolator.EASE_OUT);slide.play();}}
         else {assistantPanel.stop();assistantLauncher.requestFocus();}
     }
     private void showInfo(){

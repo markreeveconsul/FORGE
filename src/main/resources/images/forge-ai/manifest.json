@@ -21,6 +21,12 @@
     "searching": {
       "fps": 30
     },
+    "listening": {
+      "fps": 30
+    },
+    "speaking": {
+      "fps": 30
+    },
     "working": {
       "fps": 30
     },
@@ -29,6 +35,9 @@
     },
     "error": {
       "fps": 30
+    },
+    "sleeping": {
+      "fps": 12
     }
   }
 }
