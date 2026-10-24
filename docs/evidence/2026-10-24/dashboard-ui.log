@@ -1,0 +1,23 @@
+Oct 24, 2026 8:20:32 PM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @68be2bc2'
+PASS Admin signs in to Overview
+PASS Every FORGE logo letter is white
+PASS Overview is selected in the charcoal sidebar
+PASS Weekly chart has seven real daily buckets
+PASS Revenue chart excludes unpaid orders
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/Admin/Documents/Codex/2026-10-09/you-are-my-senior-java-mentor/forge-chat-verification/lib/javafx-graphics-21.0.6-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+PASS All five metric cards share one row on desktop
+PASS Monthly control changes the real chart range
+PASS Dark Obsidian switches the whole admin workspace
+PASS Inline stock edit saves without changing price
+PASS Selecting inventory reveals the bulk toolbar
+PASS Add Product opens the existing editor in the styled modal
+PASS Closing the editor restores inventory without saving
+PASS Double-clicking inventory opens the product inspection drawer
+PASS Command palette navigates and closes
+PASS AI Manager includes the styled activity terminal
+PASS Only one management module is visible
+Admin dashboard checks passed: 16

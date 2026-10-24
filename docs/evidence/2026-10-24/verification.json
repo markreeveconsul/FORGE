@@ -1,0 +1,142 @@
+{
+  "verifiedDate": "2026-10-24",
+  "timezone": "Asia/Singapore",
+  "java": "26.0.1",
+  "sourceRelease": 21,
+  "javafx": "21.0.6",
+  "mavenResult": "BUILD SUCCESS",
+  "junitTests": 175,
+  "junitFailures": 0,
+  "junitErrors": 0,
+  "junitSkipped": 0,
+  "uiAssertions": 121,
+  "suites": [
+    {
+      "name": "edu.course.shop.AccountAndRepeatTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "7.074"
+    },
+    {
+      "name": "edu.course.shop.CommerceWorkflowTest",
+      "tests": "28",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "12.19"
+    },
+    {
+      "name": "edu.course.shop.service.AiManagerServiceTest",
+      "tests": "25",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "10.729"
+    },
+    {
+      "name": "edu.course.shop.service.AiQuotaTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.026"
+    },
+    {
+      "name": "edu.course.shop.service.AiReliabilityTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.473"
+    },
+    {
+      "name": "edu.course.shop.service.CatalogAssistantTest",
+      "tests": "24",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.675"
+    },
+    {
+      "name": "edu.course.shop.service.GeminiAssistantTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.585"
+    },
+    {
+      "name": "edu.course.shop.service.RevenueAnalyticsTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.022"
+    },
+    {
+      "name": "edu.course.shop.ShopTest",
+      "tests": "35",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "14.189"
+    },
+    {
+      "name": "edu.course.shop.TechCategoriesTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.123"
+    },
+    {
+      "name": "edu.course.shop.ui.AssistantPanelTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.052"
+    }
+  ],
+  "uiSuites": [
+    {
+      "name": "storefront",
+      "assertions": 19,
+      "result": "PASS"
+    },
+    {
+      "name": "manager",
+      "assertions": 19,
+      "result": "PASS"
+    },
+    {
+      "name": "quota",
+      "assertions": 12,
+      "result": "PASS"
+    },
+    {
+      "name": "commerce",
+      "assertions": 15,
+      "result": "PASS"
+    },
+    {
+      "name": "navigation",
+      "assertions": 22,
+      "result": "PASS"
+    },
+    {
+      "name": "login",
+      "assertions": 18,
+      "result": "PASS"
+    },
+    {
+      "name": "dashboard",
+      "assertions": 16,
+      "result": "PASS"
+    }
+  ],
+  "liveAiRequests": 0,
+  "data": "Isolated fresh SQLite databases only. Production shop.db was not opened by this verification."
+}

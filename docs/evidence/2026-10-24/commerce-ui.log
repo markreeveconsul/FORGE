@@ -1,0 +1,22 @@
+Oct 24, 2026 8:19:05 PM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @6536e911'
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/Admin/Documents/Codex/2026-10-09/you-are-my-senior-java-mentor/forge-chat-verification/lib/javafx-graphics-21.0.6-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+PASS RAM filter shows the exact configuration
+PASS Specification filter has a removable chip
+PASS Configurations are grouped by brand and exact model
+PASS Guest selections are saved when signing in
+PASS Cart survives sign-out and sign-in
+PASS Checkout clears the saved cart
+PASS Admin tracking update is visible to the customer service
+PASS Compact admin order keeps the full delivery address readable
+PASS Customer sees the recorded carrier and tracking number
+PASS Delete confirmation names the selected product
+PASS Cancelling deletion keeps the product
+PASS Delete confirmation names the selected product
+PASS Product deletion preserves existing receipts
+PASS Admin editor exposes identity and hardware fields
+PASS Existing specifications populate the structured capacity and unit
+COMMERCE UI PASS: 15 assertions.

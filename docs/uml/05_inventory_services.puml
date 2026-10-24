@@ -1,0 +1,65 @@
+@startuml 05_inventory_services
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE Inventory accounts and administration services
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "ProductService" as edu_course_shop_service_ProductService {
+  -database : DatabaseManager
+  -products : ProductRepository
+  +ProductService(database, products)
+  +search(user, query, category) : List<Product>
+  +get(id) : Product
+  +save(actor, id, name, category, price, stock, active) : void
+  +delete(actor, expected) : void
+  +updateInventoryNumbers(actor, expected, price, stock) : void
+  +applyManagerChanges(actor, batchId, intent, changes) : void
+  +savedCarts() : PersistentCartService
+}
+class "ProductPhotos" as edu_course_shop_service_ProductPhotos {
+  {static} +read(file) : byte[]
+  {static} +validate(bytes) : void
+}
+class "ProductReviewService" as edu_course_shop_service_ProductReviewService {
+  -database : DatabaseManager
+  -reviews : ProductReviewRepository
+  +ProductReviewService(database, reviews)
+  +list(productId) : List<ProductReview>
+  +canReview(actor, productId) : boolean
+  +submit(actor, productId, rating, text) : void
+}
+class "AccountService" as edu_course_shop_service_AccountService {
+  -database : DatabaseManager
+  +AccountService(database)
+  +saved(user) : Set<Long>
+  +saveItem(user, productId, saved) : void
+  +displayName(user) : String
+  +saveName(user, name) : void
+  +addresses(user) : List<SavedAddress>
+}
+class "AdminService" as edu_course_shop_service_AdminService {
+  -database : DatabaseManager
+  -reports : AdminRepository
+  +AdminService(database, reports)
+  +orderProcessing() : OrderService
+  +summary(actor) : AdminRepository.Summary
+  +lowStock(actor) : List<AdminRepository.LowStockRow>
+  +orders(actor) : List<AdminRepository.OrderRow>
+  +customers(actor) : List<AdminRepository.CustomerRow>
+}
+edu_course_shop_service_AccountService -[hidden]right-> edu_course_shop_service_AdminService
+edu_course_shop_service_ProductPhotos -[hidden]down-> edu_course_shop_service_AdminService
+edu_course_shop_service_ProductPhotos -[hidden]right-> edu_course_shop_service_ProductReviewService
+edu_course_shop_service_ProductService -[hidden]down-> edu_course_shop_service_AccountService
+edu_course_shop_service_ProductService -[hidden]right-> edu_course_shop_service_ProductPhotos
+@enduml

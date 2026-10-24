@@ -1,117 +1,92 @@
-# Admin workspace and UI fidelity follow-up — October 15, 2026
+# FORGE testing evidence
 
-**43 backend tests, 112 GuiSmoke assertions and 99 NextUiSmoke assertions passed.** Admin overview, order history and customer summaries are database-backed read-only reports; customer access is rejected by the admin reporting service. The UI smoke exports overview, orders and customers screenshots in addition to its existing gallery. The latest desktop run also checked the centered search panel, filtered catalog spacing, compact viewer height, and responsive inventory columns. Existing shop-all hero, top section, category campaign artwork and motion were left unchanged.
+## Current verification on 24 October 2026
 
-# Next UI verification — October 14, 2026
+Windows, JDK 26.0.1, Java 21 source release and JavaFX 21.0.6. `build.ps1 Test` completed with **BUILD SUCCESS**: **175 JUnit tests passed**, zero failures, errors or skipped tests. Seven native JavaFX suites passed **121 assertions**. UI assertion counts are separate from JUnit test counts.
 
-**40 backend tests, 124 GUI assertions (89 existing + 35 new) and 30 motion assertions passed.** New service checks cover saved-item persistence/privacy, role checks, address ownership/defaults/limits/rollback, framing preservation, reviewed current-price repeat plans and atomic cart changes. NextUiSmoke exercises the new screens on a shown window and exports nine screenshots; existing GuiSmoke exports 26 shopping screenshots. Tests use fresh synthetic SQLite databases and gallery fixtures, never the user's store data. Source comparison confirms unchanged EditorialHeader, campaign assets and original CSS rules.
+All databases were newly created test fixtures. UI suites used isolated user-home directories. No production database, stored API key or live AI request was used. Deterministic mock responses exercise provider payloads and failures; this does not test live model accuracy or availability.
 
-An initial quantity-control GUI check exposed a read-loading race: related products temporarily disabled purchase controls. Secondary recommendations now load without disabling the page, and the final pass covers the stepper. Initial test-harness compile/startup mistakes were corrected before these final results. Native chooser, drag gestures and presentation-machine display/GPU checks remain manual. See [Next UI](NEXT-UI.md) for commands and scope.
+| JUnit suite | Tests | Failures | Errors | Skipped |
+|---|---:|---:|---:|---:|
+| AccountAndRepeatTest | 9 | 0 | 0 | 0 |
+| CommerceWorkflowTest | 28 | 0 | 0 | 0 |
+| service.AiManagerServiceTest | 25 | 0 | 0 | 0 |
+| service.AiQuotaTest | 13 | 0 | 0 | 0 |
+| service.AiReliabilityTest | 19 | 0 | 0 | 0 |
+| service.CatalogAssistantTest | 24 | 0 | 0 | 0 |
+| service.GeminiAssistantTest | 7 | 0 | 0 | 0 |
+| service.RevenueAnalyticsTest | 9 | 0 | 0 | 0 |
+| ShopTest | 35 | 0 | 0 | 0 |
+| TechCategoriesTest | 3 | 0 | 0 | 0 |
+| ui.AssistantPanelTest | 3 | 0 | 0 | 0 |
 
-# Approved wireframe verification — October 14, 2026
+| Native JavaFX suite | Assertions | Result |
+|---|---:|---|
+| StorefrontUiSmoke | 19 | PASS |
+| AiManagerUiSmoke | 19 | PASS |
+| AiQuotaUiSmoke | 12 | PASS |
+| CommerceUiSmoke | 15 | PASS |
+| CustomerNavigationUiSmoke | 22 | PASS |
+| LoginGlassSmoke | 18 | PASS |
+| AdminDashboardUiSmoke | 16 | PASS |
 
-Latest refinement: **31 backend tests, 89 shopping GUI assertions and 30 motion assertions passed**. The backend suite covers additive migration, gallery persistence, unauthorized/invalid updates, defensive photo copies and rollback of product/gallery writes. The shown-window GUI checks cover larger PC framing, real gallery selection, specifications, cancel/removal, Added feedback, actionable toast, drawer focus, stock limits, retained checkout inputs and compact stacked layouts. The motion pass verifies the unchanged storefront hero and proportional oversized account crop.
+## Evidence locations
 
-A focused scratch JavaFX check used a real 960×680 scene with header/footer space and verified that cart checkout and place-order actions are fully reachable after scrolling to the end. Native file chooser and laptop display/GPU checks remain manual. Fixtures are synthetic fresh SQLite databases; the user's store database was not accessed.
+- [Verification summary](evidence/2026-10-24/verification.json)
+- [Maven output](evidence/2026-10-24/maven-test.log)
+- [UI logs and screenshot provenance](evidence/2026-10-24/)
+- [Current report screenshots](screenshots/submission/)
+- [Source signatures and hashes](uml/source-inventory.json)
 
-Gallery screenshots use visibly synthetic test images; actual additional product angles and specifications are supplied through the admin editor.
+The AI Manager screenshot additionally uses the archived `AiManagerDocumentationCapture.java` harness to expand the draft and scroll it into view. It runs the same 19 assertions; this repeat is not added to the 121 total. Screenshot data and AI drafts are synthetic, while controls and service operations are real.
 
-## Earlier verification history
+Old Surefire XML files may remain in target after a removed test. The summary includes only suites whose Java test source still exists and asserts the total is 175. Old verification notes are preserved separately in [the archive](evidence/archive/TESTING-before-2026-10-24.md); their screenshots and counts are historical.
 
-# Animated banner verification — October 14, 2026
+## Reproduce the JUnit run
 
-Java 21 / Maven 3.9.9 / JavaFX 21.0.6 on Linux: **66 shopping GUI assertions** and **25 motion assertions passed**. The shown-window motion harness uses JavaFX Robot to exercise hover and parallax, checks reduced motion and window/scene/viewport lifecycle, verifies compact sizing, and checks scrolling inside the actual storefront. It exported 60 scene frames for the preview. The earlier **26-test backend pass** was reused after confirming identical backend/test/pom input hashes. Compilation and whitespace checks passed. Synthetic window resizing under Xvfb produced GTK resize warnings; behavioral and dimension assertions passed. Presentation-machine GPU performance, display scaling and the native file picker remain manual checks.
+From the project root:
 
-See [Animations](ANIMATIONS.md) for the controls and lifecycle behavior. Earlier verification follows.
+```powershell
+.\build.ps1 Test
+```
 
-# Current design elevation verification — October 14, 2026
+This action does not import the saved key. It compiles current source and runs Maven Surefire against isolated SQLite test fixtures. The output goes to target/surefire-reports. The existing build helper pins JavaFX to the detected JDK; it does not depend on the broken Oracle java shortcut found during startup diagnosis.
 
-Linux / Temurin 21.0.12.1 / Maven 3.9.9 / JavaFX 21.0.6: **26 backend tests passed** and **61 GUI assertions passed**, with 24 scene snapshots. The smoke harness uses Xvfb, software rendering and a fresh isolated SQLite database. New coverage includes campaign dimensions/actions, visible search, offline illustrations, collection shortcuts (including clearing a search in the same category), and compact collection tiles. An existing stale payment-validation error was found and fixed. Screens were inspected at 1280×860 and 960×680. Native file-picker and presentation-machine keyboard/display checks remain manual.
+## Reproduce a native UI suite
 
-See [Design elevation](DESIGN-ELEVATION.md) for the current direction. The following evidence describes the previous Windows verification.
+Run the following from the project root after setting JAVA_HOME to a working JDK 21 or newer. Use an absolute path to its java.exe. `build.ps1 Test` prepares target/classes and target/test-classes. Dependencies below are from this project's Maven cache on Windows; substitute the matching JavaFX platform classifier on another OS.
 
-# Testing evidence
+```powershell
+$forgeJava = Join-Path $env:JAVA_HOME 'bin/java.exe'
+$forgeRepo = Join-Path $PWD '.tools/m2'
+$forgeFx = (Get-ChildItem "$forgeRepo/org/openjfx" -Recurse -Filter '*-21.0.6-win.jar').FullName -join ';'
+$forgeLibs = @(
+  "$forgeRepo/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar",
+  "$forgeRepo/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar",
+  "$forgeRepo/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar",
+  "$forgeRepo/org/slf4j/slf4j-nop/2.0.17/slf4j-nop-2.0.17.jar"
+) -join ';'
+$forgeCp = "target/classes;target/test-classes;$forgeFx;$forgeLibs"
+$forgeOut = Join-Path $PWD ('target/ui-evidence-' + [Guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Force $forgeOut | Out-Null
+& $forgeJava --enable-native-access=ALL-UNNAMED `
+  "-Djavafx.cachedir=$forgeOut/fx-cache" "-Duser.home=$forgeOut/home" `
+  -cp $forgeCp edu.course.shop.StorefrontUiSmoke $forgeOut
+if ($LASTEXITCODE -ne 0) { throw 'UI verification failed.' }
+```
 
-Updated and verified on October 13, 2026 (Asia/Singapore), using Windows and JDK 26.0.1.
+Other suite entry points are `edu.course.shop.service.AiManagerUiSmoke`, `edu.course.shop.service.AiQuotaUiSmoke`, `edu.course.shop.CommerceUiSmoke`, `edu.course.shop.CustomerNavigationUiSmoke`, `edu.course.shop.ui.LoginGlassSmoke` and `edu.course.shop.service.AdminDashboardUiSmoke`. Each takes its own evidence directory. These classes use injected mock AI transports and create their own databases. They do not invoke the key-importing Run action. Direct JUnit XML should remain local; publish the curated summaries rather than arbitrary system-property dumps.
 
-## Automated backend tests
-**25 tests passed; zero failures, errors, or skipped tests.**
+## Coverage
 
-ShopTest.java contains these executable JUnit cases:
+Success and failure cases cover roles, product persistence, money and stock validation, immutable snapshots, checkout rollback, saved-cart ownership and restoration, cancellation and stock restoration, receipt-preserving deletion, specification parsing, local catalog retrieval, product cards without specifications, category corrections, AI argument validation and reviewed writes, cooldowns and structured quota errors, exact revenue aggregation and current interface navigation.
 
-| Test | Inputs/scenario | Expected result |
-|---|---|---|
-| loginChecksCredentialsAndResolvesRoles | Demo accounts; wrong/blank/SQL-like input | Correct subclass; invalid login rejected |
-| invalidProductsCannotBeConstructed | Blank name, negative stock, nonnumeric/negative/overprecision price | ValidationException |
-| customersCannotEditProductsEvenOutsideGui | Customer calls product save | Access denied |
-| adminCreatesEditsAndDeactivatesProducts | New item -> edit -> deactivate | Stored correctly, hidden from customer |
-| searchCombinesNameAndCategory | Uppercase name search and mismatched category | Case-insensitive match; correct filtering |
-| cartCombinesItemsAndProtectsItsCollection | Add 1 then 2; update/remove; attempt list mutation | One line with 3; correct totals; collection protected |
-| cartRejectsInvalidQuantitiesAndWrongOwner | Zero/excess quantity; wrong user | Rejected without valid cart changes |
-| cashOnDeliveryCommitsOrderAndInventory | Buy 2 items | PENDING order; stock reduced by 2; cart cleared |
-| approvedWalletUsesDifferentPaymentBehavior | Approved wallet | PAID order |
-| declinedPaymentRollsBackStockAndKeepsCart | Declined wallet | No order; original stock/cart |
-| insufficientSecondItemRollsBackFirstDeduction | Second item's stock reduced after cart addition | First deduction undone; no order |
-| databaseWriteFailureRollsBackEntireCheckout | SQLite trigger aborts order insertion | StorageException; original stock/cart |
-| checkoutRejectsEmptyCartAddressAndMissingPayment | Empty cart, blank address, null payment | ValidationException; no order |
-| stalePriceRequiresCustomerReview | Price edited after cart addition | Checkout rejected; quantity update refreshes price |
-| deactivatedCartItemCannotBePurchased | Product deactivated after cart addition | Checkout rejected; stock unchanged |
-| orderSnapshotsSurviveProductEditsAndReopeningDatabase | Buy, change name/price, reopen file | Receipt retains original values; changes persist |
-| historyDoesNotExposeOtherCustomersOrders | Different customer ID; admin | Other customer's orders absent; admin denied |
-| photoAndDescriptionSurviveReopenReplacementAndRemoval | Upload PNG, delete original, reopen DB, replace with JPEG, remove | Persistent bytes/description; latest photo or null |
-| invalidPhotosCannotReplaceSavedData | Corrupt, empty, oversize, excessive dimensions, GIF, fake JPEG, missing file | Reject; existing saved product remains intact |
-| photoBytesAreEncapsulatedAndBasicEditPreservesPhoto | Mutate source/getter arrays; save stock-only edit | Defensive copies; photo and description retained |
-| photosAndDescriptionsRequireAdminAccessAndValidDescription | Customer/guest save; overlong description | Service validation denies changes |
-| existingSchemaMigratesWithoutLosingProducts | Old product table, migrate twice | Existing product intact; new columns available |
-| guestCanBrowseAndBuildCartButCannotCheckoutOrReadOrders | Guest adds items, transfers to customer, attempts restricted operations | Cart transferred; checkout/history require customer |
-| guestTransferNeverSilentlyChangesPriceAndCheckoutRevalidates | Admin changes price before guest sign-in | Original price retained; review warning; checkout requires update |
-| deliveryDetailsAreValidatedOutsideTheGui | Missing/invalid fields, excessive combined length | DeliveryAddress rejects independently of GUI |
+## Manual presentation checks still pending
 
-Run: `./build.ps1 Test`. Detailed Maven reports are generated under target/surefire-reports.
+- Launch the batch file on the presentation computer and check window sizing and display scaling.
+- Test native file chooser select/cancel and representative photo imports.
+- Verify keyboard navigation, long input and reduced motion with the actual display and GPU.
+- Test representative live image matching, review summary and AI drafting when the configured project has quota. Automated provider fixtures do not establish live accuracy.
+- Confirm instructor approval of the title and rehearse the code walkthrough individually.
 
-## GUI smoke test
-**Passed: 35 assertions.** Fires actual JavaFX controls for inline login validation, catalog cards, sold-out actions, no-result searches, clear filters, price sorting, empty cart, cart counts, quantity edits, invalid quantity, removal, address validation/retention, declined and approved wallet checkout, confirmation, order history, and admin create/edit/filter/deactivation.
-
-Additional checks cover guest browsing, product details, quantity preservation through sign-in, required delivery fields, photo import/preview/persistence, reopening the editor, canceling removal, corrupt uploads, and saving removal. The upload test calls the same import method used after file selection; the native chooser itself remains a manual check.
-
-Run: `./build.ps1 Smoke`. Uses a unique test database under target and does not touch data/shop.db.
-
-Seventeen actual JavaFX scene snapshots were generated. Main screens, upload editing and compact layouts were visually reviewed:
-
-- 01-login.png
-- 02-catalog.png
-- 03-cart.png
-- 04-checkout.png
-- 05-orders.png
-- 06-admin.png
-- 07-confirmation.png
-- 08-catalog-compact.png
-- 09-cart-compact.png
-- 10-checkout-compact.png
-- 11-admin-editor.png
-- 12-admin-compact.png
-- 13-guest-storefront.png
-- 14-product-detail.png
-- 15-product-detail-compact.png
-- 16-photo-upload.png
-- 17-admin-editor-compact.png
-
-These are application scene renders, not desktop captures or mockups. The smoke test does not replace an interactive usability review on the presentation machine.
-
-## Build
-Maven package completed successfully and produced target/marketplace-1.0.0.jar. This is a standard dependency-requiring JAR, not a standalone executable distribution.
-
-## Manual checks still to perform personally
-- [ ] Open the native photo picker; select PNG/JPEG, cancel selection, replace and remove a photo.
-- [ ] Run build.ps1 Run on the presentation machine.
-- [ ] Use Tab/Enter to log in and navigate form controls.
-- [ ] Resize the window and verify tables/forms at your display scaling.
-- [ ] Enter letters, fractions, huge numbers, and blanks in numeric inputs.
-- [ ] Observe error dialogs for excess stock and declined demo payment.
-- [ ] Log out with a nonempty cart; test both confirmation choices.
-- [ ] Close and reopen the actual app; inspect saved orders and stock.
-- [ ] Explain one test's setup, input, expected result, and assertion.
-
-Do not mark these manual checks completed merely because the automated suite passes.
-
-Account refinement coverage: GuiSmoke verifies supplied PC loading, password visibility/edit retention, login reduced motion and square catalog geometry alongside existing shopping/auth/upload flows. BannerMotionSmoke checks account animation/reduction and compact artwork fit, plus generated opaque and alpha-padded photo fixtures for fill/contain geometry. All fixtures are synthetic and use disposable databases.
+These items are not marked as automated passes. Adding or changing Java code after this verification invalidates the snapshot hashes and requires rerunning relevant tests.

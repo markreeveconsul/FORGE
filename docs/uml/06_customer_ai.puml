@@ -1,0 +1,67 @@
+@startuml 06_customer_ai
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE Customer assistant retrieval and generation
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "CatalogAssistant" as edu_course_shop_service_CatalogAssistant {
+  -services : Services
+  +CatalogAssistant(services)
+  {static} +asksOrders(question) : boolean
+  +prepare(user, cart, page, memory, question, allowOrders) : Plan
+  {static} +remember(old, plan, question, answer) : Memory
+  {static} ~requestedCategory(query) : Category
+  {static} ~budget(q) : BigDecimal
+}
+class "AssistantContext" as edu_course_shop_service_AssistantContext {
+  {static} +product(p) : JsonObject
+  {static} +cart(items, products) : JsonObject
+  {static} +order(user, order) : JsonObject
+}
+class "AssistantCart" as edu_course_shop_service_AssistantCart {
+  {static} +prepareEdit(question, items) : Optional<Edit>
+  {static} +applyEdit(user, cart, edit, products) : void
+  {static} +validate(approved, products) : List<Product>
+  {static} +apply(user, cart, validated) : void
+}
+class "AssistantPreferences" as edu_course_shop_service_AssistantPreferences {
+  +AssistantPreferences()
+  +load(userId) : Profile
+  +hasGeminiConsent(userId) : boolean
+  +rememberGeminiConsent(userId) : void
+  +forgetGeminiConsent(userId) : void
+  +hasGeminiImageConsent(userId) : boolean
+}
+class "CompatibilityAdvisor" as edu_course_shop_service_CompatibilityAdvisor {
+  {static} +analyze(products) : List<Check>
+  {static} +report(products) : String
+}
+class "GeminiAssistant" as edu_course_shop_service_GeminiAssistant {
+  -http : AiHttp
+  +GeminiAssistant()
+  +configurationProblem() : String
+  +answer(question, context) : String
+  +searchByImage(selectedImage, products) : ImageSearchResult
+  +summarizeReviews(productName, reviews) : String
+  +limitsSummary() : String
+  +clearCaches() : void
+  +model() : String
+}
+edu_course_shop_service_AssistantCart -[hidden]down-> edu_course_shop_service_GeminiAssistant
+edu_course_shop_service_AssistantContext -[hidden]down-> edu_course_shop_service_CompatibilityAdvisor
+edu_course_shop_service_AssistantContext -[hidden]right-> edu_course_shop_service_AssistantCart
+edu_course_shop_service_AssistantPreferences -[hidden]right-> edu_course_shop_service_CompatibilityAdvisor
+edu_course_shop_service_CatalogAssistant -[hidden]down-> edu_course_shop_service_AssistantPreferences
+edu_course_shop_service_CatalogAssistant -[hidden]right-> edu_course_shop_service_AssistantContext
+edu_course_shop_service_CompatibilityAdvisor -[hidden]right-> edu_course_shop_service_GeminiAssistant
+@enduml

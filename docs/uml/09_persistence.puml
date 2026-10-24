@@ -1,0 +1,55 @@
+@startuml 09_persistence
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE SQLite persistence classes
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "DatabaseManager" as edu_course_shop_persistence_DatabaseManager {
+  +DatabaseManager(file)
+  +open() : Connection
+  +initialize() : void
+}
+class "UserRepository" as edu_course_shop_persistence_UserRepository {
+  +find(c, username) : Optional<Credentials>
+}
+class "ProductRepository" as edu_course_shop_persistence_ProductRepository {
+  +list(c, includeInactive) : List<Product>
+  +find(c, id) : Product
+  +save(c, product) : void
+  +deductStock(c, product, quantity) : void
+}
+class "OrderRepository" as edu_course_shop_persistence_OrderRepository {
+  +save(c, order) : Order
+  +forCustomer(c, customerId) : List<Order>
+  +find(c, id) : Order
+  +event(c, id, status, time, note, actor) : void
+}
+class "ProductReviewRepository" as edu_course_shop_persistence_ProductReviewRepository {
+  +hasPurchased(c, customerId, productId) : boolean
+  +list(c, productId) : List<ProductReview>
+  +save(c, customerId, productId, rating, text) : void
+}
+class "AdminRepository" as edu_course_shop_persistence_AdminRepository {
+  +summary(c) : Summary
+  +lowStock(c) : List<LowStockRow>
+  +orders(c) : List<OrderRow>
+  +customers(c) : List<CustomerRow>
+}
+edu_course_shop_persistence_DatabaseManager -[hidden]down-> edu_course_shop_persistence_OrderRepository
+edu_course_shop_persistence_DatabaseManager -[hidden]right-> edu_course_shop_persistence_UserRepository
+edu_course_shop_persistence_OrderRepository -[hidden]right-> edu_course_shop_persistence_ProductReviewRepository
+edu_course_shop_persistence_ProductRepository -[hidden]down-> edu_course_shop_persistence_AdminRepository
+edu_course_shop_persistence_ProductReviewRepository -[hidden]right-> edu_course_shop_persistence_AdminRepository
+edu_course_shop_persistence_UserRepository -[hidden]down-> edu_course_shop_persistence_ProductReviewRepository
+edu_course_shop_persistence_UserRepository -[hidden]right-> edu_course_shop_persistence_ProductRepository
+@enduml

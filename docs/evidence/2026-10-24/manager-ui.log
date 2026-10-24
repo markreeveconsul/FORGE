@@ -1,0 +1,26 @@
+Oct 24, 2026 8:18:42 PM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @3a5ed7a6'
+PASS AI Manager replaces Products in the right content area
+PASS Sidebar marks AI Manager active
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/Admin/Documents/Codex/2026-10-09/you-are-my-senior-java-mentor/forge-chat-verification/lib/javafx-graphics-21.0.6-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+PASS Command controls fit the compact admin workspace
+PASS Switching modules removes the AI Manager view
+PASS Natural command reaches the mocked function-call and content pipeline
+PASS Robot thinks while the content request is pending
+PASS Loading placeholders stay inside the manager results
+PASS Other admin navigation remains available while AI thinks
+PASS Preview does not mutate the database
+PASS Robot works only after reviewed changes are applied
+PASS Reviewed edits are saved and fresh content counts reach zero
+PASS Robot celebrates successfully saved changes
+PASS Success renders refreshed product rows
+PASS Robot signals the failed online request during fallback
+PASS Fallback shows the failed stage and actual HTTP status
+PASS Provider failures are distinguished from an unconfigured AI
+PASS Retry reconnects successfully and clears the old error
+PASS Admin diagnostics shows request outcomes and timing
+PASS Diagnostics excludes keys and command text
+AI Manager UI checks passed: 19

@@ -386,6 +386,8 @@ public final class CatalogView extends VBox {
         Thread worker=new Thread(task,"forge-image-search");worker.setDaemon(true);worker.start();
     }
     private static String imageSearchFailure(Throwable error) {
+        if(error instanceof edu.course.shop.service.AiFailure failure)return failure.getMessage().replaceFirst("^HTTP \\d+: ","");
+        if(error instanceof IllegalArgumentException&&error.getMessage()!=null)return error.getMessage();
         Throwable cause=error;
         while(cause!=null&&cause.getCause()!=null&&cause.getCause()!=cause)cause=cause.getCause();
         String message=cause==null?"":cause.getMessage();
@@ -393,7 +395,7 @@ public final class CatalogView extends VBox {
             message=message.replaceAll("[\\r\\n\\t]+"," ").trim();
             return message.length()>280?message.substring(0,277).strip()+"…":message;
         }
-        return "Visual search couldn't complete. Check your internet connection, Gemini model access and free-tier quota, then try again.";
+        return "Visual search couldn't finish. Try another photo or retry. If it continues, ask the store administrator to check AI diagnostics.";
     }
     private VBox imageSearchProgress() {
         ProgressIndicator spinner=new ProgressIndicator();spinner.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);spinner.setPrefSize(48,48);spinner.setMaxSize(48,48);spinner.setAccessibleText("Searching product images");spinner.setStyle("-fx-accent: #ef502b;");

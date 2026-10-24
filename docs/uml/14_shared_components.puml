@@ -1,0 +1,142 @@
+@startuml 14_shared_components
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE Shared layout state editors and motion
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "CatalogState" as edu_course_shop_ui_CatalogState {
+  +getSpecificationFilters() : java.util.Map<String, String>
+  +setSpecificationFilters(value) : void
+  +getMinimumPrice() : String
+  +getMaximumPrice() : String
+  +setPriceRange(minimum, maximum) : void
+  +getCategoryIndex() : int
+}
+class "CheckoutDraft" as edu_course_shop_ui_CheckoutDraft {
+  +getRecipient() : String
+  +setRecipient(value) : void
+  +getCity() : String
+  +setCity(value) : void
+  +getPostalCode() : String
+  +setPostalCode(value) : void
+}
+class "ProductPhotoEditor" as edu_course_shop_ui_ProductPhotoEditor {
+  +getFraming() : PhotoFrame
+  +setFraming(framing) : void
+  +ProductPhotoEditor()
+  +importPhoto(file) : void
+  +setPhoto(bytes) : void
+  +setPhotos(main, extras) : void
+}
+class "SpecificationsEditor" as edu_course_shop_ui_SpecificationsEditor {
+  +SpecificationsEditor()
+  +setCategory(value) : void
+  +getText() : String
+  +setText(value) : void
+  +clear() : void
+  +validatedText() : String
+}
+class "EditorialHeader" as edu_course_shop_ui_EditorialHeader {
+  +EditorialHeader(shop, electronics)
+  {static} +forLogin() : EditorialHeader
+  +setInViewport(value) : void
+}
+class "CategoryBanner" as edu_course_shop_ui_CategoryBanner {
+  +CategoryBanner()
+  +showCategory(value) : void
+  #layoutChildren() : void
+}
+class "CollectionArtwork" as edu_course_shop_ui_CollectionArtwork {
+  +CollectionArtwork(subject)
+  {static} +supports(name) : boolean
+  #layoutChildren() : void
+}
+class "StoreIcon" as edu_course_shop_ui_StoreIcon {
+  {static} +of(name, size) : Group
+}
+class "Motion" as edu_course_shop_ui_Motion {
+  {static} +reducedProperty() : BooleanProperty
+  {static} +isReduced() : boolean
+  {static} +lift(target) : void
+  {static} +zoom(trigger, image) : void
+  {static} +reveal(target) : void
+  {static} +dropIn(target) : void
+}
+class "AdminMotion" as edu_course_shop_ui_AdminMotion {
+  {static} ~showing(node) : boolean
+  {static} ~animated(node) : boolean
+  {static} ~observe(node, sync) : void
+  {static} ~disclose(node, open) : void
+}
+class "Interactions" as edu_course_shop_ui_Interactions {
+  {static} +install(root) : void
+  {static} ~section(title, content) : VBox
+  {static} ~categoryIndicator(row, selection) : void
+}
+class "Ui" as edu_course_shop_ui_Ui {
+  {static} +main(args) : void
+  {static} +label(text, style) : Label
+  {static} +category(category) : String
+  {static} +button(text, action) : Button
+  {static} +primary(text, action) : Button
+  {static} +link(text, action) : Button
+}
+class "ShopOverlay" as edu_course_shop_ui_ShopOverlay {
+  {static} ~show(owner, panel, glass, drawer, dismissed) : Runnable
+}
+class "FilterDrawer" as edu_course_shop_ui_FilterDrawer {
+  {static} ~show(owner, state, ceiling, matches, apply) : void
+}
+class "PriceRange" as edu_course_shop_ui_PriceRange {
+  +PriceRange(ceiling, from, to)
+  +setRange(from, to) : void
+  +lowProperty() : DoubleProperty
+  +highProperty() : DoubleProperty
+  +getLow() : double
+  +getHigh() : double
+}
+class "OrderTracking" as edu_course_shop_ui_OrderTracking {
+  {static} +view(order) : VBox
+  {static} +payment(order) : String
+}
+class "LoginGlassPanel" as edu_course_shop_ui_LoginGlassPanel {
+  ~LoginGlassPanel(form)
+  ~glowRunning() : boolean
+  ~glowPhase() : double
+}
+edu_course_shop_ui_AdminMotion -[hidden]down-> edu_course_shop_ui_ShopOverlay
+edu_course_shop_ui_AdminMotion -[hidden]right-> edu_course_shop_ui_Interactions
+edu_course_shop_ui_CatalogState -[hidden]down-> edu_course_shop_ui_SpecificationsEditor
+edu_course_shop_ui_CatalogState -[hidden]right-> edu_course_shop_ui_CheckoutDraft
+edu_course_shop_ui_CategoryBanner -[hidden]down-> edu_course_shop_ui_Motion
+edu_course_shop_ui_CheckoutDraft -[hidden]down-> edu_course_shop_ui_EditorialHeader
+edu_course_shop_ui_CheckoutDraft -[hidden]right-> edu_course_shop_ui_ProductPhotoEditor
+edu_course_shop_ui_CollectionArtwork -[hidden]down-> edu_course_shop_ui_AdminMotion
+edu_course_shop_ui_CollectionArtwork -[hidden]right-> edu_course_shop_ui_StoreIcon
+edu_course_shop_ui_EditorialHeader -[hidden]down-> edu_course_shop_ui_StoreIcon
+edu_course_shop_ui_EditorialHeader -[hidden]right-> edu_course_shop_ui_CategoryBanner
+edu_course_shop_ui_FilterDrawer -[hidden]down-> edu_course_shop_ui_LoginGlassPanel
+edu_course_shop_ui_FilterDrawer -[hidden]right-> edu_course_shop_ui_PriceRange
+edu_course_shop_ui_Interactions -[hidden]down-> edu_course_shop_ui_FilterDrawer
+edu_course_shop_ui_Interactions -[hidden]right-> edu_course_shop_ui_Ui
+edu_course_shop_ui_Motion -[hidden]down-> edu_course_shop_ui_Ui
+edu_course_shop_ui_OrderTracking -[hidden]right-> edu_course_shop_ui_LoginGlassPanel
+edu_course_shop_ui_ProductPhotoEditor -[hidden]down-> edu_course_shop_ui_CategoryBanner
+edu_course_shop_ui_ShopOverlay -[hidden]down-> edu_course_shop_ui_OrderTracking
+edu_course_shop_ui_ShopOverlay -[hidden]right-> edu_course_shop_ui_FilterDrawer
+edu_course_shop_ui_SpecificationsEditor -[hidden]down-> edu_course_shop_ui_CollectionArtwork
+edu_course_shop_ui_SpecificationsEditor -[hidden]right-> edu_course_shop_ui_EditorialHeader
+edu_course_shop_ui_StoreIcon -[hidden]down-> edu_course_shop_ui_Interactions
+edu_course_shop_ui_StoreIcon -[hidden]right-> edu_course_shop_ui_Motion
+edu_course_shop_ui_Ui -[hidden]down-> edu_course_shop_ui_PriceRange
+@enduml

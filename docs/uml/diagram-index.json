@@ -1,0 +1,195 @@
+[
+  {
+    "id": "01_roles_payments",
+    "title": "User roles and payment polymorphism",
+    "classes": [
+      "User",
+      "Admin",
+      "Customer",
+      "Guest",
+      "PaymentMethod",
+      "CashOnDeliveryPayment",
+      "SimulatedWalletPayment",
+      "PaymentResult"
+    ]
+  },
+  {
+    "id": "02_products_carts",
+    "title": "Products carts and specifications",
+    "classes": [
+      "Product",
+      "Cart",
+      "CartItem",
+      "Category",
+      "Money",
+      "PhotoFrame",
+      "ProductSpecifications",
+      "DeliveryAddress"
+    ]
+  },
+  {
+    "id": "03_orders_reviews",
+    "title": "Orders fulfillment and reviews",
+    "classes": [
+      "Order",
+      "OrderItem",
+      "OrderEvent",
+      "FulfillmentStatus",
+      "ProductReview"
+    ]
+  },
+  {
+    "id": "04_checkout_services",
+    "title": "Authentication carts and checkout services",
+    "classes": [
+      "AuthService",
+      "Passwords",
+      "CartService",
+      "PersistentCartService",
+      "CheckoutService",
+      "OrderService"
+    ]
+  },
+  {
+    "id": "05_inventory_services",
+    "title": "Inventory accounts and administration services",
+    "classes": [
+      "ProductService",
+      "ProductPhotos",
+      "ProductReviewService",
+      "AccountService",
+      "AdminService"
+    ]
+  },
+  {
+    "id": "06_customer_ai",
+    "title": "Customer assistant retrieval and generation",
+    "classes": [
+      "CatalogAssistant",
+      "AssistantContext",
+      "AssistantCart",
+      "AssistantPreferences",
+      "CompatibilityAdvisor",
+      "GeminiAssistant"
+    ]
+  },
+  {
+    "id": "07_ai_manager",
+    "title": "AI Manager commands reviewed changes and sales",
+    "classes": [
+      "ManagerCommand",
+      "ManagerAi",
+      "AiManagerService",
+      "RevenueAnalytics"
+    ]
+  },
+  {
+    "id": "08_ai_transport",
+    "title": "AI transport caching errors and quota reporting",
+    "classes": [
+      "AiHttp",
+      "AiFailure",
+      "AiQuota",
+      "AiDiagnostics",
+      "AiCache"
+    ]
+  },
+  {
+    "id": "09_persistence",
+    "title": "SQLite persistence classes",
+    "classes": [
+      "DatabaseManager",
+      "UserRepository",
+      "ProductRepository",
+      "OrderRepository",
+      "ProductReviewRepository",
+      "AdminRepository"
+    ]
+  },
+  {
+    "id": "10_application",
+    "title": "Application wiring and exceptions",
+    "classes": [
+      "ShopApp",
+      "Services",
+      "ValidationException",
+      "OutOfStockException",
+      "StorageException"
+    ]
+  },
+  {
+    "id": "11_customer_screens",
+    "title": "Customer screens",
+    "classes": [
+      "ShopWindow",
+      "LoginView",
+      "CatalogView",
+      "ProductDetailView",
+      "CartView",
+      "CheckoutView",
+      "ConfirmationView",
+      "OrdersView",
+      "AccountView",
+      "SavedItemsView"
+    ]
+  },
+  {
+    "id": "12_admin_screens",
+    "title": "Administration screens",
+    "classes": [
+      "AdminWorkspace",
+      "AdminReportsView",
+      "AdminView",
+      "OrderProcessingView",
+      "AiManagerView",
+      "RevenuePerformanceCard",
+      "RevenueDraw"
+    ]
+  },
+  {
+    "id": "13_customer_components",
+    "title": "Customer interface components",
+    "classes": [
+      "AssistantPanel",
+      "RobotAvatar",
+      "RobotLauncher",
+      "ProductCard",
+      "ProductArtwork",
+      "ProductGallery",
+      "ProductReviewsView",
+      "SavedItems",
+      "SearchSuggestions",
+      "QuantityControl",
+      "OrderSummary",
+      "CartDrawer"
+    ]
+  },
+  {
+    "id": "14_shared_components",
+    "title": "Shared layout state editors and motion",
+    "classes": [
+      "CatalogState",
+      "CheckoutDraft",
+      "ProductPhotoEditor",
+      "SpecificationsEditor",
+      "EditorialHeader",
+      "CategoryBanner",
+      "CollectionArtwork",
+      "StoreIcon",
+      "Motion",
+      "AdminMotion",
+      "Interactions",
+      "Ui",
+      "ShopOverlay",
+      "FilterDrawer",
+      "PriceRange",
+      "OrderTracking",
+      "LoginGlassPanel"
+    ]
+  },
+  {
+    "id": "15_cross_layer",
+    "title": "Dependencies across application layers",
+    "classes": []
+  }
+]

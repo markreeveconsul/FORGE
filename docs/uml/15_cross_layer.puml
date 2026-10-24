@@ -1,0 +1,70 @@
+@startuml 15_cross_layer
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam classBackgroundColor #F7F8FA
+skinparam packageStyle rectangle
+hide members
+package Application {
+ class ShopApp
+ class Services <<record>>
+ class ShopWindow
+}
+package Customer {
+ class CatalogView
+ class AssistantPanel
+ class CatalogAssistant
+ class CheckoutService
+ interface PaymentMethod
+ class CashOnDeliveryPayment
+ class SimulatedWalletPayment
+}
+package Administration {
+ class AdminWorkspace
+ class AiManagerView
+ class AiManagerService
+ class ManagerAi
+}
+package AI {
+ class GeminiAssistant
+ class AiHttp
+ class AiQuota
+ class AiDiagnostics
+}
+package Persistence {
+ class DatabaseManager
+ class ProductRepository
+ class OrderRepository
+}
+ShopApp ..> DatabaseManager : initializes
+ShopApp ..> Services : constructs
+ShopApp ..> ShopWindow : opens
+ShopWindow --> Services
+ShopWindow ..> CatalogView
+ShopWindow ..> AssistantPanel
+ShopWindow ..> AdminWorkspace
+Services o-- CheckoutService
+CheckoutService --> DatabaseManager
+CheckoutService --> ProductRepository
+CheckoutService --> OrderRepository
+CheckoutService ..> PaymentMethod : pay total
+PaymentMethod <|.. CashOnDeliveryPayment
+PaymentMethod <|.. SimulatedWalletPayment
+AssistantPanel --> CatalogAssistant : local retrieval
+AssistantPanel --> GeminiAssistant : optional explanation
+CatalogView --> GeminiAssistant : image search
+AdminWorkspace ..> AiManagerView : one active module
+AiManagerView --> AiManagerService
+AiManagerService --> Services
+AiManagerService --> ManagerAi
+ManagerAi --> GeminiAssistant : plan and draft
+GeminiAssistant --> AiHttp
+AiHttp ..> AiQuota
+AiHttp ..> AiDiagnostics
+note bottom of AiManagerService
+prepare creates a preview.
+apply saves only reviewed changes through ProductService.
+No model-generated SQL is executed.
+end note
+@enduml

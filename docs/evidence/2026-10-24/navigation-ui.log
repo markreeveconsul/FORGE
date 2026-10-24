@@ -1,0 +1,29 @@
+Oct 24, 2026 8:19:26 PM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @5419f379'
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/Admin/Documents/Codex/2026-10-09/you-are-my-senior-java-mentor/forge-chat-verification/lib/javafx-graphics-21.0.6-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+PASS Guest favorite keeps the catalog scroll position
+PASS Guest favorite keeps keyboard focus on the heart
+PASS Empty-cart sign-in opens the main shop at the top
+PASS Pending favorite remains enabled for focus (reduced=true)
+PASS Pending save exposes accessible busy feedback
+PASS Pending customer favorite keeps the catalog scroll position
+PASS Pending customer favorite keeps keyboard focus on the heart
+PASS Completed customer favorite keeps the catalog scroll position
+PASS Completed customer favorite keeps keyboard focus on the heart
+PASS Favorite change persists once despite repeated activation
+PASS Pending favorite remains enabled for focus (reduced=false)
+PASS Pending save exposes accessible busy feedback
+PASS Pending customer favorite keeps the catalog scroll position
+PASS Pending customer favorite keeps keyboard focus on the heart
+PASS Completed customer favorite keeps the catalog scroll position
+PASS Completed customer favorite keeps keyboard focus on the heart
+PASS Favorite change persists once despite repeated activation
+PASS Guest-cart merge keeps the main shop open and updates the cart count
+PASS Merged quantity is persisted
+PASS Returning customer with a saved cart lands in the main shop
+PASS Customer can explicitly open the restored cart
+PASS Cart revalidation notice appears on the shop without redirecting
+Customer navigation checks passed: 22

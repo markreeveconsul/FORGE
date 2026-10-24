@@ -1,0 +1,49 @@
+PASS Inventory covers every main Java source file
+PASS Inventory source hashes match current Java files
+PASS Every top-level type has exactly one readable home sheet
+PASS Dated report type and file counts match the source snapshot
+PASS Exports exist for 01_roles_payments
+PASS Renderer reported no syntax error for 01_roles_payments
+PASS Exports exist for 02_products_carts
+PASS Renderer reported no syntax error for 02_products_carts
+PASS Exports exist for 03_orders_reviews
+PASS Renderer reported no syntax error for 03_orders_reviews
+PASS Exports exist for 04_checkout_services
+PASS Renderer reported no syntax error for 04_checkout_services
+PASS Exports exist for 05_inventory_services
+PASS Renderer reported no syntax error for 05_inventory_services
+PASS Exports exist for 06_customer_ai
+PASS Renderer reported no syntax error for 06_customer_ai
+PASS Exports exist for 07_ai_manager
+PASS Renderer reported no syntax error for 07_ai_manager
+PASS Exports exist for 08_ai_transport
+PASS Renderer reported no syntax error for 08_ai_transport
+PASS Exports exist for 09_persistence
+PASS Renderer reported no syntax error for 09_persistence
+PASS Exports exist for 10_application
+PASS Renderer reported no syntax error for 10_application
+PASS Exports exist for 11_customer_screens
+PASS Renderer reported no syntax error for 11_customer_screens
+PASS Exports exist for 12_admin_screens
+PASS Renderer reported no syntax error for 12_admin_screens
+PASS Exports exist for 13_customer_components
+PASS Renderer reported no syntax error for 13_customer_components
+PASS Exports exist for 14_shared_components
+PASS Renderer reported no syntax error for 14_shared_components
+PASS Exports exist for 15_cross_layer
+PASS Renderer reported no syntax error for 15_cross_layer
+PASS All ten assignment sections are present
+PASS Cover includes the supplied group course and instructor
+PASS Report has no unresolved authoring markers
+PASS Every report figure resolves to a local artifact
+PASS Retired behavior and old project name removed from the report
+PASS JUnit summary totals 175 tests
+PASS JUnit evidence reports no failures errors or skipped tests
+PASS UI evidence totals 121 assertions separately from JUnit
+PASS Verification states that no live AI requests were made
+PASS Archived Maven run completed successfully
+PASS No Google API key pattern in 39 documentation and helper text artifacts
+PASS PDF text includes all ten sections
+PASS PDF text contains no Google API key pattern
+PASS UML PDF includes the cover and every diagram sheet
+DOCUMENTATION CHECKS PASSED

@@ -3,6 +3,8 @@ package edu.course.shop.ui;
 import edu.course.shop.Services;
 import edu.course.shop.model.User;
 import javafx.application.Platform;
+import javafx.animation.*;
+import javafx.util.Duration;
 import javafx.concurrent.Task;
 import javafx.geometry.*;
 import javafx.scene.Node;
@@ -23,6 +25,11 @@ public final class AdminWorkspace extends StackPane {
     private StackPane modal;
     private Runnable modalClosed;
     private boolean dark;
+    private final Region navIndicator=new Region();
+    private final Timeline navMotion=new Timeline();
+    private String selectedNavigation;private boolean indicatorPlaced;
+    private Node modalCard,restoreFocus;private boolean modalDrawer,closing;private Animation modalExit;
+    private HBox notice;private final PauseTransition noticeHold=new PauseTransition(Duration.seconds(7));
     public AdminWorkspace(User actor,Services services,Runnable overview,Runnable products,Runnable orders,Runnable customers,Runnable ai,Runnable addProduct,Runnable signOut){
         this.actor=actor;this.services=services;this.addProduct=addProduct;
         setId("admin-workspace");getStyleClass().add("forge-admin");setMinSize(0,0);
@@ -33,6 +40,8 @@ public final class AdminWorkspace extends StackPane {
         HBox logo=new HBox(10,monogram,brand,brandSpace,Ui.label("PRO","workspace-pro"));logo.setAlignment(Pos.CENTER_LEFT);logo.getStyleClass().add("workspace-logo");
         VBox nav=new VBox(6,Ui.label("MANAGE","workspace-nav-caption"));nav.setId("admin-navigation");
         nav.getChildren().addAll(nav("Overview","dashboard","admin-nav-overview",overview,false),nav("Products","package","nav-inventory",products,true),nav("Orders","bag","admin-nav-orders",orders,true),nav("Customers","users","admin-nav-customers",customers,true),nav("AI Manager","sparkles","admin-nav-ai-manager",ai,false));
+                navIndicator.setId("admin-nav-indicator");navIndicator.getStyleClass().add("workspace-nav-indicator");navIndicator.setManaged(false);navIndicator.setMouseTransparent(true);navIndicator.setVisible(false);nav.getChildren().add(navIndicator);
+        nav.widthProperty().addListener((o,a,b)->Platform.runLater(()->moveIndicator(false)));
         theme=Ui.button("Dark Obsidian",this::toggleTheme);theme.setId("admin-theme-toggle");theme.setGraphic(StoreIcon.of("moon",14));theme.getStyleClass().add("workspace-utility");theme.setMaxWidth(Double.MAX_VALUE);
         Button command=Ui.button("Command menu       Ctrl K",()->commandMenu(overview,products,orders,customers,ai));command.setId("admin-command-menu");command.setGraphic(StoreIcon.of("command",14));command.getStyleClass().add("workspace-utility");command.setMaxWidth(Double.MAX_VALUE);
         VBox utilities=new VBox(8,theme,command);utilities.getStyleClass().add("workspace-utilities");
@@ -50,12 +59,20 @@ public final class AdminWorkspace extends StackPane {
         HBox footer=new HBox(14,Ui.label("FORGE Enterprise · Store Management System","workspace-footer-text"),footerSpace,docs,Ui.label("USD · Simulated payments","workspace-footer-text"));footer.setAlignment(Pos.CENTER_LEFT);footer.getStyleClass().add("workspace-footer");main.setBottom(footer);
         widthProperty().addListener((o,a,b)->{sidebar.setPrefWidth(b.doubleValue()<1100?220:256);description.setVisible(b.doubleValue()>=1100);description.setManaged(description.isVisible());});
         addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED,e->{
-            if(e.getCode()==KeyCode.ESCAPE&&modal!=null){closeModal();e.consume();}
+            if(e.getCode()==KeyCode.TAB&&modal!=null&&!e.isControlDown()&&!e.isAltDown()){cycleFocus(e.isShiftDown());e.consume();}
+            else if(e.getCode()==KeyCode.ESCAPE&&modal!=null){closeModal();e.consume();}
             else if(e.isControlDown()&&e.getCode()==KeyCode.K){commandMenu(overview,products,orders,customers,ai);e.consume();}
             else if(e.isControlDown()&&e.getCode()==KeyCode.D){toggleTheme();e.consume();}
         });
+        AdminMotion.observe(this,()->{if(!AdminMotion.animated(this)){navMotion.stop();moveIndicator(false);if(closing)closeModalNow(true);}if(!AdminMotion.showing(this))dismissNotice();});
     }
     public BorderPane pageHost(){return pageHost;}
+    private void moveIndicator(boolean animate){
+        Button selected=navigation.get(selectedNavigation);if(selected==null||selected.getHeight()<=0)return;
+        double y=selected.getLayoutY()+8;navIndicator.resizeRelocate(selected.getLayoutX(),0,3,30);navIndicator.setVisible(true);navMotion.stop();
+        if(!animate||!indicatorPlaced||!AdminMotion.animated(this))navIndicator.setTranslateY(y);
+        else{navMotion.getKeyFrames().setAll(new KeyFrame(Duration.millis(170),new KeyValue(navIndicator.translateYProperty(),y,Interpolator.EASE_BOTH)));navMotion.play();}indicatorPlaced=true;
+    }
     private Button nav(String title,String icon,String id,Runnable action,boolean count){
         Button button=Ui.button("",()->{closeModal();action.run();});button.setId(id);button.getStyleClass().add("workspace-nav");button.setMaxWidth(Double.MAX_VALUE);button.setMinHeight(46);button.setPrefHeight(46);button.setMaxHeight(46);
         Label text=Ui.label(title,"workspace-nav-text");text.setWrapText(false);Region gap=new Region();HBox.setHgrow(gap,Priority.ALWAYS);
@@ -66,6 +83,7 @@ public final class AdminWorkspace extends StackPane {
         button.setGraphic(graphic);button.setAccessibleText(title);navigation.put(id,button);return button;
     }
     public void select(String id){
+        selectedNavigation=id;Platform.runLater(()->moveIndicator(true));
         navigation.forEach((key,button)->{button.getStyleClass().remove("admin-nav-active");if(key.equals(id))button.getStyleClass().add("admin-nav-active");});
         section.setText(switch(id){case "nav-inventory"->"Products";case "admin-nav-orders"->"Orders";case "admin-nav-customers"->"Customers";case "admin-nav-ai-manager"->"AI Neural Manager";default->"Overview";});
         description.setText(switch(id){case "nav-inventory"->"Inventory & price controls";case "admin-nav-orders"->"Checkouts & billing log";case "admin-nav-customers"->"Customer directory";case "admin-nav-ai-manager"->"Store command workspace";default->"Store metrics & trend analytics";});
@@ -84,10 +102,45 @@ public final class AdminWorkspace extends StackPane {
         showModal(card,false);StackPane.setAlignment(card,Pos.TOP_CENTER);StackPane.setMargin(card,new Insets(80,20,20,20));Platform.runLater(query::requestFocus);
     }
     private void showModal(Node card,boolean drawer){
-        closeModal();Region scrim=new Region();scrim.getStyleClass().add("workspace-scrim");scrim.setOnMouseClicked(e->closeModal());
-        modal=new StackPane(scrim,card);modal.setId("admin-modal");getChildren().add(modal);if(drawer){StackPane.setAlignment(card,Pos.CENTER_RIGHT);Motion.panel(card);}
+        Node focus=modal==null?(getScene()==null?null:getScene().getFocusOwner()):restoreFocus;closeModalNow(false);restoreFocus=focus;
+        Region scrim=new Region();scrim.getStyleClass().add("workspace-scrim");scrim.setOnMouseClicked(e->closeModal());
+        modalCard=card;modalDrawer=drawer;modal=new StackPane(scrim,card);modal.setId("admin-modal");getChildren().add(modal);
+        if(drawer){StackPane.setAlignment(card,Pos.CENTER_RIGHT);Motion.panel(card);}else Motion.popup(card);Motion.reveal(scrim);
+        Platform.runLater(()->{if(modalCard==card){List<Node> focusable=new ArrayList<>();focusable(card,focusable);if(!focusable.isEmpty())focusable.getFirst().requestFocus();}});
     }
-    private void closeModal(){if(modal!=null){getChildren().remove(modal);modal=null;}Runnable cleanup=modalClosed;modalClosed=null;if(cleanup!=null)cleanup.run();}
+    private void cycleFocus(boolean backwards){
+        if(modalCard==null)return;List<Node> items=new ArrayList<>();focusable(modalCard,items);if(items.isEmpty())return;
+        int current=items.indexOf(getScene().getFocusOwner()),next=current<0?0:Math.floorMod(current+(backwards?-1:1),items.size());items.get(next).requestFocus();
+    }
+    private static void focusable(Node node,List<Node> items){if(!node.isVisible()||node.isDisabled())return;if(node.isFocusTraversable())items.add(node);if(node instanceof javafx.scene.Parent parent)parent.getChildrenUnmodifiable().forEach(child->focusable(child,items));}
+    private void closeModal(){
+        if(modal==null||closing)return;if(!AdminMotion.animated(this)){closeModalNow(true);return;}
+        closing=true;modal.setMouseTransparent(true);modalCard.setDisable(true);
+        FadeTransition fade=new FadeTransition(Duration.millis(150),modal);fade.setToValue(0);
+        TranslateTransition slide=new TranslateTransition(Duration.millis(150),modalCard);if(modalDrawer)slide.setToX(20);else slide.setToY(5);slide.setInterpolator(Interpolator.EASE_IN);
+        modalExit=new ParallelTransition(fade,slide);modalExit.setOnFinished(e->closeModalNow(true));modalExit.play();
+    }
+    private void closeModalNow(boolean restore){
+        if(modalExit!=null){modalExit.stop();modalExit=null;}closing=false;
+        if(modal!=null)getChildren().remove(modal);modal=null;modalCard=null;
+        Runnable cleanup=modalClosed;modalClosed=null;if(cleanup!=null)cleanup.run();
+        Node target=restoreFocus;restoreFocus=null;if(restore&&target!=null)Platform.runLater(()->{if(modal==null&&target.getScene()==getScene()&&AdminMotion.showing(target)&&!target.isDisabled())target.requestFocus();});
+    }
+    public static void placeNotice(Node owner){AdminWorkspace workspace=find(owner);if(workspace!=null)workspace.placeNotice();}
+    private void placeNotice(){if(notice==null)return;Node bulk=lookup("#admin-bulk-actions");double bottom=74;if(bulk instanceof Region row&&row.isVisible()){var position=sceneToLocal(row.localToScene(row.getLayoutBounds()));bottom=row.getHeight()>0&&position.getMinY()>0?getHeight()-position.getMinY()+16:154;}StackPane.setMargin(notice,new Insets(0,24,bottom,24));}
+    private void dismissNotice(){noticeHold.stop();if(notice!=null)getChildren().remove(notice);notice=null;}
+    static AdminWorkspace find(Node owner){for(Node node=owner;node!=null;node=node.getParent())if(node instanceof AdminWorkspace workspace)return workspace;return null;}
+    public static void notice(Node owner,String message,Runnable undo){AdminWorkspace workspace=find(owner);if(workspace!=null)workspace.showNotice(message,undo,false);}
+    public static void failure(Node owner,String message){AdminWorkspace workspace=find(owner);if(workspace!=null)workspace.showNotice(message,null,true);}
+    private void showNotice(String message,Runnable undo,boolean error){
+        dismissNotice();Label text=Ui.label(message,"workspace-toast-text");text.setWrapText(true);text.setMinWidth(0);HBox.setHgrow(text,Priority.ALWAYS);
+        HBox box=new HBox(12,text);box.setId("admin-toast");box.setAccessibleText(message);box.setAlignment(Pos.CENTER_LEFT);box.getStyleClass().add("workspace-toast");if(error)box.getStyleClass().add("workspace-toast-error");box.setMaxWidth(480);box.setMaxHeight(Region.USE_PREF_SIZE);
+        if(undo!=null){Button action=Ui.button("Undo",()->{});action.setId("admin-toast-undo");action.setOnAction(e->{noticeHold.stop();action.setDisable(true);undo.run();});action.focusedProperty().addListener((o,a,b)->{if(b)noticeHold.pause();else if(notice==box)noticeHold.play();});box.getChildren().add(action);}
+        Button close=Ui.button("×",this::dismissNotice);close.setAccessibleText("Dismiss notification");box.getChildren().add(close);
+        box.setOnMouseEntered(e->noticeHold.pause());box.setOnMouseExited(e->{if(notice==box)noticeHold.play();});
+        notice=box;getChildren().add(box);StackPane.setAlignment(box,Pos.BOTTOM_RIGHT);placeNotice();Motion.dropIn(box);
+        noticeHold.setOnFinished(e->dismissNotice());noticeHold.playFromStart();
+    }
     public static void inventoryChanged(Node owner){
         for(Node node=owner;node!=null;node=node.getParent())if(node instanceof AdminWorkspace workspace){workspace.select("nav-inventory");return;}
     }

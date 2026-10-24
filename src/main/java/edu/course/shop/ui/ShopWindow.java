@@ -87,6 +87,7 @@ public final class ShopWindow {
     }
     private record CustomerSession(java.util.Set<Long> saved,edu.course.shop.service.PersistentCartService.Restored restored){}
     private void signedIn(User signedIn){
+        assistant.clearCaches();
         if(signedIn.canManageProducts()){saved.reset();completeSignIn(signedIn);return;}
         java.util.Set<Long> guestSaved=saved.snapshot();Cart guest=cart.getCustomerId()==0?cart:null;
         Ui.async(stage.getScene().getRoot(),"Restoring your account and cart…",()->{
@@ -96,11 +97,9 @@ public final class ShopWindow {
             return new CustomerSession(ids,services.products().savedCarts().restore(signedIn,guest));
         },session->{
             saved.signedIn(signedIn,session.saved());user=signedIn;cart=session.restored().cart();buildShell();
-            if(cart.getItems().isEmpty()&&session.restored().notices().isEmpty())showCatalog();
-            else{
-                showCart();Label feedback=(Label)shell.lookup("#cart-feedback");
-                Ui.success(feedback,session.restored().notices().isEmpty()?"Your cart is saved to your account. Prices and availability were checked; stock is reserved only at checkout.":String.join("\n",session.restored().notices()));
-            }
+            catalogState.setScrollPosition(0);showCatalog();
+            if(!session.restored().notices().isEmpty())showToast(String.join("\n",session.restored().notices()));
+            else if(!cart.getItems().isEmpty())showToast("Your saved cart is ready. Continue shopping or review your cart.");
         },Ui::error);
     }
     private void completeSignIn(User signedIn){
@@ -108,6 +107,7 @@ public final class ShopWindow {
         user=signedIn;cart=new Cart(user.getId());buildShell();showAdminOverview();
     }
     private void signOut(){
+        assistant.clearCaches();
         user=new Guest();cart=pendingGuestCart==null?new Cart(0):pendingGuestCart;pendingGuestCart=null;draft.clear();saved.reset();showStorefront();
     }
     private Button link(String text,Runnable action){Button b=Ui.button(text,action);b.getStyleClass().add("header-link");return b;}

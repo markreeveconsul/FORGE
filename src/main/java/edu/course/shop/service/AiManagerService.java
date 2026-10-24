@@ -26,16 +26,18 @@ public final class AiManagerService {
     public boolean configured(){return ai.configured();}
     private static void requireAdmin(User actor){if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");}
     public Metrics metrics(User actor){requireAdmin(actor);List<Product> p=services.products().search(actor,"",null);return new Metrics(p.size(),(int)p.stream().filter(ManagerCommand::needsContent).count(),(int)p.stream().filter(x->x.isActive()&&x.getStock()<=5).count(),(int)p.stream().filter(x->!x.isActive()&&x.getStock()>0).count());}
-    public Result prepare(User actor,String request,boolean research){
+    public Result prepare(User actor,String request,boolean research){return prepare(actor,request,research,stage->{});}
+    public Result prepare(User actor,String request,boolean research,java.util.function.Consumer<String> progress){
         requireAdmin(actor);if(request==null||request.isBlank()||request.length()>1000)throw new ValidationException("Enter a store command of 1–1,000 characters.");
+        progress.accept("Interpreting your command…");
         boolean offline=!ai.configured();String aiIssue=offline?ai.configurationProblem():"";ManagerCommand command;
         if(offline)command=ManagerCommand.offline(request);
         else try{command=ai.classify(request);}catch(IllegalStateException e){if(Thread.currentThread().isInterrupted())throw e;offline=true;aiIssue="Command interpretation: "+e.getMessage();command=ManagerCommand.offline(request);}
         if(Thread.currentThread().isInterrupted())throw new IllegalStateException("Command cancelled.");
         if(command.intent()==ManagerCommand.Intent.CLARIFY)return result(command,List.of(),List.of(),List.of(),null,offline,command.question(),0,aiIssue);
-        List<Product> catalog=services.products().search(actor,"",null);
+        progress.accept("Checking catalog records…");List<Product> catalog=services.products().search(actor,"",null);
         if(command.intent()==ManagerCommand.Intent.SALES_SUMMARY){
-            Sales sales=sales(actor,command);List<Product> restock=command.includeRestock()?catalog.stream().filter(p->p.isActive()&&p.getStock()<=5).sorted(Comparator.comparingInt(Product::getStock)).toList():List.of();
+            progress.accept("Calculating recorded sales totals…");Sales sales=sales(actor,command);List<Product> restock=command.includeRestock()?catalog.stream().filter(p->p.isActive()&&p.getStock()<=5).sorted(Comparator.comparingInt(Product::getStock)).toList():List.of();
             return result(command,restock,List.of(),List.of(),sales,offline,"Recorded order totals are calculated from SQLite. Payments are simulated; pending payments are excluded from paid value.",restock.size(),aiIssue);
         }
         List<Product> matched=catalog.stream().filter(command::matches).sorted(Comparator.comparingInt(Product::getStock).thenComparing(Product::getName)).toList();
@@ -59,9 +61,10 @@ public final class AiManagerService {
         List<ManagerAi.Draft> drafts=List.of();String message;
         if(batch.isEmpty())message="No products with missing content match this request.";
         else if(command.missingField().equals("photo"))message="These products need a photo upload in Products. AI Manager does not fabricate product photos.";
-        else if(offline)message="Found "+count+" products needing content. AI drafting is offline; you can inspect these records and retry when connected.";
+        else if(offline)message="Found "+count+" products needing content. AI drafting is unavailable; local records remain available. Check the error details before retrying.";
         else if(draftable.isEmpty())message="These products need a photo upload or researched specifications. Upload missing photos in Products; enable Research missing specifications online for exact-model lookup. No drafting request was made.";
         else {
+            progress.accept("Drafting content for "+batch.size()+" products"+(research?" with source research":"")+"…");
             try{drafts=ai.draft(batch,research);message="Review the proposed content. Existing fields are preserved; missing photos and unverified specifications still need attention.";}
             catch(IllegalStateException e){if(Thread.currentThread().isInterrupted())throw e;offline=true;aiIssue="Content drafting: "+e.getMessage();message="Content drafting is unavailable right now. Your matching products are below; nothing was changed.";}
         }

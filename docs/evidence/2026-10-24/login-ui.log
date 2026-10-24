@@ -1,0 +1,25 @@
+Oct 24, 2026 8:19:51 PM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @2344fc66'
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/Admin/Documents/Codex/2026-10-09/you-are-my-senior-java-mentor/forge-chat-verification/lib/javafx-graphics-21.0.6-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+PASS Glass panel has the diagonal reflection
+PASS Login wordmark matches the white reference
+PASS Reduced motion uses a static edge glow
+PASS Demo accounts remain collapsed
+PASS Password visibility uses an eye icon
+PASS Card stays centered within the right column
+PASS Reference-sized panel keeps readable form controls
+PASS Required username error stays in the glass form
+PASS Eye reveals the password accessibly
+PASS Password edits survive hiding
+PASS Forgot password opens real account-help guidance
+PASS Orange light progresses around the perimeter
+PASS Hidden windows pause the glow
+PASS Reduce motion immediately stops the glow
+PASS Static glow does not keep updating
+PASS Authentication failure unlocks the form
+PASS Leaving login releases the moving glow
+PASS Customer authentication still navigates to the store
+LOGIN GLASS PASS: 18 assertions
