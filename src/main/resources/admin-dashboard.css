@@ -117,6 +117,10 @@
 .forge-admin.admin-dark .manager-command-card { -fx-border-color: #78350F; }
 .forge-admin .manager-eyebrow { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: -admin-muted; }
 .forge-admin .manager-result-title { -fx-text-fill: -admin-text; -fx-font-size: 13px; }
+.forge-admin .manager-metric-number { -fx-text-fill: -admin-text; }
+/* Sales figures stay legible against both light and charcoal result cards. */
+.forge-admin #ai-manager-sales .manager-metric-number { -fx-text-fill: #047857; }
+.forge-admin.admin-dark #ai-manager-sales .manager-metric-number { -fx-text-fill: #34D399; }
 .forge-admin .manager-chip { -fx-background-color: -admin-card; -fx-border-color: -admin-border; -fx-text-fill: -admin-text; -fx-font-size: 11px; -fx-padding: 7 11; -fx-min-height: 33; -fx-background-radius: 9; -fx-border-radius: 9; }
 .forge-admin .manager-research { -fx-text-fill: -admin-muted; -fx-font-size: 11px; }
 .forge-admin .manager-terminal { -fx-background-color: #0C0A09; -fx-background-radius: 16; -fx-border-color: #292524; -fx-border-radius: 16; }

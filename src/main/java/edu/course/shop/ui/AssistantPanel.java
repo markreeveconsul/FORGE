@@ -70,7 +70,8 @@ public final class AssistantPanel extends BorderPane {
         HBox composer=new HBox(8,input,send);HBox.setHgrow(input,Priority.ALWAYS);composer.setAlignment(Pos.CENTER_LEFT);composer.getStyleClass().add("chat-composer");
         Label disclaimer=Ui.label("AI can make mistakes. Check specs before you buy.","chat-disclaimer");disclaimer.setWrapText(true);
         Button privacy=Ui.button("Privacy",this::showPrivacy);privacy.getStyleClass().add("chat-link");
-        HBox footer=new HBox(4,disclaimer,privacy);HBox.setHgrow(disclaimer,Priority.ALWAYS);footer.setAlignment(Pos.CENTER_LEFT);footer.getStyleClass().add("chat-disclaimer-row");
+        Button limits=Ui.button("AI limits",this::showLimits);limits.setId("assistant-limits");limits.getStyleClass().add("chat-link");
+        HBox footer=new HBox(4,disclaimer,limits,privacy);HBox.setHgrow(disclaimer,Priority.ALWAYS);footer.setAlignment(Pos.CENTER_LEFT);footer.getStyleClass().add("chat-disclaimer-row");
         setBottom(new VBox(composer,footer));
         newChat();
     }
@@ -108,6 +109,7 @@ public final class AssistantPanel extends BorderPane {
         }
         messages.getChildren().add(welcome);
     }
+    private void showLimits(){VBox info=bot("FORGE AI usage limits");info.setId("assistant-limits-info");info.getChildren().add(wrap(gemini.limitsSummary(),"chat-muted"));scrollDown();}
     private void showPrivacy(){
         VBox notice=bot("Questions and relevant catalog/cart records go to Google when an AI explanation is needed. Image search also sends your selected image and FORGE product photos, names and specifications to Gemini after you approve. Free-tier content may improve Google's products. Don't enter sensitive information. Order summaries require separate approval and exclude addresses, usernames and payment methods. Chat history stays in memory until New chat or sign-out. Shopping preferences and approvals are stored locally on this device.");
         if(consent){Button revoke=Ui.button("Forget Gemini approval",()->{});

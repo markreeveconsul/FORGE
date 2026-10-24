@@ -1,0 +1,98 @@
+[
+  {
+    "file": "docs/screenshots/submission/01-login.png",
+    "title": "Account access",
+    "suite": "LoginGlassSmoke",
+    "caption": "The glass login panel provides required-field validation, password visibility, public demo account help and a reduced-motion setting.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/02-storefront.png",
+    "title": "Customer storefront",
+    "suite": "StorefrontUiSmoke",
+    "caption": "The store separates category navigation from the search and account controls. Product cards show current fixture prices and availability.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/03-product.png",
+    "title": "Product details",
+    "suite": "StorefrontUiSmoke",
+    "caption": "The detail interface presents a product image, optional specifications and purchase controls. Missing specifications do not hide the product.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/04-cart.png",
+    "title": "Shopping cart",
+    "suite": "StorefrontUiSmoke",
+    "caption": "The cart exposes quantities, removal controls and a shared order summary. A cart does not reserve stock.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/05-checkout.png",
+    "title": "Checkout",
+    "suite": "StorefrontUiSmoke",
+    "caption": "Checkout collects validated delivery details and a simulated payment choice. The service rechecks prices and stock before committing.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/06-order-tracking.png",
+    "title": "Customer order history and tracking",
+    "suite": "CommerceUiSmoke",
+    "caption": "Customers see their own recorded fulfillment timeline. Carrier and tracking details are entered by an administrator; no live carrier API is connected.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/07-admin-overview.png",
+    "title": "Administration overview",
+    "suite": "AdminDashboardUiSmoke",
+    "caption": "Overview uses SQLite order records for metrics and the revenue graph. These values are synthetic verification data, not actual business income.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/08-inventory.png",
+    "title": "Inventory management",
+    "suite": "AdminDashboardUiSmoke",
+    "caption": "The inventory table supports searching, filtering and validated inline stock or price edits. Product and content badges remain readable.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/09-product-editor.png",
+    "title": "Product editor and specifications",
+    "suite": "CommerceUiSmoke",
+    "caption": "The editor supports category-specific facts and an optional free-text specification format. Quantities use explicit units and photos are supplied by the administrator.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/10-admin-orders.png",
+    "title": "Administration order processing",
+    "suite": "AdminDashboardUiSmoke",
+    "caption": "Administrators inspect recorded orders and manage simulated fulfillment. Service checks prevent invalid transitions and duplicate stock restoration.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/11-customer-assistant.png",
+    "title": "FORGE AI customer assistant",
+    "suite": "StorefrontUiSmoke",
+    "caption": "A local catalog query renders product cards inside the conversation. The current local records determine the cards; product specifications are optional.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  },
+  {
+    "file": "docs/screenshots/submission/12-ai-manager.png",
+    "title": "AI Manager reviewed content preview",
+    "suite": "AiManagerUiSmoke with AiManagerDocumentationCapture",
+    "caption": "This deterministic provider fixture demonstrates editable generated drafts before Apply reviewed changes. The test verifies that previewing does not write to SQLite. The capture variant expands the editable draft and scrolls the review into view; it uses the same assertions.",
+    "capturedDate": "2026-10-24",
+    "data": "synthetic"
+  }
+]

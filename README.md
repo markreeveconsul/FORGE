@@ -1,4 +1,4 @@
-# FORGE — Java OOP E-commerce System
+# FORGE - an AI integrated E Commerce System
 
 A small JavaFX desktop store with SQLite persistence. Built as a readable course project, not a production commerce service.
 
@@ -77,13 +77,23 @@ All Java paths above are under `src/main/java/edu/course/shop`.
 
 - [Storefront and admin photo guide](docs/STOREFRONT-UPDATE.md)
 - [UI refresh and reference research](docs/UX-REFRESH.md)
-- [Ten-section project guide](docs/PROJECT-GUIDE.md)
-- [Class diagram source](docs/classes.puml)
+- [Ten-section project report and editable source](docs/PROJECT-GUIDE.md)
+- [Class diagram source](docs/classes.puml) and [UML sheet index](docs/uml/README.md)
 - [Testing evidence](docs/TESTING.md)
 - [Defense questions](docs/DEFENSE.md)
 - [Screenshots](docs/screenshots/)
 
-Keep the UML and guide updated when you change class signatures or business rules. The documentation is a working draft to adapt to your instructor's exact required section names.
+Keep the UML and guide updated when you change class signatures or business rules. The report follows the assignment's ten required sections. Personal code understanding, title approval and presentation-machine checks remain the group's responsibility.
+
+## Submission package
+
+Updated on 24 October 2026 for the OOP assignment. The report includes the supplied group, section and instructor details, all ten required sections, current screenshots and the 175-test / 121-UI-assertion evidence.
+
+- [Project report PDF](docs/submission/FORGE-PROJECT-REPORT.pdf)
+- [Readable UML PDF](docs/submission/FORGE-UML.pdf)
+- [Editable report source](docs/PROJECT-GUIDE.md)
+- [Full declared-member reference](docs/uml/CLASS-REFERENCE.md)
+- [Submission and defense checklist](docs/SUBMISSION-CHECKLIST.md)
 
 ## Boundaries
 

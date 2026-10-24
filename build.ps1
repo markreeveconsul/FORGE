@@ -68,7 +68,8 @@ try {
         'Package' { @('package') }
         'Smoke' { @('test-compile') }
     }
-    & $javaExe "-Dmaven.home=$mavenRoot" "-Dclassworlds.conf=$mavenRoot\bin\m2.conf" "-Dmaven.multiModuleProjectDirectory=$PSScriptRoot" -cp "$mavenRoot\boot\*" org.codehaus.plexus.classworlds.launcher.Launcher "-Dmaven.repo.local=$Repository" -B @goals
+    # JavaFX must use the selected JDK, including when Windows PATH has a broken java shortcut.
+    & $javaExe "-Dmaven.home=$mavenRoot" "-Dclassworlds.conf=$mavenRoot\bin\m2.conf" "-Dmaven.multiModuleProjectDirectory=$PSScriptRoot" -cp "$mavenRoot\boot\*" org.codehaus.plexus.classworlds.launcher.Launcher "-Dmaven.repo.local=$Repository" "-Djavafx.executable=$javaExe" -B @goals
     if ($LASTEXITCODE -ne 0) { throw "Maven failed with exit code $LASTEXITCODE." }
     if ($Action -eq 'Smoke') {
         $fx = (Get-ChildItem "$Repository\org\openjfx" -Recurse -Filter '*-21.0.6-win.jar').FullName -join ';'

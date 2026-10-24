@@ -1,0 +1,114 @@
+@startuml 13_customer_components
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE Customer interface components
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "AssistantPanel" as edu_course_shop_ui_AssistantPanel {
+  -services : Services
+  -user : User
+  -cart : Supplier<Cart>
+  -page : Supplier<Product>
+  -gemini : GeminiAssistant
+  +AssistantPanel(...)
+  +greet() : void
+  +refreshContext() : void
+  +stop() : void
+  {static} ~friendly(error) : String
+}
+class "RobotAvatar" as edu_course_shop_ui_RobotAvatar {
+  +RobotAvatar(size)
+  +getState() : State
+  +setState(value) : void
+  +stateProperty() : ReadOnlyObjectProperty<State>
+  +setAnimated(value) : void
+  +react(value) : void
+}
+class "RobotLauncher" as edu_course_shop_ui_RobotLauncher {
+  +RobotLauncher(open)
+}
+class "ProductCard" as edu_course_shop_ui_ProductCard {
+  -productForSaving : Product
+  +confirmAdded() : void
+  +ProductCard(product, add, details)
+  +enableSavedItems(saved) : void
+}
+class "ProductArtwork" as edu_course_shop_ui_ProductArtwork {
+  +ProductArtwork(product, height)
+}
+class "ProductGallery" as edu_course_shop_ui_ProductGallery {
+  -product : Product
+  +setCompact(value) : void
+  +ProductGallery(product)
+}
+class "ProductReviewsView" as edu_course_shop_ui_ProductReviewsView {
+  -user : User
+  -reviews : ProductReviewService
+  -gemini : GeminiAssistant
+  +ProductReviewsView(productId, productName, user, reviews, gemini)
+}
+class "SavedItems" as edu_course_shop_ui_SavedItems {
+  -accounts : AccountService
+  -user : User
+  +SavedItems(accounts)
+  +snapshot() : Set<Long>
+  +reset() : void
+  +signedIn(customer, stored) : void
+  +observe(owner, action) : void
+  +heart(product) : Button
+}
+class "SearchSuggestions" as edu_course_shop_ui_SearchSuggestions {
+  -user : User
+  -products : ProductService
+  -details : Consumer<Product>
+  -pending : Task<List<Product>>
+  +SearchSuggestions(search, user, products, details, results)
+  +dismiss() : void
+  +close() : void
+}
+class "QuantityControl" as edu_course_shop_ui_QuantityControl {
+  +validProperty() : ReadOnlyBooleanProperty
+  +QuantityControl(maximum)
+  +getValue() : int
+  +valueProperty() : IntegerProperty
+}
+class "OrderSummary" as edu_course_shop_ui_OrderSummary {
+  +OrderSummary(cart, action)
+}
+class "CartDrawer" as edu_course_shop_ui_CartDrawer {
+  -user : User
+  -cart : Cart
+  -carts : CartService
+  +CartDrawer(user, cart, carts, changed, close, review, checkout)
+}
+edu_course_shop_ui_AssistantPanel --> edu_course_shop_ui_RobotAvatar : robot
+edu_course_shop_ui_AssistantPanel --> edu_course_shop_ui_SavedItems : savedItems
+edu_course_shop_ui_AssistantPanel -[hidden]down-> edu_course_shop_ui_ProductCard
+edu_course_shop_ui_AssistantPanel -[hidden]right-> edu_course_shop_ui_RobotAvatar
+edu_course_shop_ui_OrderSummary -[hidden]right-> edu_course_shop_ui_CartDrawer
+edu_course_shop_ui_ProductArtwork -[hidden]down-> edu_course_shop_ui_SavedItems
+edu_course_shop_ui_ProductArtwork -[hidden]right-> edu_course_shop_ui_ProductGallery
+edu_course_shop_ui_ProductCard -[hidden]down-> edu_course_shop_ui_ProductReviewsView
+edu_course_shop_ui_ProductCard -[hidden]right-> edu_course_shop_ui_ProductArtwork
+edu_course_shop_ui_ProductGallery -[hidden]down-> edu_course_shop_ui_SearchSuggestions
+edu_course_shop_ui_ProductReviewsView -[hidden]down-> edu_course_shop_ui_QuantityControl
+edu_course_shop_ui_ProductReviewsView -[hidden]right-> edu_course_shop_ui_SavedItems
+edu_course_shop_ui_QuantityControl -[hidden]right-> edu_course_shop_ui_OrderSummary
+edu_course_shop_ui_RobotAvatar -[hidden]down-> edu_course_shop_ui_ProductArtwork
+edu_course_shop_ui_RobotAvatar -[hidden]right-> edu_course_shop_ui_RobotLauncher
+edu_course_shop_ui_RobotLauncher --> edu_course_shop_ui_RobotAvatar : robot
+edu_course_shop_ui_RobotLauncher -[hidden]down-> edu_course_shop_ui_ProductGallery
+edu_course_shop_ui_SavedItems -[hidden]down-> edu_course_shop_ui_OrderSummary
+edu_course_shop_ui_SavedItems -[hidden]right-> edu_course_shop_ui_SearchSuggestions
+edu_course_shop_ui_SearchSuggestions -[hidden]down-> edu_course_shop_ui_CartDrawer
+@enduml

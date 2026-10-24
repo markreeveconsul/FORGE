@@ -1,0 +1,53 @@
+@startuml 08_ai_transport
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE AI transport caching errors and quota reporting
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "AiHttp" as edu_course_shop_service_AiHttp {
+  -sender : GeminiAssistant.Sender
+  ~AiHttp(sender, key, model, sleeper, clock, events)
+  ~send(request, feature) : GeminiAssistant.Reply
+  ~invalidResponse(feature) : void
+  ~cacheHit(feature) : void
+  ~limitsSummary() : String
+  {static} ~error(reply, key) : AiFailure
+}
+class "AiFailure" as edu_course_shop_service_AiFailure {
+  +kind() : Kind
+  +status() : int
+  +retryAfterSeconds() : long
+  +quota() : AiQuota.Info
+  ~AiFailure(kind, status, delay, message)
+}
+class "AiQuota" as edu_course_shop_service_AiQuota {
+  {static} +guide() : String
+  {static} ~read(reply, key) : Info
+}
+class "AiDiagnostics" as edu_course_shop_service_AiDiagnostics {
+  {static} +recent() : List<Event>
+  {static} ~record(e) : void
+}
+class "AiCache" as edu_course_shop_service_AiCache {
+  ~AiCache(count, bytes, ttl, clock)
+  ~get(key) : T
+  ~put(key, value, size) : void
+  ~clear() : void
+  {static} ~digest(text) : String
+}
+edu_course_shop_service_AiDiagnostics -[hidden]right-> edu_course_shop_service_AiCache
+edu_course_shop_service_AiFailure -[hidden]down-> edu_course_shop_service_AiCache
+edu_course_shop_service_AiFailure -[hidden]right-> edu_course_shop_service_AiQuota
+edu_course_shop_service_AiHttp -[hidden]down-> edu_course_shop_service_AiDiagnostics
+edu_course_shop_service_AiHttp -[hidden]right-> edu_course_shop_service_AiFailure
+@enduml

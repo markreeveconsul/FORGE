@@ -123,6 +123,7 @@ public final class GeminiAssistant {
     }
     public String configurationProblem() { return config.problem(); }
     public String model() { return config.model(); }
+    public String limitsSummary(){return http.limitsSummary();}
     /** Admin planning and drafting share bounded transport retries; proposals always need review. */
     JsonObject managerRequest(JsonObject body) {
         if(!config.problem().isBlank())throw new IllegalStateException(config.problem());

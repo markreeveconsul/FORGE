@@ -253,8 +253,8 @@ class AiManagerServiceTest {
         var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().startsWith("Content drafting:"));assertTrue(preview.changes().isEmpty());
     }
     @Test void dailyQuotaExhaustedDuringDraftingNeverSavesPartialChanges()throws Exception{
-        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->requests.getAndIncrement()==0?call("fix_content","{\"ids\":["+gpu.getId()+"]}"):new GeminiAssistant.Reply(429,"{\"error\":{\"message\":\"Daily free request quota exceeded.\"}}")));
-        var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().contains("Content drafting: HTTP 429"));assertTrue(preview.aiIssue().contains("daily AI quota"));assertEquals(0,auditCount());assertTrue(preview.changes().isEmpty());assertTrue(services.products().get(gpu.getId()).getDescription().isBlank());
+        AtomicInteger requests=new AtomicInteger();var manager=new AiManagerService(services,client(r->requests.getAndIncrement()==0?call("fix_content","{\"ids\":["+gpu.getId()+"]}"):AiQuotaTest.reply("RequestsPerDay","generativelanguage.googleapis.com/requests","20",0)));
+        var preview=manager.prepare(admin,"Fix content",false);assertTrue(preview.offline());assertTrue(preview.aiIssue().contains("Content drafting: HTTP 429"));assertTrue(preview.aiIssue().contains("requests per day"));assertEquals(0,auditCount());assertTrue(preview.changes().isEmpty());assertTrue(services.products().get(gpu.getId()).getDescription().isBlank());
         manager.prepare(admin,"Fix content",false);assertEquals(2,requests.get());
     }
     @Test void malformedDuplicateAndUnknownDraftsAreRejectedBeforeSaving()throws Exception{

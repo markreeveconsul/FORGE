@@ -1,21 +1,51 @@
-# Defense preparation
+# FORGE defense preparation
 
-1. **Where is encapsulation?** Product fields are private and final; its constructor rejects invalid values. Cart changes go through methods and getItems returns an unmodifiable copy.
-2. **Why no Product setters?** Immutable snapshots prevent partially updated state. ProductService constructs a validated replacement before saving it.
-3. **Show inheritance.** Customer and Admin extend User and inherit its identity fields/getters.
-4. **Is inheritance meaningful here?** Yes: permission methods differ. Services use those methods to authorize operations.
-5. **Show runtime polymorphism.** CheckoutService calls payment.pay(total) through PaymentMethod. COD returns PENDING; an approved wallet returns PAID.
-6. **Why an interface?** Checkout depends on a behavior contract. A new payment simulation can implement it without adding a type-based branch in checkout.
-7. **Why an abstract User?** Every concrete user must specify role and permission behavior; an incomplete generic user should not be instantiated.
-8. **Why not put checkout in the button handler?** Business rules would become tied to the GUI and hard to test. The button collects values and calls a service.
-9. **How do you prevent overselling?** The database UPDATE includes stock>=quantity, and checkout checks the affected row count.
-10. **What if a later item lacks stock?** The transaction rolls back earlier deductions. A test explicitly checks this.
-11. **What if the database fails after stock deduction?** The same transaction is rolled back; the cart clears only after commit. An injected failing SQLite trigger tests this.
-12. **Why BigDecimal?** It represents decimal money exactly with explicit scale rules. SQLite stores whole cents, avoiding binary floating-point rounding.
-13. **Why copy product details into OrderItem?** A receipt must preserve what was purchased even after the catalog changes.
-14. **Can you add a new payment method live?** Implement PaymentMethod, return a PaymentResult, add an instance to CheckoutView's choices, and test it. Real payment integration would require a different failure/recovery design.
-15. **Can you modify a validation rule live?** For example, change Product's maximum name length, update its message and test, then run build.ps1 Test. Explain why GUI-only validation would be insufficient.
+Use the actual source while rehearsing. Code paths below are relative to src/main/java/edu/course/shop. The report uses the assignment's ten required sections; this page supports the personal defense and does not certify understanding.
 
-Rehearse tracing this exact path: CheckoutView button -> CheckoutService.checkout -> ProductRepository.deductStock -> PaymentMethod.pay -> OrderRepository.save -> commit -> Cart.clear.
+## Explain the four pillars
 
-For a discount question: there is no discount feature currently. Explain where a pricing policy would belong (the service/domain layer), how cart and checkout totals must agree, and how an order would preserve the final charged amounts. Do not pretend an unimplemented method exists.
+1. **Encapsulation:** Product uses private final fields, validation and defensive photo copies. Cart keeps its map private and returns a list copy. Explain why getters do not require unrestricted setters.
+2. **Inheritance:** Customer, Admin and Guest extend abstract User. They share identity getters but supply different permissions. Private parent fields are not directly accessible to subclasses.
+3. **Polymorphism:** CheckoutService calls payment.pay(total) through PaymentMethod. COD accepts with PENDING; an approved wallet returns PAID; a declined wallet rejects. There is no payment-class switch in checkout.
+4. **Abstraction:** User requires role behavior and cannot be instantiated directly. PaymentMethod exposes the payment contract without requiring checkout to know the concrete simulation.
+
+Open model/User.java and its subclasses, model/Product.java, model/Cart.java, payment/PaymentMethod.java, both implementations, and service/CheckoutService.java. Demonstrate the examples rather than only reciting definitions.
+
+## Trace a purchase
+
+CheckoutView collects fields -> CheckoutService.checkout verifies Customer/cart ownership -> one JDBC connection starts a transaction -> ProductRepository.find reloads products -> conditional deductStock prevents overselling -> PaymentMethod.pay supplies behavior -> OrderRepository.save writes snapshots -> saved cart rows are cleared -> commit -> Cart.clearAfterCheckout.
+
+A failure rolls back the writes and leaves the cart available. OrderItems preserve the purchased name and price even after a catalog edit or deletion. A real payment gateway would require recovery for external side effects; SQLite rollback cannot undo a charge at another service.
+
+## Trace AI Manager
+
+AiManagerView receives a command -> AiManagerService.prepare enforces administrator access -> ManagerAi.classify requests one typed function call -> ManagerCommand validates arguments -> local services select records -> optional ManagerAi.draft returns content -> the administrator reviews/selects/edits -> AiManagerService.apply delegates reviewed changes to ProductService.applyManagerChanges.
+
+The model never runs SQL. Preview does not save. Missing photos require upload; existing nonempty text is preserved. Source URLs and an exact-model flag are required for proposed researched specifications, and a human still checks the variant. A stale product invalidates the complete batch. Audit rows record before and after values; a batch cannot be applied twice.
+
+## Explain the customer assistant and image search
+
+CatalogAssistant performs local retrieval and supports catalog/category/budget context. AssistantPanel renders records as product cards even without specifications. Broader explanations use GeminiAssistant after approval. Missing facts cannot establish compatibility. Do not claim that all customer intent handling is Gemini function calling; the customer retrieval path contains local parsing, whereas AI Manager explicitly uses declared functions.
+
+Image search sends a resized reference and up to 40 active catalog photos with public facts to the configured Gemini model. Returned IDs must belong to the catalog and meet the implemented threshold. This is constrained visual matching, not an image index of the internet. Privacy identifies the external provider even though the interface feature is branded FORGE AI.
+
+Review-summary and image approvals are separate from general chat approval. Consent and preferences are local to the OS account and application user identifier. Do not describe that storage as secure cloud account synchronization.
+
+## Explain sales and limitations
+
+RevenueAnalytics aggregates integer cents and zero-fills the selected local dates. PAID records define paid revenue; order value includes other recorded orders. The chart groups by order creation date, not settlement time. Low stock is a threshold alert, not a predictive model. Payments, refunds and fulfillment are simulated or manually recorded, with no live carrier or bank connection.
+
+AI limits are shared by the provider project/model. One content command can use separate planning and drafting requests. A good network connection cannot prevent a 429 or 503. The app retries only bounded transient failures and uses structured quota metadata; it never invents remaining daily counts. Mock tests validate the application behavior but not current provider uptime or answer accuracy.
+
+## Demonstrate failures and a small code change
+
+- Enter invalid price, quantity or stock and identify both UI feedback and model/service validation.
+- Attempt a product update using a Customer at the service layer and explain the permission rejection.
+- Decline the simulated wallet; verify stock, order rows and cart remain consistent.
+- Prepare an AI change, edit the product elsewhere, then explain why a stale batch must roll back.
+- Explain a local fallback alongside an online error without describing the device as offline.
+- Practice changing the Product name-length limit, its message and its test together, then run build.ps1 Test and update UML if an API signature changed.
+
+## Rehearsal record
+
+Automated evidence on 24 October 2026: 175 JUnit tests and 121 native UI assertions passed. Instructor title approval, personal code understanding, presentation-machine checks and the actual defense are still human responsibilities. Each member should trace a workflow and answer follow-up questions without relying on memorized claims.

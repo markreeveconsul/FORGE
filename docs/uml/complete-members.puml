@@ -1,0 +1,4795 @@
+@startuml edu_course_shop_Services
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.Services
+class "Services" as edu_course_shop_Services <<record>> {
+  -auth : AuthService
+  -products : ProductService
+  -checkout : CheckoutService
+  -orders : OrderService
+  -admin : AdminService
+  -reviews : ProductReviewService
+  +accounts() : AccountService
+}
+@enduml
+
+@startuml edu_course_shop_ShopApp
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ShopApp
+class "ShopApp" as edu_course_shop_ShopApp {
+  +start(stage : Stage) : void
+  {static} +main(args : String[]) : void
+}
+@enduml
+
+@startuml edu_course_shop_exception_OutOfStockException
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.exception.OutOfStockException
+class "OutOfStockException" as edu_course_shop_exception_OutOfStockException {
+  +OutOfStockException(name : String)
+}
+@enduml
+
+@startuml edu_course_shop_exception_StorageException
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.exception.StorageException
+class "StorageException" as edu_course_shop_exception_StorageException {
+  +StorageException(cause : Throwable)
+}
+@enduml
+
+@startuml edu_course_shop_exception_ValidationException
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.exception.ValidationException
+class "ValidationException" as edu_course_shop_exception_ValidationException {
+  +ValidationException(message : String)
+}
+@enduml
+
+@startuml edu_course_shop_model_Admin
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Admin
+class "Admin" as edu_course_shop_model_Admin {
+  +Admin(id : long, username : String)
+  +canManageProducts() : boolean
+  +canShop() : boolean
+  +getRole() : String
+}
+@enduml
+
+@startuml edu_course_shop_model_Cart
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Cart
+class "Cart" as edu_course_shop_model_Cart {
+  -customerId : long
+  -items : Map<Long, CartItem>
+  -persistence : Consumer<List<CartItem>>
+  +Cart(customerId : long)
+  +getCustomerId() : long
+  +getItems() : List<CartItem>
+  +attachPersistence(save : Consumer<List<CartItem>>) : void
+  +add(product : Product, quantity : int) : void
+  +setQuantity(product : Product, quantity : int) : void
+  +remove(id : long) : void
+  +clear() : void
+  +replaceWith(replacement : Cart) : void
+  +clearAfterCheckout() : void
+  -commit(next : Map<Long, CartItem>) : void
+  +getTotal() : BigDecimal
+}
+@enduml
+
+@startuml edu_course_shop_model_CartItem
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.CartItem
+class "CartItem" as edu_course_shop_model_CartItem {
+  -product : Product
+  -quantity : int
+  +CartItem(product : Product, quantity : int)
+  +getProduct() : Product
+  +getQuantity() : int
+  +getSubtotal() : BigDecimal
+}
+@enduml
+
+@startuml edu_course_shop_model_Category
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Category
+enum "Category" as edu_course_shop_model_Category {
+  PC_SETS
+  PC_PARTS
+  LAPTOPS
+  PHONES_TABLETS
+  PERIPHERALS
+  ELECTRONICS
+  CLOTHING
+  HOME
+  -label : String
+  ~Category(label : String)
+  +label() : String
+  +isRetired() : boolean
+  {static} +shopping() : List<Category>
+  +shoppingIndex() : int
+}
+@enduml
+
+@startuml edu_course_shop_model_Customer
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Customer
+class "Customer" as edu_course_shop_model_Customer {
+  +Customer(id : long, username : String)
+  +canManageProducts() : boolean
+  +canShop() : boolean
+  +getRole() : String
+}
+@enduml
+
+@startuml edu_course_shop_model_DeliveryAddress
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.DeliveryAddress
+class "DeliveryAddress" as edu_course_shop_model_DeliveryAddress <<record>> {
+  -recipient : String
+  -street : String
+  -city : String
+  -postalCode : String
+  +DeliveryAddress(recipient : String, street : String, city : String, postalCode : String)
+  +formatted() : String
+}
+@enduml
+
+@startuml edu_course_shop_model_FulfillmentStatus
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.FulfillmentStatus
+enum "FulfillmentStatus" as edu_course_shop_model_FulfillmentStatus {
+  CONFIRMED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  -label : String
+  ~FulfillmentStatus(label : String)
+  +toString() : String
+  +next() : List<FulfillmentStatus>
+}
+@enduml
+
+@startuml edu_course_shop_model_Guest
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Guest
+class "Guest" as edu_course_shop_model_Guest {
+  +Guest()
+  +canManageProducts() : boolean
+  +canShop() : boolean
+  +getRole() : String
+}
+@enduml
+
+@startuml edu_course_shop_model_Money
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Money
+class "Money" as edu_course_shop_model_Money {
+  -Money()
+  {static} +price(value : BigDecimal) : BigDecimal
+  {static} +parse(text : String) : BigDecimal
+  {static} +cents(amount : BigDecimal) : long
+  {static} +amount(cents : long) : BigDecimal
+  {static} +format(amount : BigDecimal) : String
+}
+@enduml
+
+@startuml edu_course_shop_model_Order
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Order
+class "Order" as edu_course_shop_model_Order <<record>> {
+  -id : long
+  -customerId : long
+  -createdAt : String
+  -address : String
+  -paymentMethod : String
+  -paymentStatus : String
+  -total : BigDecimal
+  -items : List<OrderItem>
+  -fulfillmentStatus : FulfillmentStatus
+  -carrier : String
+  -trackingNumber : String
+  -events : List<OrderEvent>
+  +Order(id : long, customerId : long, createdAt : String, address : String, paymentMethod : String, paymentStatus : String, total : BigDecimal, items : List<OrderItem>, fulfillmentStatus : FulfillmentStatus, carrier : String, trackingNumber : String, events : List<OrderEvent>)
+  +Order(id : long, customerId : long, createdAt : String, address : String, paymentMethod : String, paymentStatus : String, total : BigDecimal, items : List<OrderItem>)
+}
+@enduml
+
+@startuml edu_course_shop_model_OrderEvent
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.OrderEvent
+class "OrderEvent" as edu_course_shop_model_OrderEvent <<record>> {
+  -status : FulfillmentStatus
+  -createdAt : String
+  -note : String
+}
+@enduml
+
+@startuml edu_course_shop_model_OrderItem
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.OrderItem
+class "OrderItem" as edu_course_shop_model_OrderItem <<record>> {
+  -productId : long
+  -productName : String
+  -unitPrice : BigDecimal
+  -quantity : int
+  +subtotal() : BigDecimal
+}
+@enduml
+
+@startuml edu_course_shop_model_PhotoFrame
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.PhotoFrame
+class "PhotoFrame" as edu_course_shop_model_PhotoFrame <<record>> {
+  -mode : Mode
+  -x : double
+  -y : double
+  AUTO
+  +PhotoFrame(mode : Mode, x : double, y : double)
+}
+@enduml
+
+@startuml edu_course_shop_model_PhotoFrame_Mode
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.PhotoFrame.Mode
+enum "PhotoFrame.Mode" as edu_course_shop_model_PhotoFrame_Mode {
+  AUTO
+  CONTAIN
+  COVER
+}
+@enduml
+
+@startuml edu_course_shop_model_Product
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.Product
+class "Product" as edu_course_shop_model_Product {
+  -id : long
+  -name : String
+  -category : Category
+  -price : BigDecimal
+  -stock : int
+  -active : boolean
+  -description : String
+  -photo : byte[]
+  -additionalPhotos : java.util.List<byte[]>
+  -specifications : String
+  -photoFrame : PhotoFrame
+  +getPhotoFrame() : PhotoFrame
+  +Product(id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean)
+  +Product(id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean, description : String, photo : byte[])
+  +Product(id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean, description : String, photo : byte[], additionalPhotos : java.util.List<byte[]>, specifications : String)
+  +Product(id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean, description : String, photo : byte[], additionalPhotos : java.util.List<byte[]>, specifications : String, frame : PhotoFrame)
+  +getDescription() : String
+  +getPhoto() : byte[]
+  +getAdditionalPhotos() : java.util.List<byte[]>
+  +getSpecifications() : String
+  +getId() : long
+  +getName() : String
+  +getCategory() : Category
+  +getPrice() : BigDecimal
+  +getStock() : int
+  +isActive() : boolean
+}
+@enduml
+
+@startuml edu_course_shop_model_ProductReview
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.ProductReview
+class "ProductReview" as edu_course_shop_model_ProductReview <<record>> {
+  -id : long
+  -productId : long
+  -author : String
+  -rating : int
+  -text : String
+  -createdAt : String
+}
+@enduml
+
+@startuml edu_course_shop_model_ProductSpecifications
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.ProductSpecifications
+class "ProductSpecifications" as edu_course_shop_model_ProductSpecifications {
+  {static} -ALIASES : Map<String, String>
+  -ProductSpecifications()
+  {static} +fields(category : Category) : List<String>
+  {static} +canonical(key : String) : String
+  {static} +values(text : String) : Map<String, String>
+  {static} +value(p : Product, key : String) : String
+  {static} +matches(p : Product, filters : Map<String, String>) : boolean
+  {static} +validated(text : String) : String
+  {static} +listingText(text : String) : String
+  {static} +formatWarnings(text : String) : List<FormatWarning>
+  {static} -normalize(text : String, strict : boolean) : String
+  {static} -quantity(key : String, value : String, regex : String, help : String, length : boolean) : String
+}
+@enduml
+
+@startuml edu_course_shop_model_ProductSpecifications_FormatWarning
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.ProductSpecifications.FormatWarning
+class "ProductSpecifications.FormatWarning" as edu_course_shop_model_ProductSpecifications_FormatWarning <<record>> {
+  -key : String
+  -message : String
+}
+@enduml
+
+@startuml edu_course_shop_model_User
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.model.User
+abstract class "User" as edu_course_shop_model_User {
+  -id : long
+  -username : String
+  #User(id : long, username : String)
+  +getId() : long
+  +getUsername() : String
+  {abstract} +canManageProducts() : boolean
+  {abstract} +canShop() : boolean
+  {abstract} +getRole() : String
+}
+@enduml
+
+@startuml edu_course_shop_payment_CashOnDeliveryPayment
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.payment.CashOnDeliveryPayment
+class "CashOnDeliveryPayment" as edu_course_shop_payment_CashOnDeliveryPayment {
+  +getName() : String
+  +pay(amount : BigDecimal) : PaymentResult
+  +toString() : String
+}
+@enduml
+
+@startuml edu_course_shop_payment_PaymentMethod
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.payment.PaymentMethod
+interface "PaymentMethod" as edu_course_shop_payment_PaymentMethod {
+  +getName() : String
+  +pay(amount : BigDecimal) : PaymentResult
+}
+@enduml
+
+@startuml edu_course_shop_payment_PaymentResult
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.payment.PaymentResult
+class "PaymentResult" as edu_course_shop_payment_PaymentResult <<record>> {
+  -accepted : boolean
+  -status : String
+}
+@enduml
+
+@startuml edu_course_shop_payment_SimulatedWalletPayment
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.payment.SimulatedWalletPayment
+class "SimulatedWalletPayment" as edu_course_shop_payment_SimulatedWalletPayment {
+  -approved : boolean
+  +SimulatedWalletPayment(approved : boolean)
+  +getName() : String
+  +pay(amount : BigDecimal) : PaymentResult
+  +toString() : String
+}
+@enduml
+
+@startuml edu_course_shop_persistence_AdminRepository
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.AdminRepository
+class "AdminRepository" as edu_course_shop_persistence_AdminRepository {
+  +summary(c : Connection) : Summary
+  +lowStock(c : Connection) : List<LowStockRow>
+  +orders(c : Connection) : List<OrderRow>
+  +customers(c : Connection) : List<CustomerRow>
+}
+@enduml
+
+@startuml edu_course_shop_persistence_AdminRepository_CustomerRow
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.AdminRepository.CustomerRow
+class "AdminRepository.CustomerRow" as edu_course_shop_persistence_AdminRepository_CustomerRow <<record>> {
+  -id : long
+  -username : String
+  -displayName : String
+  -orderCount : int
+  -orderCents : long
+}
+@enduml
+
+@startuml edu_course_shop_persistence_AdminRepository_LowStockRow
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.AdminRepository.LowStockRow
+class "AdminRepository.LowStockRow" as edu_course_shop_persistence_AdminRepository_LowStockRow <<record>> {
+  -id : long
+  -name : String
+  -category : String
+  -stock : int
+}
+@enduml
+
+@startuml edu_course_shop_persistence_AdminRepository_OrderRow
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.AdminRepository.OrderRow
+class "AdminRepository.OrderRow" as edu_course_shop_persistence_AdminRepository_OrderRow <<record>> {
+  -id : long
+  -customer : String
+  -createdAt : String
+  -paymentMethod : String
+  -paymentStatus : String
+  -itemCount : int
+  -totalCents : long
+  -fulfillmentStatus : String
+  +OrderRow(id : long, customer : String, createdAt : String, method : String, payment : String, itemCount : int, total : long)
+}
+@enduml
+
+@startuml edu_course_shop_persistence_AdminRepository_Summary
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.AdminRepository.Summary
+class "AdminRepository.Summary" as edu_course_shop_persistence_AdminRepository_Summary <<record>> {
+  -activeProducts : int
+  -lowStockProducts : int
+  -orders : int
+  -customers : int
+  -recordedOrderCents : long
+}
+@enduml
+
+@startuml edu_course_shop_persistence_DatabaseManager
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.DatabaseManager
+class "DatabaseManager" as edu_course_shop_persistence_DatabaseManager {
+  -url : String
+  +DatabaseManager(file : Path)
+  +open() : Connection
+  +initialize() : void
+  -seedUser(c : Connection, username : String, password : String, role : String) : void
+}
+@enduml
+
+@startuml edu_course_shop_persistence_OrderRepository
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.OrderRepository
+class "OrderRepository" as edu_course_shop_persistence_OrderRepository {
+  +save(c : Connection, order : Order) : Order
+  +forCustomer(c : Connection, customerId : long) : List<Order>
+  +find(c : Connection, id : long) : Order
+  -read(c : Connection, r : ResultSet) : Order
+  +event(c : Connection, id : long, status : FulfillmentStatus, time : String, note : String, actor : long) : void
+  -items(c : Connection, id : long) : List<OrderItem>
+}
+@enduml
+
+@startuml edu_course_shop_persistence_ProductRepository
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.ProductRepository
+class "ProductRepository" as edu_course_shop_persistence_ProductRepository {
+  +list(c : Connection, includeInactive : boolean) : List<Product>
+  +find(c : Connection, id : long) : Product
+  +save(c : Connection, product : Product) : void
+  +deductStock(c : Connection, product : Product, quantity : int) : void
+  -read(c : Connection, r : ResultSet) : Product
+}
+@enduml
+
+@startuml edu_course_shop_persistence_ProductReviewRepository
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.ProductReviewRepository
+class "ProductReviewRepository" as edu_course_shop_persistence_ProductReviewRepository {
+  +hasPurchased(c : Connection, customerId : long, productId : long) : boolean
+  +list(c : Connection, productId : long) : List<ProductReview>
+  +save(c : Connection, customerId : long, productId : long, rating : int, text : String) : void
+}
+@enduml
+
+@startuml edu_course_shop_persistence_UserRepository
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.UserRepository
+class "UserRepository" as edu_course_shop_persistence_UserRepository {
+  +find(c : Connection, username : String) : Optional<Credentials>
+}
+@enduml
+
+@startuml edu_course_shop_persistence_UserRepository_Credentials
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.persistence.UserRepository.Credentials
+class "UserRepository.Credentials" as edu_course_shop_persistence_UserRepository_Credentials <<record>> {
+  -user : User
+  -passwordHash : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AccountService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AccountService
+class "AccountService" as edu_course_shop_service_AccountService {
+  -database : DatabaseManager
+  +AccountService(database : DatabaseManager)
+  -customer(c : Connection, user : User) : void
+  +saved(user : User) : Set<Long>
+  +saveItem(user : User, productId : long, saved : boolean) : void
+  +displayName(user : User) : String
+  +saveName(user : User, name : String) : void
+  +addresses(user : User) : List<SavedAddress>
+  +saveAddress(user : User, id : long, address : DeliveryAddress, preferred : boolean) : void
+  +removeAddress(user : User, id : long) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_AccountService_SavedAddress
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AccountService.SavedAddress
+class "AccountService.SavedAddress" as edu_course_shop_service_AccountService_SavedAddress <<record>> {
+  -id : long
+  -address : DeliveryAddress
+  -preferred : boolean
+  +toString() : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AdminService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AdminService
+class "AdminService" as edu_course_shop_service_AdminService {
+  -database : DatabaseManager
+  -reports : AdminRepository
+  +AdminService(database : DatabaseManager, reports : AdminRepository)
+  -requireAdmin(actor : User) : void
+  +orderProcessing() : OrderService
+  +summary(actor : User) : AdminRepository.Summary
+  +lowStock(actor : User) : List<AdminRepository.LowStockRow>
+  +orders(actor : User) : List<AdminRepository.OrderRow>
+  +customers(actor : User) : List<AdminRepository.CustomerRow>
+}
+@enduml
+
+@startuml edu_course_shop_service_AiCache
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiCache
+class "AiCache" as edu_course_shop_service_AiCache {
+  -entries : LinkedHashMap<String, Entry<T>>
+  -maxEntries : int
+  -maxBytes : int
+  -ttl : long
+  -clock : LongSupplier
+  -bytes : int
+  ~AiCache(count : int, bytes : int, ttl : long, clock : LongSupplier)
+  ~get(key : String) : T
+  ~put(key : String, value : T, size : int) : void
+  ~clear() : void
+  {static} ~digest(text : String) : String
+  {static} ~digest(bytes : byte[]) : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AiCache_Entry
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiCache.Entry
+class "AiCache.Entry" as edu_course_shop_service_AiCache_Entry <<record>> {
+  -value : T
+  -expires : long
+  -bytes : int
+}
+@enduml
+
+@startuml edu_course_shop_service_AiDiagnostics
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiDiagnostics
+class "AiDiagnostics" as edu_course_shop_service_AiDiagnostics {
+  {static} -recent : Deque<Event>
+  {static} -file : Path
+  -AiDiagnostics()
+  {static} -quotaFields(quota : AiQuota.Info) : String
+  {static} ~record(e : Event) : void
+  {static} +recent() : List<Event>
+  {static} -safe(s : String) : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AiDiagnostics_Event
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiDiagnostics.Event
+class "AiDiagnostics.Event" as edu_course_shop_service_AiDiagnostics_Event <<record>> {
+  -time : Instant
+  -feature : String
+  -model : String
+  -outcome : String
+  -attempt : int
+  -httpStatus : int
+  -durationMs : long
+  -requestBytes : long
+  -quota : AiQuota.Info
+  +Event(time : Instant, feature : String, model : String, outcome : String, attempt : int, httpStatus : int, durationMs : long, requestBytes : long)
+  +line() : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AiFailure
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiFailure
+class "AiFailure" as edu_course_shop_service_AiFailure {
+  -kind : Kind
+  -status : int
+  -retryAfterSeconds : long
+  -quota : AiQuota.Info
+  ~AiFailure(kind : Kind, status : int, delay : long, message : String)
+  ~AiFailure(kind : Kind, status : int, delay : long, message : String, quota : AiQuota.Info)
+  +kind() : Kind
+  +status() : int
+  +retryAfterSeconds() : long
+  +quota() : AiQuota.Info
+}
+@enduml
+
+@startuml edu_course_shop_service_AiFailure_Kind
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiFailure.Kind
+enum "AiFailure.Kind" as edu_course_shop_service_AiFailure_Kind {
+  TIMEOUT
+  CONNECTION
+  SERVICE
+  RATE_LIMIT
+  DAILY_QUOTA
+  ACCESS
+  MODEL
+  REQUEST
+  RESPONSE
+  COOLDOWN
+}
+@enduml
+
+@startuml edu_course_shop_service_AiHttp
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiHttp
+class "AiHttp" as edu_course_shop_service_AiHttp {
+  -sender : GeminiAssistant.Sender
+  -key : String
+  -model : String
+  -sleeper : Sleeper
+  -clock : LongSupplier
+  -events : Consumer<AiDiagnostics.Event>
+  -nextAllowed : long
+  -lastQuota : QuotaReport
+  ~AiHttp(sender : GeminiAssistant.Sender, key : String, model : String, sleeper : Sleeper, clock : LongSupplier, events : Consumer<AiDiagnostics.Event>)
+  ~send(request : HttpRequest, feature : String) : GeminiAssistant.Reply
+  ~invalidResponse(feature : String) : void
+  ~cacheHit(feature : String) : void
+  -event(feature : String, outcome : String, attempt : int, status : int, began : long, bytes : long) : void
+  -event(feature : String, outcome : String, attempt : int, status : int, began : long, bytes : long, quota : AiQuota.Info) : void
+  ~limitsSummary() : String
+  {static} -timeout() : AiFailure
+  {static} -ioFailure(e : IOException) : AiFailure
+  {static} ~error(reply : GeminiAssistant.Reply, key : String) : AiFailure
+}
+@enduml
+
+@startuml edu_course_shop_service_AiHttp_QuotaReport
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiHttp.QuotaReport
+class "AiHttp.QuotaReport" as edu_course_shop_service_AiHttp_QuotaReport <<record>> {
+  -at : Instant
+  -info : AiQuota.Info
+}
+@enduml
+
+@startuml edu_course_shop_service_AiHttp_Sleeper
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiHttp.Sleeper
+interface "AiHttp.Sleeper" as edu_course_shop_service_AiHttp_Sleeper {
+  +sleep(millis : long) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_AiManagerService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiManagerService
+class "AiManagerService" as edu_course_shop_service_AiManagerService {
+  -services : Services
+  -ai : ManagerAi
+  -clock : Clock
+  +AiManagerService(services : Services, gemini : GeminiAssistant)
+  ~AiManagerService(services : Services, ai : ManagerAi, clock : Clock)
+  +configured() : boolean
+  {static} -requireAdmin(actor : User) : void
+  +metrics(actor : User) : Metrics
+  +prepare(actor : User, request : String, research : boolean) : Result
+  +prepare(actor : User, request : String, research : boolean, progress : java.util.function.Consumer<String>) : Result
+  -result(c : ManagerCommand, p : List<Product>, changes : List<ProductService.ManagerChange>, drafts : List<ManagerAi.Draft>, sales : Sales, offline : boolean, message : String, count : int, aiIssue : String) : Result
+  -sales(actor : User, command : ManagerCommand) : Sales
+  +apply(actor : User, result : Result) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_AiManagerService_Metrics
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiManagerService.Metrics
+class "AiManagerService.Metrics" as edu_course_shop_service_AiManagerService_Metrics <<record>> {
+  -products : int
+  -needContent : int
+  -lowStock : int
+  -inactiveWithStock : int
+}
+@enduml
+
+@startuml edu_course_shop_service_AiManagerService_Result
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiManagerService.Result
+class "AiManagerService.Result" as edu_course_shop_service_AiManagerService_Result <<record>> {
+  -batchId : String
+  -command : ManagerCommand
+  -products : List<Product>
+  -changes : List<ProductService.ManagerChange>
+  -drafts : List<ManagerAi.Draft>
+  -sales : Sales
+  -offline : boolean
+  -message : String
+  -totalMatches : int
+  -aiIssue : String
+  +Result(batchId : String, command : ManagerCommand, products : List<Product>, changes : List<ProductService.ManagerChange>, drafts : List<ManagerAi.Draft>, sales : Sales, offline : boolean, message : String, totalMatches : int, aiIssue : String)
+  +Result(batchId : String, command : ManagerCommand, products : List<Product>, changes : List<ProductService.ManagerChange>, drafts : List<ManagerAi.Draft>, sales : Sales, offline : boolean, message : String, totalMatches : int)
+}
+@enduml
+
+@startuml edu_course_shop_service_AiManagerService_Sales
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiManagerService.Sales
+class "AiManagerService.Sales" as edu_course_shop_service_AiManagerService_Sales <<record>> {
+  -period : String
+  -orders : int
+  -orderValue : BigDecimal
+  -paidValue : BigDecimal
+  -units : int
+}
+@enduml
+
+@startuml edu_course_shop_service_AiQuota
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiQuota
+class "AiQuota" as edu_course_shop_service_AiQuota {
+  -AiQuota()
+  {static} +guide() : String
+  {static} ~read(reply : GeminiAssistant.Reply, key : String) : Info
+  {static} -details(body : String) : JsonArray
+  {static} -type(object : JsonObject, expected : String) : boolean
+  {static} -text(object : JsonObject, field : String) : String
+  {static} -safeField(object : JsonObject, field : String, key : String) : String
+  {static} -identifier(value : String) : String
+  {static} -amount(value : String) : String
+  {static} -window(identity : String) : Window
+  {static} -retryDelay(reply : GeminiAssistant.Reply, details : JsonArray) : long
+  {static} -bounded(value : long) : long
+}
+@enduml
+
+@startuml edu_course_shop_service_AiQuota_Info
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiQuota.Info
+class "AiQuota.Info" as edu_course_shop_service_AiQuota_Info <<record>> {
+  -violations : List<Violation>
+  -retryAfterSeconds : long
+  EMPTY
+  +Info(violations : List<Violation>, retryAfterSeconds : long)
+  +daily() : boolean
+  +zeroAllowance() : boolean
+  +retryable() : boolean
+  +message() : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AiQuota_Resource
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiQuota.Resource
+enum "AiQuota.Resource" as edu_course_shop_service_AiQuota_Resource {
+  REQUESTS
+  INPUT_TOKENS
+  OUTPUT_TOKENS
+  TOKENS
+  SEARCHES
+  IMAGES
+  UNKNOWN
+}
+@enduml
+
+@startuml edu_course_shop_service_AiQuota_Violation
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiQuota.Violation
+class "AiQuota.Violation" as edu_course_shop_service_AiQuota_Violation <<record>> {
+  -metric : String
+  -id : String
+  -limit : String
+  -model : String
+  -window : Window
+  -resource : Resource
+  +Violation(metric : String, id : String, limit : String, model : String, window : Window, resource : Resource)
+  +label() : String
+}
+@enduml
+
+@startuml edu_course_shop_service_AiQuota_Window
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AiQuota.Window
+enum "AiQuota.Window" as edu_course_shop_service_AiQuota_Window {
+  MINUTE
+  DAY
+  UNKNOWN
+}
+@enduml
+
+@startuml edu_course_shop_service_AssistantCart
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AssistantCart
+class "AssistantCart" as edu_course_shop_service_AssistantCart {
+  -AssistantCart()
+  {static} +prepareEdit(question : String, items : List<CartItem>) : Optional<Edit>
+  {static} -find(phrase : String, items : List<CartItem>) : Optional<CartItem>
+  {static} +applyEdit(user : User, cart : Cart, edit : Edit, products : ProductService) : void
+  {static} +validate(approved : List<Product>, products : ProductService) : List<Product>
+  {static} +apply(user : User, cart : Cart, validated : List<Product>) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_AssistantCart_Edit
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AssistantCart.Edit
+class "AssistantCart.Edit" as edu_course_shop_service_AssistantCart_Edit <<record>> {
+  -productId : long
+  -productName : String
+  -quantity : Integer
+  +removes() : boolean
+}
+@enduml
+
+@startuml edu_course_shop_service_AssistantContext
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AssistantContext
+class "AssistantContext" as edu_course_shop_service_AssistantContext {
+  -AssistantContext()
+  {static} +product(p : Product) : JsonObject
+  {static} +cart(items : List<CartItem>, products : ProductService) : JsonObject
+  {static} +order(user : User, order : Order) : JsonObject
+}
+@enduml
+
+@startuml edu_course_shop_service_AssistantPreferences
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AssistantPreferences
+class "AssistantPreferences" as edu_course_shop_service_AssistantPreferences {
+  -file : Path
+  +AssistantPreferences()
+  ~AssistantPreferences(file : Path)
+  +load(userId : long) : Profile
+  +hasGeminiConsent(userId : long) : boolean
+  +rememberGeminiConsent(userId : long) : void
+  +forgetGeminiConsent(userId : long) : void
+  +hasGeminiImageConsent(userId : long) : boolean
+  +rememberGeminiImageConsent(userId : long) : void
+  +forgetGeminiImageConsent(userId : long) : void
+  +hasReviewSummaryConsent(userId : long) : boolean
+  +rememberReviewSummaryConsent(userId : long) : void
+  +parseAndSave(userId : long, request : String) : Profile
+  +clear(userId : long) : boolean
+  {static} +apply(question : String, profile : Profile) : String
+  {static} -category(q : String) : Category
+  {static} -mentionsCategory(q : String) : boolean
+  {static} -hasBudget(q : String) : boolean
+  {static} -parseBudget(q : String) : BigDecimal
+  -read() : Properties
+  -write(values : Properties) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_AssistantPreferences_Profile
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AssistantPreferences.Profile
+class "AssistantPreferences.Profile" as edu_course_shop_service_AssistantPreferences_Profile <<record>> {
+  -category : Category
+  -budget : BigDecimal
+  +empty() : boolean
+}
+@enduml
+
+@startuml edu_course_shop_service_AuthService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.AuthService
+class "AuthService" as edu_course_shop_service_AuthService {
+  -database : DatabaseManager
+  -users : UserRepository
+  +AuthService(database : DatabaseManager, users : UserRepository)
+  +accounts() : AccountService
+  +login(username : String, password : String) : User
+}
+@enduml
+
+@startuml edu_course_shop_service_CartService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CartService
+class "CartService" as edu_course_shop_service_CartService {
+  -products : ProductService
+  +CartService(products : ProductService)
+  +add(user : User, cart : Cart, productId : long, quantity : int) : void
+  +update(user : User, cart : Cart, productId : long, quantity : int) : void
+  +transferGuest(guest : Cart, customer : User) : Cart
+  +review(cart : Cart) : String
+  {static} +checkOwner(user : User, cart : Cart) : void
+  +prepareRepeat(user : User, cart : Cart, order : Order) : RepeatPlan
+  +applyRepeat(user : User, cart : Cart, plan : RepeatPlan) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_CartService_RepeatLine
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CartService.RepeatLine
+class "CartService.RepeatLine" as edu_course_shop_service_CartService_RepeatLine <<record>> {
+  -product : Product
+  -quantity : int
+}
+@enduml
+
+@startuml edu_course_shop_service_CartService_RepeatPlan
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CartService.RepeatPlan
+class "CartService.RepeatPlan" as edu_course_shop_service_CartService_RepeatPlan <<record>> {
+  -lines : java.util.List<RepeatLine>
+  -unavailable : java.util.List<String>
+  +RepeatPlan(lines : java.util.List<RepeatLine>, unavailable : java.util.List<String>)
+}
+@enduml
+
+@startuml edu_course_shop_service_CatalogAssistant
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CatalogAssistant
+class "CatalogAssistant" as edu_course_shop_service_CatalogAssistant {
+  -services : Services
+  {static} -CATEGORY_WORDS : String
+  {static} -REJECTED_CATEGORY : Pattern
+  +CatalogAssistant(services : Services)
+  {static} -categoryIntent(query : String) : CategoryIntent
+  {static} ~requestedCategory(query : String) : Category
+  {static} +asksOrders(question : String) : boolean
+  {static} -words(s : String) : String
+  +prepare(user : User, cart : List<CartItem>, page : Product, memory : Memory, question : String, allowOrders : boolean) : Plan
+  {static} -conversationalReply(q : String) : String
+  {static} +remember(old : Memory, plan : Plan, question : String, answer : String) : Memory
+  {static} ~budget(q : String) : BigDecimal
+  {static} -category(q : String) : Category
+  {static} -terms(q : String) : Set<String>
+}
+@enduml
+
+@startuml edu_course_shop_service_CatalogAssistant_CategoryIntent
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CatalogAssistant.CategoryIntent
+class "CatalogAssistant.CategoryIntent" as edu_course_shop_service_CatalogAssistant_CategoryIntent <<record>> {
+  -query : String
+  -excluded : Set<Category>
+  -correction : boolean
+}
+@enduml
+
+@startuml edu_course_shop_service_CatalogAssistant_Memory
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CatalogAssistant.Memory
+class "CatalogAssistant.Memory" as edu_course_shop_service_CatalogAssistant_Memory <<record>> {
+  -ids : List<Long>
+  -category : Category
+  -ceiling : BigDecimal
+  -turns : List<Turn>
+  +Memory(ids : List<Long>, category : Category, ceiling : BigDecimal, turns : List<Turn>)
+  {static} +empty() : Memory
+}
+@enduml
+
+@startuml edu_course_shop_service_CatalogAssistant_Plan
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CatalogAssistant.Plan
+class "CatalogAssistant.Plan" as edu_course_shop_service_CatalogAssistant_Plan <<record>> {
+  -products : List<Product>
+  -facts : JsonObject
+  -localAnswer : String
+  -context : String
+  -category : Category
+  -ceiling : BigDecimal
+  -orderContext : boolean
+  +Plan(products : List<Product>, facts : JsonObject, localAnswer : String, context : String, category : Category, ceiling : BigDecimal, orderContext : boolean)
+}
+@enduml
+
+@startuml edu_course_shop_service_CatalogAssistant_Turn
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CatalogAssistant.Turn
+class "CatalogAssistant.Turn" as edu_course_shop_service_CatalogAssistant_Turn <<record>> {
+  -question : String
+  -answer : String
+}
+@enduml
+
+@startuml edu_course_shop_service_CheckoutService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CheckoutService
+class "CheckoutService" as edu_course_shop_service_CheckoutService {
+  -database : DatabaseManager
+  -products : ProductRepository
+  -orders : OrderRepository
+  +CheckoutService(database : DatabaseManager, products : ProductRepository, orders : OrderRepository)
+  +checkout(customer : User, cart : Cart, address : String, payment : PaymentMethod) : Order
+  -checkoutLocked(customer : User, cart : Cart, address : String, payment : PaymentMethod) : Order
+}
+@enduml
+
+@startuml edu_course_shop_service_CompatibilityAdvisor
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CompatibilityAdvisor
+class "CompatibilityAdvisor" as edu_course_shop_service_CompatibilityAdvisor {
+  -CompatibilityAdvisor()
+  {static} +analyze(products : List<Product>) : List<Check>
+  {static} +report(products : List<Product>) : String
+  {static} -compare(label : String, a : String, b : String, nameA : String, nameB : String) : Check
+  {static} -lengthCheck(gpuLength : String, clearance : String, gpu : String, pcCase : String) : Check
+  {static} -wattageCheck(recommended : String, capacity : String, gpu : String, psu : String) : Check
+  {static} -hasRole(p : Product, words : String[]) : boolean
+  {static} -spec(product : Product, keys : String[]) : String
+  {static} -normalize(value : String) : String
+  {static} -normalizeComparable(label : String, value : String) : String
+  {static} -millimeters(value : String) : Double
+  {static} -watts(value : String) : Double
+}
+@enduml
+
+@startuml edu_course_shop_service_CompatibilityAdvisor_Check
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CompatibilityAdvisor.Check
+class "CompatibilityAdvisor.Check" as edu_course_shop_service_CompatibilityAdvisor_Check <<record>> {
+  -label : String
+  -status : Status
+  -evidence : String
+}
+@enduml
+
+@startuml edu_course_shop_service_CompatibilityAdvisor_Status
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.CompatibilityAdvisor.Status
+enum "CompatibilityAdvisor.Status" as edu_course_shop_service_CompatibilityAdvisor_Status {
+  MATCH
+  CONFLICT
+  UNVERIFIED
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant
+class "GeminiAssistant" as edu_course_shop_service_GeminiAssistant {
+  {static} +DEFAULT_MODEL : String
+  {static} -JSON : Gson
+  {static} -RULES : String
+  -config : Config
+  -http : AiHttp
+  -clock : java.util.function.LongSupplier
+  -answers : AiCache<String>
+  -imageResults : AiCache<ImageSearchResult>
+  -catalogPhotos : AiCache<JsonObject>
+  -cacheEpoch : java.util.concurrent.atomic.AtomicLong
+  -busy : AtomicBoolean
+  -nextAllowed : long
+  +GeminiAssistant()
+  ~GeminiAssistant(config : Config, sender : Sender)
+  ~GeminiAssistant(config : Config, sender : Sender, sleeper : AiHttp.Sleeper, clock : java.util.function.LongSupplier, events : java.util.function.Consumer<AiDiagnostics.Event>)
+  -checkSpacing() : void
+  -requestBody(body : JsonObject) : String
+  +clearCaches() : void
+  {static} -productionSender() : Sender
+  +configurationProblem() : String
+  +model() : String
+  +limitsSummary() : String
+  ~managerRequest(body : JsonObject) : JsonObject
+  +answer(question : String, context : JsonObject) : String
+  +summarizeReviews(productName : String, reviews : List<ProductReview>) : String
+  +searchByImage(selectedImage : byte[], products : List<Product>) : ImageSearchResult
+  {static} -textPart(text : String) : JsonObject
+  {static} -imagePart(source : byte[], maxSide : int) : JsonObject
+  {static} -parseImageSearch(reply : Reply, candidates : List<Product>) : ImageSearchResult
+  {static} -responseFailure(message : String) : AiFailure
+  {static} ~parse(reply : Reply) : String
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant_Config
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant.Config
+class "GeminiAssistant.Config" as edu_course_shop_service_GeminiAssistant_Config {
+  -key : String
+  -model : String
+  -freeTierConfirmed : boolean
+  +Config(key : String, model : String, freeTierConfirmed : boolean)
+  {static} +environment() : Config
+  +problem() : String
+  +model() : String
+  +toString() : String
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant_HttpClientHolder
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant.HttpClientHolder
+class "GeminiAssistant.HttpClientHolder" as edu_course_shop_service_GeminiAssistant_HttpClientHolder {
+  {static} -CLIENT : HttpClient
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant_ImageMatch
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant.ImageMatch
+class "GeminiAssistant.ImageMatch" as edu_course_shop_service_GeminiAssistant_ImageMatch <<record>> {
+  -productId : long
+  -confidence : int
+  -reason : String
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant_ImageSearchResult
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant.ImageSearchResult
+class "GeminiAssistant.ImageSearchResult" as edu_course_shop_service_GeminiAssistant_ImageSearchResult <<record>> {
+  -identifiedItem : String
+  -matches : List<ImageMatch>
+  +ImageSearchResult(identifiedItem : String, matches : List<ImageMatch>)
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant_Reply
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant.Reply
+class "GeminiAssistant.Reply" as edu_course_shop_service_GeminiAssistant_Reply <<record>> {
+  -status : int
+  -body : String
+  -headers : Map<String, String>
+  ~Reply(status : int, body : String)
+  ~Reply(status : int, body : String, headers : Map<String, String>)
+}
+@enduml
+
+@startuml edu_course_shop_service_GeminiAssistant_Sender
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.GeminiAssistant.Sender
+interface "GeminiAssistant.Sender" as edu_course_shop_service_GeminiAssistant_Sender {
+  +send(request : HttpRequest) : Reply
+}
+@enduml
+
+@startuml edu_course_shop_service_ManagerAi
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ManagerAi
+class "ManagerAi" as edu_course_shop_service_ManagerAi {
+  -gemini : GeminiAssistant
+  +ManagerAi(gemini : GeminiAssistant)
+  +configured() : boolean
+  +configurationProblem() : String
+  ~classify(command : String) : ManagerCommand
+  ~draft(products : List<Product>, research : boolean) : List<Draft>
+  {static} ~validSource(text : String) : boolean
+  {static} -parts(response : JsonObject) : JsonArray
+  {static} -schema(type : String, description : String) : JsonObject
+  {static} -enumSchema(description : String, values : String[]) : JsonObject
+  {static} -request(rules : String, input : String, tokens : int) : JsonObject
+}
+@enduml
+
+@startuml edu_course_shop_service_ManagerAi_Draft
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ManagerAi.Draft
+class "ManagerAi.Draft" as edu_course_shop_service_ManagerAi_Draft <<record>> {
+  -id : long
+  -description : String
+  -specifications : String
+  -sources : List<String>
+  -note : String
+  +Draft(id : long, description : String, specifications : String, sources : List<String>, note : String)
+}
+@enduml
+
+@startuml edu_course_shop_service_ManagerCommand
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ManagerCommand
+class "ManagerCommand" as edu_course_shop_service_ManagerCommand <<record>> {
+  -intent : Intent
+  -query : String
+  -category : Category
+  -belowPrice : BigDecimal
+  -stockAtMost : Integer
+  -stockAtLeast : Integer
+  -status : String
+  -targetActive : Boolean
+  -missingContent : boolean
+  -missingField : String
+  -ids : List<Long>
+  -period : String
+  -days : int
+  -includeRestock : boolean
+  -question : String
+  +ManagerCommand(intent : Intent, query : String, category : Category, belowPrice : BigDecimal, stockAtMost : Integer, stockAtLeast : Integer, status : String, targetActive : Boolean, missingContent : boolean, missingField : String, ids : List<Long>, period : String, days : int, includeRestock : boolean, question : String)
+  +matches(p : Product) : boolean
+  {static} +needsContent(p : Product) : boolean
+  {static} ~parse(tool : String, args : JsonObject) : ManagerCommand
+  {static} ~arguments(intent : Intent) : Set<String>
+  {static} -has(o : JsonObject, k : String) : boolean
+  {static} -string(o : JsonObject, k : String, fallback : String) : String
+  {static} -bool(o : JsonObject, k : String) : boolean
+  {static} ~offline(request : String) : ManagerCommand
+  {static} -clarify(text : String) : ManagerCommand
+  {static} -similarity(tokens : Set<String>, concepts : String) : double
+}
+@enduml
+
+@startuml edu_course_shop_service_ManagerCommand_Intent
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ManagerCommand.Intent
+enum "ManagerCommand.Intent" as edu_course_shop_service_ManagerCommand_Intent {
+  FIX_CONTENT
+  FIND_LOW_STOCK
+  QUERY_PRODUCTS
+  SALES_SUMMARY
+  UPDATE_STATUS
+  CLARIFY
+}
+@enduml
+
+@startuml edu_course_shop_service_OrderService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.OrderService
+class "OrderService" as edu_course_shop_service_OrderService {
+  -database : DatabaseManager
+  -orders : OrderRepository
+  +OrderService(database : DatabaseManager, orders : OrderRepository)
+  -authorize(c : Connection, user : User, order : Order, adminOnly : boolean) : void
+  +history(customer : User) : List<Order>
+  +get(actor : User, id : long) : Order
+  +recordDeliveryPayment(admin : User, id : long) : Order
+  +update(admin : User, id : long, expected : FulfillmentStatus, next : FulfillmentStatus, carrier : String, tracking : String) : Order
+  +cancel(customer : User, id : long, expected : FulfillmentStatus) : Order
+  -change(actor : User, id : long, expected : FulfillmentStatus, next : FulfillmentStatus, carrier : String, tracking : String, customerCancel : boolean) : Order
+}
+@enduml
+
+@startuml edu_course_shop_service_Passwords
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.Passwords
+class "Passwords" as edu_course_shop_service_Passwords {
+  -Passwords()
+  {static} +hash(password : String) : String
+  {static} +matches(password : String, stored : String) : boolean
+  {static} -derive(password : String, salt : byte[]) : byte[]
+}
+@enduml
+
+@startuml edu_course_shop_service_PersistentCartService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.PersistentCartService
+class "PersistentCartService" as edu_course_shop_service_PersistentCartService {
+  -database : DatabaseManager
+  -products : ProductRepository
+  +PersistentCartService(database : DatabaseManager, products : ProductRepository)
+  -customer(c : Connection, user : User) : void
+  +restore(user : User, guest : Cart) : Restored
+  -restoreLine(c : Connection, cart : Cart, id : long, quantity : int, oldPrice : long, notices : List<String>) : void
+  -save(user : User, rows : List<CartItem>) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_PersistentCartService_Restored
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.PersistentCartService.Restored
+class "PersistentCartService.Restored" as edu_course_shop_service_PersistentCartService_Restored <<record>> {
+  -cart : Cart
+  -notices : List<String>
+  +Restored(cart : Cart, notices : List<String>)
+}
+@enduml
+
+@startuml edu_course_shop_service_ProductPhotos
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ProductPhotos
+class "ProductPhotos" as edu_course_shop_service_ProductPhotos {
+  {static} +MAX_BYTES : int
+  -ProductPhotos()
+  {static} +read(file : Path) : byte[]
+  {static} +validate(bytes : byte[]) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_ProductReviewService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ProductReviewService
+class "ProductReviewService" as edu_course_shop_service_ProductReviewService {
+  -database : DatabaseManager
+  -reviews : ProductReviewRepository
+  +ProductReviewService(database : DatabaseManager, reviews : ProductReviewRepository)
+  +list(productId : long) : List<ProductReview>
+  +canReview(actor : User, productId : long) : boolean
+  +submit(actor : User, productId : long, rating : int, text : String) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_ProductService
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ProductService
+class "ProductService" as edu_course_shop_service_ProductService {
+  -database : DatabaseManager
+  -products : ProductRepository
+  +ProductService(database : DatabaseManager, products : ProductRepository)
+  +delete(actor : User, expected : Product) : void
+  +savedCarts() : PersistentCartService
+  +search(user : User, query : String, category : Category) : List<Product>
+  +search(user : User, query : String, category : Category, inStockOnly : boolean, maximumPrice : BigDecimal) : List<Product>
+  +get(id : long) : Product
+  +applyManagerChanges(actor : User, batchId : String, intent : String, changes : List<ManagerChange>) : void
+  +save(actor : User, id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean) : void
+  +save(actor : User, id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean, description : String, photo : byte[]) : void
+  +updateInventoryNumbers(actor : User, expected : Product, price : BigDecimal, stock : int) : void
+  +save(actor : User, id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean, description : String, photo : byte[], additionalPhotos : List<byte[]>, specifications : String) : void
+  +save(actor : User, id : long, name : String, category : Category, price : BigDecimal, stock : int, active : boolean, description : String, photo : byte[], additionalPhotos : List<byte[]>, specifications : String, frame : PhotoFrame) : void
+}
+@enduml
+
+@startuml edu_course_shop_service_ProductService_ManagerChange
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.ProductService.ManagerChange
+class "ProductService.ManagerChange" as edu_course_shop_service_ProductService_ManagerChange <<record>> {
+  -expected : Product
+  -description : String
+  -specifications : String
+  -active : Boolean
+  -sources : String
+}
+@enduml
+
+@startuml edu_course_shop_service_RevenueAnalytics
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.RevenueAnalytics
+class "RevenueAnalytics" as edu_course_shop_service_RevenueAnalytics {
+  -RevenueAnalytics()
+  {static} +calculate(orders : List<OrderRow>, start : LocalDate, end : LocalDate, clock : Clock) : Report
+  {static} -period(start : LocalDate, end : LocalDate, grouped : Map<LocalDate, List<OrderRow>>) : Period
+  {static} -paid(order : OrderRow) : boolean
+}
+@enduml
+
+@startuml edu_course_shop_service_RevenueAnalytics_Day
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.RevenueAnalytics.Day
+class "RevenueAnalytics.Day" as edu_course_shop_service_RevenueAnalytics_Day <<record>> {
+  -date : LocalDate
+  -orders : List<OrderRow>
+  +Day(date : LocalDate, orders : List<OrderRow>)
+  +matching(metric : Metric) : List<OrderRow>
+  +cents(metric : Metric) : long
+  +count(metric : Metric) : int
+}
+@enduml
+
+@startuml edu_course_shop_service_RevenueAnalytics_Metric
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.RevenueAnalytics.Metric
+enum "RevenueAnalytics.Metric" as edu_course_shop_service_RevenueAnalytics_Metric {
+  PAID_REVENUE
+  ORDER_VALUE
+  -label : String
+  ~Metric(label : String)
+  +label() : String
+}
+@enduml
+
+@startuml edu_course_shop_service_RevenueAnalytics_Period
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.RevenueAnalytics.Period
+class "RevenueAnalytics.Period" as edu_course_shop_service_RevenueAnalytics_Period <<record>> {
+  -start : LocalDate
+  -end : LocalDate
+  -days : List<Day>
+  +Period(start : LocalDate, end : LocalDate, days : List<Day>)
+  +cents(metric : Metric) : long
+  +count(metric : Metric) : int
+  +average(metric : Metric) : BigDecimal
+}
+@enduml
+
+@startuml edu_course_shop_service_RevenueAnalytics_Report
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.service.RevenueAnalytics.Report
+class "RevenueAnalytics.Report" as edu_course_shop_service_RevenueAnalytics_Report <<record>> {
+  -current : Period
+  -previous : Period
+  -zone : ZoneId
+  -today : LocalDate
+  -invalidRecords : int
+  -futureRecords : int
+  +changePercent(metric : Metric) : Optional<BigDecimal>
+}
+@enduml
+
+@startuml edu_course_shop_ui_AccountView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AccountView
+class "AccountView" as edu_course_shop_ui_AccountView {
+  -editing : long
+  +AccountView(user : User, accounts : AccountService, savedItems : Runnable, orders : Runnable)
+  -reload() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminMotion
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminMotion
+class "AdminMotion" as edu_course_shop_ui_AdminMotion {
+  -AdminMotion()
+  {static} ~showing(node : Node) : boolean
+  {static} ~animated(node : Node) : boolean
+  {static} ~observe(node : Node, sync : Runnable) : void
+  {static} ~disclose(node : Node, open : boolean) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminMotion_Dots
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminMotion.Dots
+class "AdminMotion.Dots" as edu_course_shop_ui_AdminMotion_Dots {
+  -pulse : Timeline
+  -dots : List<Label>
+  -running : boolean
+  ~Dots()
+  ~setRunning(value : boolean) : void
+  ~sync() : void
+  ~dispose() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminMotion_Watch
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminMotion.Watch
+class "AdminMotion.Watch" as edu_course_shop_ui_AdminMotion_Watch {
+  ~node : Node
+  ~sync : Runnable
+  ~ancestors : List<Node>
+  ~window : Window
+  ~update : InvalidationListener
+  ~windows : ChangeListener<Window>
+  ~Watch(node : Node, sync : Runnable)
+  ~sync() : void
+  ~parents() : void
+  ~window(next : Window) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminReportsView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminReportsView
+class "AdminReportsView" as edu_course_shop_ui_AdminReportsView {
+  {static} -DATE : DateTimeFormatter
+  -admin : User
+  -reports : AdminService
+  -viewOrders : Runnable
+  -viewInventory : Runnable
+  -viewAi : Runnable
+  -addProduct : Runnable
+  -feedback : Label
+  +AdminReportsView(admin : User, reports : AdminService, section : Section, viewOrders : Runnable)
+  +AdminReportsView(admin : User, reports : AdminService, section : Section, viewOrders : Runnable, viewInventory : Runnable)
+  +AdminReportsView(admin : User, reports : AdminService, section : Section, viewOrders : Runnable, viewInventory : Runnable, viewAi : Runnable, addProduct : Runnable)
+  -buildOverview() : void
+  -lowStockTable() : TableView<AdminRepository.LowStockRow>
+  -metric(label : String, value : String, note : String, icon : String) : VBox
+  -resizeStats(stats : FlowPane) : void
+  -buildOrders() : void
+  -orderTable(id : String) : TableView<AdminRepository.OrderRow>
+  -buildCustomers() : void
+  {static} -date(value : String) : String
+  {static} -payment(value : String) : String
+  {static} -paymentStatus(value : String) : String
+  {static} -fitTable(table : TableView<?>, rows : int) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminReportsView_OverviewData
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminReportsView.OverviewData
+class "AdminReportsView.OverviewData" as edu_course_shop_ui_AdminReportsView_OverviewData <<record>> {
+  -summary : AdminRepository.Summary
+  -orders : List<AdminRepository.OrderRow>
+  -lowStock : List<AdminRepository.LowStockRow>
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminReportsView_Section
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminReportsView.Section
+enum "AdminReportsView.Section" as edu_course_shop_ui_AdminReportsView_Section {
+  OVERVIEW
+  ORDERS
+  CUSTOMERS
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminView
+class "AdminView" as edu_course_shop_ui_AdminView {
+  -editingId : long
+  -originalSpecifications : String
+  -activeCount : Label
+  -lowCount : Label
+  -photoCount : Label
+  -all : List<Product>
+  -table : TableView<Product>
+  -search : TextField
+  -status : ComboBox<String>
+  -filterCategory : ComboBox<String>
+  -count : Label
+  -selected : java.util.Set<Long>
+  -bulk : HBox
+  -selectionCount : Label
+  -selectAll : CheckBox
+  -reload : Runnable
+  -actor : User
+  -productService : ProductService
+  -editFeedback : java.util.Map<String, EditFeedback>
+  -drafts : java.util.Map<String, String>
+  +AdminView(admin : User, products : ProductService)
+  +AdminView(admin : User, products : ProductService, aiCommand : java.util.function.Consumer<String>)
+  -filter() : void
+  -updateSelection() : void
+  -bulkCommand(command : java.util.function.Consumer<String>, prefix : String) : void
+  -replaceProduct(updated : Product) : void
+  -undoInventory(workspace : AdminWorkspace, before : Product, after : Product) : void
+  -editable(column : TableColumn<Product, String>, price : boolean) : void
+  -exportCsv() : void
+  {static} -csv(text : String) : String
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminView_EditFeedback
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminView.EditFeedback
+class "AdminView.EditFeedback" as edu_course_shop_ui_AdminView_EditFeedback <<record>> {
+  -message : String
+  -pending : boolean
+  -error : boolean
+}
+@enduml
+
+@startuml edu_course_shop_ui_AdminWorkspace
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AdminWorkspace
+class "AdminWorkspace" as edu_course_shop_ui_AdminWorkspace {
+  -pageHost : BorderPane
+  -section : Label
+  -description : Label
+  -navigation : Map<String, Button>
+  -counts : Map<String, Label>
+  -services : Services
+  -actor : User
+  -addProduct : Runnable
+  -theme : Button
+  -modal : StackPane
+  -modalClosed : Runnable
+  -dark : boolean
+  -navIndicator : Region
+  -navMotion : Timeline
+  -selectedNavigation : String
+  -indicatorPlaced : boolean
+  -modalCard : Node
+  -restoreFocus : Node
+  -modalDrawer : boolean
+  -closing : boolean
+  -modalExit : Animation
+  -notice : HBox
+  -noticeHold : PauseTransition
+  +AdminWorkspace(actor : User, services : Services, overview : Runnable, products : Runnable, orders : Runnable, customers : Runnable, ai : Runnable, addProduct : Runnable, signOut : Runnable)
+  +pageHost() : BorderPane
+  -moveIndicator(animate : boolean) : void
+  -nav(title : String, icon : String, id : String, action : Runnable, count : boolean) : Button
+  +select(id : String) : void
+  -toggleTheme() : void
+  -commandMenu(overview : Runnable, products : Runnable, orders : Runnable, customers : Runnable, ai : Runnable) : void
+  -showModal(card : Node, drawer : boolean) : void
+  -cycleFocus(backwards : boolean) : void
+  {static} -focusable(node : Node, items : List<Node>) : void
+  -closeModal() : void
+  -closeModalNow(restore : boolean) : void
+  {static} +placeNotice(owner : Node) : void
+  -placeNotice() : void
+  -dismissNotice() : void
+  {static} ~find(owner : Node) : AdminWorkspace
+  {static} +notice(owner : Node, message : String, undo : Runnable) : void
+  {static} +failure(owner : Node, message : String) : void
+  -showNotice(message : String, undo : Runnable, error : boolean) : void
+  {static} +inventoryChanged(owner : Node) : void
+  {static} +editProduct(owner : Node, form : VBox) : void
+  {static} +inspect(owner : Node, type : String, title : String, fields : List<Node>, edit : Runnable) : void
+  {static} +detail(label : String, value : String) : VBox
+  {static} +badges(column : TableColumn<T, String>, variant : java.util.function.Function<String, String>) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AiManagerView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AiManagerView
+class "AiManagerView" as edu_course_shop_ui_AiManagerView {
+  -actor : User
+  -services : Services
+  -manager : AiManagerService
+  -gemini : GeminiAssistant
+  -input : TextField
+  -robot : RobotAvatar
+  -badge : Label
+  -feedback : Label
+  -results : VBox
+  -chips : FlowPane
+  -metrics : FlowPane
+  -research : CheckBox
+  -run : Button
+  -cancel : Button
+  -reviews : List<Review>
+  -activity : VBox
+  -terminalDots : AdminMotion.Dots
+  -activityStatus : Label
+  -pending : Task<?>
+  -metricsTask : Task<?>
+  -shimmer : Animation
+  -generation : int
+  -metricsGeneration : int
+  -disposed : boolean
+  -busy : boolean
+  -applying : boolean
+  +AiManagerView(actor : User, services : Services, gemini : GeminiAssistant)
+  -setMode(offline : boolean) : void
+  -loadMetrics() : void
+  -metric(label : String, count : int) : VBox
+  -resizeMetrics() : void
+  -chip(title : String, command : String, id : String) : Button
+  -empty() : void
+  -run() : void
+  +submit(command : String) : void
+  -log(text : String) : void
+  -setBusy(value : boolean) : void
+  -loading() : void
+  -finish() : void
+  -render(result : AiManagerService.Result) : void
+  -revealResults() : void
+  -editor(before : String, value : String, title : String, parent : VBox) : TextArea
+  -filter(row : FlowPane, value : String) : void
+  -salesMetric(label : String, value : String) : VBox
+  -productTable(products : List<Product>, total : int) : VBox
+  -apply(result : AiManagerService.Result) : void
+  -failure(error : Throwable) : void
+  -cancel() : void
+  +dispose() : void
+  -showLimits() : void
+  -showDiagnostics() : void
+  -showPrivacy() : void
+  -openSource(source : String) : void
+  {static} -start(task : Task<?>) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_AiManagerView_Review
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AiManagerView.Review
+class "AiManagerView.Review" as edu_course_shop_ui_AiManagerView_Review <<record>> {
+  -original : ProductService.ManagerChange
+  -included : CheckBox
+  -description : TextArea
+  -specs : TextArea
+}
+@enduml
+
+@startuml edu_course_shop_ui_AssistantPanel
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.AssistantPanel
+class "AssistantPanel" as edu_course_shop_ui_AssistantPanel {
+  -services : Services
+  -user : User
+  -cart : Supplier<Cart>
+  -page : Supplier<Product>
+  -gemini : GeminiAssistant
+  -retrieval : CatalogAssistant
+  -savedItems : SavedItems
+  -preferenceStore : AssistantPreferences
+  -savedPreferences : AssistantPreferences.Profile
+  -viewProduct : Consumer<Product>
+  -cartChanged : Runnable
+  -messages : VBox
+  -scroll : ScrollPane
+  -input : TextField
+  -send : Button
+  -context : Label
+  -memory : CatalogAssistant.Memory
+  -pending : Task<?>
+  -thinking : Node
+  -robot : RobotAvatar
+  -dots : Timeline
+  -generation : int
+  -consent : boolean
+  -busy : boolean
+  -lastFailed : String
+  +AssistantPanel(services : Services, user : User, cart : Supplier<Cart>, page : Supplier<Product>, gemini : GeminiAssistant, viewProduct : Consumer<Product>, cartChanged : Runnable, savedItems : SavedItems, close : Runnable)
+  +greet() : void
+  +refreshContext() : void
+  -preferenceSuffix() : String
+  {static} -preferenceLabels(profile : AssistantPreferences.Profile) : List<String>
+  -personalize(question : String) : String
+  -newChat() : void
+  -showLimits() : void
+  -showPrivacy() : void
+  -submit() : void
+  -submit(question : String, orderApproved : boolean, retry : boolean) : void
+  -confirmCartEdit(edit : AssistantCart.Edit) : void
+  -showAiConsent(plan : CatalogAssistant.Plan, question : String, previous : CatalogAssistant.Memory) : void
+  -startGemini(plan : CatalogAssistant.Plan, question : String, previous : CatalogAssistant.Memory) : void
+  -renderAnswer(plan : CatalogAssistant.Plan, previous : CatalogAssistant.Memory, question : String, text : String) : void
+  -appendProductCards(bubble : VBox, plan : CatalogAssistant.Plan) : void
+  -addLoadMore(bubble : VBox, plan : CatalogAssistant.Plan, offset : int) : void
+  -productCard(p : Product, bestMatch : boolean, plan : CatalogAssistant.Plan) : Node
+  {static} -productNote(p : Product, plan : CatalogAssistant.Plan) : String
+  {static} -productEvidence(p : Product) : Node
+  -confirmAdd(products : List<Product>) : void
+  +stop() : void
+  -finish() : void
+  -setBusy(value : boolean) : void
+  -showThinking(message : String) : void
+  -bot(text : String) : VBox
+  -userBubble(text : String) : void
+  -trim() : void
+  {static} -wrap(text : String, style : String) : Label
+  -scrollDown() : void
+  {static} -start(task : Task<?>) : void
+  {static} ~friendly(error : Throwable) : String
+  {static} -isSetupFailure(error : Throwable) : boolean
+}
+@enduml
+
+@startuml edu_course_shop_ui_CartDrawer
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CartDrawer
+class "CartDrawer" as edu_course_shop_ui_CartDrawer {
+  -user : User
+  -cart : Cart
+  -carts : CartService
+  -changed : Runnable
+  -close : Runnable
+  -review : Runnable
+  -checkout : Runnable
+  -removed : CartItem
+  -undoTimeout : javafx.animation.PauseTransition
+  -undo : Button
+  -lines : VBox
+  -bottom : VBox
+  -feedback : Label
+  -count : Label
+  +CartDrawer(user : User, cart : Cart, carts : CartService, changed : Runnable, close : Runnable, review : Runnable, checkout : Runnable)
+  -render() : void
+  -update(product : Product, quantity : int) : void
+  -undoRemoval() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_CartView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CartView
+class "CartView" as edu_course_shop_ui_CartView {
+  -user : User
+  -cart : Cart
+  -carts : CartService
+  -changed : Runnable
+  -checkout : Runnable
+  -browse : Runnable
+  -feedback : Label
+  -removed : edu.course.shop.model.CartItem
+  -undoTimeout : javafx.animation.PauseTransition
+  -undo : Button
+  -undoBar : HBox
+  -body : VBox
+  +CartView(user : User, cart : Cart, carts : CartService, changed : Runnable, checkout : Runnable, browse : Runnable)
+  -refresh() : void
+  -line(item : CartItem) : VBox
+  -update(p : Product, count : int) : void
+  -undoRemoval() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_CatalogState
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CatalogState
+class "CatalogState" as edu_course_shop_ui_CatalogState {
+  -specificationFilters : java.util.Map<String, String>
+  -minimumPrice : String
+  -maximumPrice : String
+  -categoryIndex : int
+  -sortIndex : int
+  -budgetIndex : int
+  -inStockOnly : boolean
+  -filtersExpanded : boolean
+  -scrollPosition : double
+  +getSpecificationFilters() : java.util.Map<String, String>
+  +setSpecificationFilters(value : java.util.Map<String, String>) : void
+  +getMinimumPrice() : String
+  +getMaximumPrice() : String
+  +setPriceRange(minimum : String, maximum : String) : void
+  +getCategoryIndex() : int
+  +setCategoryIndex(value : int) : void
+  +getSortIndex() : int
+  +setSortIndex(value : int) : void
+  +getBudgetIndex() : int
+  +setBudgetIndex(value : int) : void
+  +isInStockOnly() : boolean
+  +setInStockOnly(value : boolean) : void
+  +isFiltersExpanded() : boolean
+  +setFiltersExpanded(value : boolean) : void
+  +getScrollPosition() : double
+  +setScrollPosition(value : double) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_CatalogView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CatalogView
+class "CatalogView" as edu_course_shop_ui_CatalogView {
+  -clearing : boolean
+  -restoring : boolean
+  -rangeApplied : javafx.beans.property.BooleanProperty
+  -toggle : Button
+  -imageSearch : Button
+  -imageSearchTask : Task<?>
+  -gemini : GeminiAssistant
+  -preferences : AssistantPreferences
+  -filters : FlowPane
+  -grid : TilePane
+  -search : TextField
+  -minimum : TextField
+  -maximum : TextField
+  -saved : SavedItems
+  -state : CatalogState
+  -details : Consumer<Product>
+  -category : ComboBox<String>
+  -sort : ComboBox<String>
+  -budget : ComboBox<String>
+  -available : CheckBox
+  -feedback : Label
+  -result : Label
+  -title : Label
+  -chips : FlowPane
+  -results : VBox
+  -collectionSection : VBox
+  -scroll : ScrollPane
+  -hero : EditorialHeader
+  -searchBar : HBox
+  -suggestions : SearchSuggestions
+  -navigation : HBox
+  -campaign : javafx.scene.layout.StackPane
+  -user : User
+  -cart : Cart
+  -products : ProductService
+  -carts : CartService
+  -changed : Runnable
+  -toast : Consumer<String>
+  -navSync : Runnable
+  +enableSavedItems(saved : SavedItems) : void
+  +stopSearchSuggestions() : void
+  +useHeaderNavigation(host : HBox) : void
+  +searchBar() : HBox
+  +CatalogView(user : User, cart : Cart, products : ProductService, carts : CartService, changed : Runnable, openCart : Runnable, details : Consumer<Product>, search : TextField, state : CatalogState)
+  +CatalogView(user : User, cart : Cart, products : ProductService, carts : CartService, changed : Runnable, openCart : Runnable, details : Consumer<Product>, search : TextField, state : CatalogState, toast : Consumer<String>, navSync : Runnable)
+  +CatalogView(user : User, cart : Cart, products : ProductService, carts : CartService, changed : Runnable, openCart : Runnable, details : Consumer<Product>, search : TextField, state : CatalogState, toast : Consumer<String>, navSync : Runnable, gemini : GeminiAssistant, preferences : AssistantPreferences)
+  -categoryNavigation() : HBox
+  {static} -labeled(title : String, input : javafx.scene.control.Control) : VBox
+  -syncToggle() : void
+  -applyFilters() : void
+  -openFilters() : void
+  -validRange() : boolean
+  -scrollViewportHeight() : double
+  -updateHeroViewport() : void
+  -scrollTo(value : double) : void
+  -collections() : VBox
+  -closing() : VBox
+  -filterChanged() : void
+  -browseCategory(index : int) : void
+  -clear() : void
+  -refresh() : void
+  -chooseImage() : void
+  {static} -imageSearchFailure(error : Throwable) : String
+  -imageSearchProgress() : VBox
+  -scrollToCollection() : void
+  -confirmImageSharing() : boolean
+  -chip(text : String, remove : Runnable) : void
+  -add(product : Product) : void
+  {static} -parseRange(value : String) : BigDecimal
+}
+@enduml
+
+@startuml edu_course_shop_ui_CatalogView_ImageSearchData
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CatalogView.ImageSearchData
+class "CatalogView.ImageSearchData" as edu_course_shop_ui_CatalogView_ImageSearchData <<record>> {
+  -catalog : List<Product>
+  -response : GeminiAssistant.ImageSearchResult
+}
+@enduml
+
+@startuml edu_course_shop_ui_CategoryBanner
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CategoryBanner
+class "CategoryBanner" as edu_course_shop_ui_CategoryBanner {
+  {static} -ART : EnumMap<Category, Artwork>
+  -canvas : Canvas
+  -eyebrow : Label
+  -headline : Label
+  -support : Label
+  -pending : Label
+  -copy : VBox
+  -product : ImageView
+  -floating : StackPane
+  -contactShadow : Ellipse
+  -drift : TranslateTransition
+  -lifecycle : InvalidationListener
+  -windowListener : ChangeListener<Window>
+  -watchedWindow : Window
+  -category : Category
+  -campaign : Campaign
+  +CategoryBanner()
+  +showCategory(value : Category) : void
+  {static} -load(file : String) : Artwork
+  -watchWindow(next : Window) : void
+  -syncMotion() : void
+  #layoutChildren() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_CategoryBanner_Artwork
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CategoryBanner.Artwork
+class "CategoryBanner.Artwork" as edu_course_shop_ui_CategoryBanner_Artwork <<record>> {
+  -image : Image
+  -viewport : Rectangle2D
+}
+@enduml
+
+@startuml edu_course_shop_ui_CategoryBanner_Campaign
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CategoryBanner.Campaign
+class "CategoryBanner.Campaign" as edu_course_shop_ui_CategoryBanner_Campaign <<record>> {
+  -headline : String
+  -support : String
+  -image : String
+}
+@enduml
+
+@startuml edu_course_shop_ui_CheckoutDraft
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CheckoutDraft
+class "CheckoutDraft" as edu_course_shop_ui_CheckoutDraft {
+  -address : String
+  -paymentIndex : int
+  -recipient : String
+  -city : String
+  -postalCode : String
+  +getRecipient() : String
+  +setRecipient(value : String) : void
+  +getCity() : String
+  +setCity(value : String) : void
+  +getPostalCode() : String
+  +setPostalCode(value : String) : void
+  +getAddress() : String
+  +setAddress(value : String) : void
+  +getPaymentIndex() : int
+  +setPaymentIndex(value : int) : void
+  +clear() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_CheckoutView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CheckoutView
+class "CheckoutView" as edu_course_shop_ui_CheckoutView {
+  +CheckoutView(user : User, cart : Cart, checkout : CheckoutService, draft : CheckoutDraft, placed : Consumer<Order>, back : Runnable)
+  +CheckoutView(user : User, cart : Cart, checkout : CheckoutService, accounts : AccountService, draft : CheckoutDraft, placed : Consumer<Order>, back : Runnable)
+  {static} -steps() : HBox
+}
+@enduml
+
+@startuml edu_course_shop_ui_CollectionArtwork
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.CollectionArtwork
+class "CollectionArtwork" as edu_course_shop_ui_CollectionArtwork {
+  -canvas : Canvas
+  -subject : String
+  +CollectionArtwork(subject : String)
+  {static} +supports(name : String) : boolean
+  #layoutChildren() : void
+  {static} -gradient(light : String, dark : String) : LinearGradient
+  -headphones(g : GraphicsContext) : void
+  -keyboard(g : GraphicsContext) : void
+  -screen(g : GraphicsContext, x : double, y : double, width : double, height : double) : void
+  -pc(g : GraphicsContext) : void
+  -parts(g : GraphicsContext) : void
+  -laptop(g : GraphicsContext) : void
+  -mobile(g : GraphicsContext) : void
+  -speaker(g : GraphicsContext) : void
+  -tee(g : GraphicsContext) : void
+  -tote(g : GraphicsContext) : void
+  -mug(g : GraphicsContext) : void
+  -lamp(g : GraphicsContext) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ConfirmationView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ConfirmationView
+class "ConfirmationView" as edu_course_shop_ui_ConfirmationView {
+  +ConfirmationView(order : Order, orders : Runnable, browse : Runnable)
+}
+@enduml
+
+@startuml edu_course_shop_ui_EditorialHeader
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.EditorialHeader
+class "EditorialHeader" as edu_course_shop_ui_EditorialHeader {
+  -floating : StackPane
+  -parallax : StackPane
+  -productReveal : StackPane
+  -glow : Region
+  -drift : TranslateTransition
+  -pulse : FadeTransition
+  -pointer : TranslateTransition
+  -entrance : ParallelTransition
+  -lifecycle : InvalidationListener
+  -windowListener : ChangeListener<Window>
+  -copyNodes : Node[]
+  -watchedWindow : Window
+  -inViewport : boolean
+  -entered : boolean
+  +EditorialHeader(shop : Runnable, electronics : Runnable)
+  +EditorialHeader(shop : Runnable, electronics : Runnable, headphones : Runnable)
+  {static} +forLogin() : EditorialHeader
+  -EditorialHeader(shop : Runnable, electronics : Runnable, headphones : Runnable, account : boolean)
+  +setInViewport(value : boolean) : void
+  -watchWindow(next : Window) : void
+  -canAnimate() : boolean
+  -syncMotion() : void
+  -finishEntrance() : void
+  -centerPointer() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_EditorialHeader_CircuitAccents
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.EditorialHeader.CircuitAccents
+class "EditorialHeader.CircuitAccents" as edu_course_shop_ui_EditorialHeader_CircuitAccents {
+  ~CircuitAccents()
+  #layoutChildren() : void
+  -line(x1 : double, y1 : double, x2 : double, y2 : double, color : Color) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_EditorialHeader_Rings
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.EditorialHeader.Rings
+class "EditorialHeader.Rings" as edu_course_shop_ui_EditorialHeader_Rings {
+  -rings : Circle[]
+  -streaks : Line[]
+  -Rings()
+  #layoutChildren() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_FilterDrawer
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.FilterDrawer
+class "FilterDrawer" as edu_course_shop_ui_FilterDrawer {
+  {static} ~show(owner : CatalogView, state : CatalogState, ceiling : double, matches : java.util.List<edu.course.shop.model.Product>, apply : Consumer<Selection>) : void
+  {static} -money(value : double) : String
+}
+@enduml
+
+@startuml edu_course_shop_ui_FilterDrawer_Selection
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.FilterDrawer.Selection
+class "FilterDrawer.Selection" as edu_course_shop_ui_FilterDrawer_Selection <<record>> {
+  -category : int
+  -inStock : boolean
+  -minimum : String
+  -maximum : String
+  -specifications : java.util.Map<String, String>
+}
+@enduml
+
+@startuml edu_course_shop_ui_Interactions
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.Interactions
+class "Interactions" as edu_course_shop_ui_Interactions {
+  {static} -CSS : String
+  -Interactions()
+  {static} +install(root : Parent) : void
+  {static} -enhance(node : Node) : void
+  {static} -rotateArrow(owner : Node, open : boolean) : void
+  {static} -popup(content : Parent, owner : Node) : void
+  {static} ~section(title : String, content : Node) : VBox
+  {static} ~categoryIndicator(row : HBox, selection : ObservableValue<?>) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_LoginGlassPanel
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.LoginGlassPanel
+class "LoginGlassPanel" as edu_course_shop_ui_LoginGlassPanel {
+  -reflection : Pane
+  -lights : Pane
+  -sheen : Polygon
+  -mask : Rectangle
+  -trails : Rectangle[]
+  -phase : DoubleProperty
+  -flow : Timeline
+  -lifecycle : InvalidationListener
+  -windowListener : ChangeListener<Window>
+  -window : Window
+  ~LoginGlassPanel(form : VBox)
+  -geometry() : void
+  -positionLights() : void
+  -watch(next : Window) : void
+  -syncMotion() : void
+  ~glowRunning() : boolean
+  ~glowPhase() : double
+}
+@enduml
+
+@startuml edu_course_shop_ui_LoginView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.LoginView
+class "LoginView" as edu_course_shop_ui_LoginView {
+  +LoginView(auth : AuthService, signedIn : Consumer<User>)
+}
+@enduml
+
+@startuml edu_course_shop_ui_Motion
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.Motion
+class "Motion" as edu_course_shop_ui_Motion {
+  {static} -reduced : BooleanProperty
+  -Motion()
+  {static} +reducedProperty() : BooleanProperty
+  {static} +isReduced() : boolean
+  {static} +lift(target : Node) : void
+  {static} +zoom(trigger : Node, image : Node) : void
+  {static} +reveal(target : Node) : void
+  {static} +dropIn(target : Node) : void
+  {static} +press(target : Node) : void
+  {static} +popup(target : Node) : void
+  {static} +panel(target : Node) : void
+  {static} -transientEntrance(target : Node, offset : double, duration : int) : void
+  {static} +loading(target : Node) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_OrderProcessingView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.OrderProcessingView
+class "OrderProcessingView" as edu_course_shop_ui_OrderProcessingView {
+  +OrderProcessingView(admin : User, service : OrderService, order : Order, refreshed : Runnable)
+}
+@enduml
+
+@startuml edu_course_shop_ui_OrderSummary
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.OrderSummary
+class "OrderSummary" as edu_course_shop_ui_OrderSummary {
+  +OrderSummary(cart : Cart, action : Node)
+  -row(name : String, value : String, strong : boolean) : HBox
+}
+@enduml
+
+@startuml edu_course_shop_ui_OrderTracking
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.OrderTracking
+class "OrderTracking" as edu_course_shop_ui_OrderTracking {
+  -OrderTracking()
+  {static} +view(order : Order) : VBox
+  {static} +payment(order : Order) : String
+}
+@enduml
+
+@startuml edu_course_shop_ui_OrdersView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.OrdersView
+class "OrdersView" as edu_course_shop_ui_OrdersView {
+  +OrdersView(user : User, orders : OrderService, products : ProductService, browse : Runnable, repeat : Consumer<Order>)
+  {static} -showReceipt(receipt : VBox, order : Order, orders : OrderService, user : User, refresh : Runnable) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_OrdersView_History
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.OrdersView.History
+class "OrdersView.History" as edu_course_shop_ui_OrdersView_History <<record>> {
+  -orders : List<Order>
+  -images : Map<Long, Product>
+}
+@enduml
+
+@startuml edu_course_shop_ui_PriceRange
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.PriceRange
+class "PriceRange" as edu_course_shop_ui_PriceRange {
+  -ceiling : double
+  -low : DoubleProperty
+  -high : DoubleProperty
+  -track : Region
+  -selection : Region
+  -lower : Button
+  -upper : Button
+  +PriceRange(ceiling : double, from : double, to : double)
+  -configure(thumb : Button, minimum : boolean) : void
+  -move(minimum : boolean, value : double) : void
+  +setRange(from : double, to : double) : void
+  +lowProperty() : DoubleProperty
+  +highProperty() : DoubleProperty
+  +getLow() : double
+  +getHigh() : double
+  +getCeiling() : double
+  -update() : void
+  #layoutChildren() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductArtwork
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductArtwork
+class "ProductArtwork" as edu_course_shop_ui_ProductArtwork {
+  +ProductArtwork(product : Product, height : double)
+  +ProductArtwork(product : Product, height : double, square : boolean)
+  +ProductArtwork(photo : byte[], name : String, height : double)
+  +ProductArtwork(photo : byte[], name : String, height : double, square : boolean, frame : PhotoFrame)
+  +ProductArtwork(photo : byte[], name : String, height : double, square : boolean, frame : PhotoFrame, sourceResolution : boolean)
+  {static} -alphaBounds(image : Image) : javafx.geometry.Rectangle2D
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductCard
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductCard
+class "ProductCard" as edu_course_shop_ui_ProductCard {
+  -quick : Button
+  -photoFrame : StackPane
+  -productForSaving : Product
+  -visualLayer : StackPane
+  -confirmation : javafx.animation.PauseTransition
+  +confirmAdded() : void
+  +ProductCard(product : Product, add : Runnable, details : Runnable)
+  +enableSavedItems(saved : SavedItems) : void
+  +enableSavedItems(saved : SavedItems, showRemoveAction : boolean) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductDetailView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductDetailView
+class "ProductDetailView" as edu_course_shop_ui_ProductDetailView {
+  +ProductDetailView(product : Product, user : User, cart : Cart, carts : CartService, products : ProductService, changed : Runnable, back : Runnable, openCart : Runnable, openProduct : Consumer<Product>)
+  +ProductDetailView(product : Product, user : User, cart : Cart, carts : CartService, products : ProductService, changed : Runnable, back : Runnable, openCart : Runnable, openProduct : Consumer<Product>, saved : SavedItems, toast : Consumer<String>)
+  +ProductDetailView(product : Product, user : User, cart : Cart, carts : CartService, products : ProductService, changed : Runnable, back : Runnable, openCart : Runnable, openProduct : Consumer<Product>, saved : SavedItems, toast : Consumer<String>, reviews : ProductReviewService, gemini : GeminiAssistant)
+  -specifications(product : Product) : VBox
+  -section(title : String, text : String) : TitledPane
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductGallery
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductGallery
+class "ProductGallery" as edu_course_shop_ui_ProductGallery {
+  -product : Product
+  -addToCart : Runnable
+  -photos : List<byte[]>
+  -thumbnails : List<Button>
+  -main : Button
+  -caption : Label
+  -selected : int
+  -compact : javafx.beans.property.BooleanProperty
+  -windowHeight : javafx.beans.property.DoubleProperty
+  +setCompact(value : boolean) : void
+  +ProductGallery(product : Product)
+  +ProductGallery(product : Product, addToCart : Runnable)
+  -select(index : int) : void
+  -enlarge() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductPhotoEditor
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductPhotoEditor
+class "ProductPhotoEditor" as edu_course_shop_ui_ProductPhotoEditor {
+  -photo : byte[]
+  -mode : ComboBox<PhotoFrame.Mode>
+  -focalX : Slider
+  -focalY : Slider
+  -dimensions : Label
+  -updating : boolean
+  -additional : java.util.List<byte[]>
+  -gallery : FlowPane
+  -preview : VBox
+  -feedback : Label
+  +getFraming() : PhotoFrame
+  +setFraming(framing : PhotoFrame) : void
+  +ProductPhotoEditor()
+  +importPhoto(file : Path) : void
+  +setPhoto(bytes : byte[]) : void
+  +setPhotos(main : byte[], extras : java.util.List<byte[]>) : void
+  +importAdditionalPhoto(file : Path) : void
+  -renderGallery() : void
+  +getAdditionalPhotos() : java.util.List<byte[]>
+  +getPhoto() : byte[]
+  -renderPreview() : void
+  -compare() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductReviewsView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductReviewsView
+class "ProductReviewsView" as edu_course_shop_ui_ProductReviewsView {
+  {static} -DATE : DateTimeFormatter
+  -productId : long
+  -productName : String
+  -user : User
+  -reviews : ProductReviewService
+  -gemini : GeminiAssistant
+  -preferences : AssistantPreferences
+  -average : Label
+  -entries : VBox
+  -feedback : Label
+  -summary : Label
+  -summarize : Button
+  -rating : ComboBox<Integer>
+  -text : TextArea
+  +ProductReviewsView(productId : long, productName : String, user : User, reviews : ProductReviewService, gemini : GeminiAssistant)
+  -buildForm() : void
+  -load() : void
+  -reviewCard(review : ProductReview) : VBox
+  -submit() : void
+  -summarize() : void
+  -confirmSharing() : boolean
+  -saveConsent() : boolean
+  {static} -date(value : String) : String
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductReviewsView_RegionSpacer
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductReviewsView.RegionSpacer
+class "ProductReviewsView.RegionSpacer" as edu_course_shop_ui_ProductReviewsView_RegionSpacer {
+}
+@enduml
+
+@startuml edu_course_shop_ui_ProductReviewsView_ReviewData
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ProductReviewsView.ReviewData
+class "ProductReviewsView.ReviewData" as edu_course_shop_ui_ProductReviewsView_ReviewData <<record>> {
+  -rows : List<ProductReview>
+  -canReview : boolean
+}
+@enduml
+
+@startuml edu_course_shop_ui_QuantityControl
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.QuantityControl
+class "QuantityControl" as edu_course_shop_ui_QuantityControl {
+  -value : IntegerProperty
+  -valid : ReadOnlyBooleanWrapper
+  +validProperty() : ReadOnlyBooleanProperty
+  +QuantityControl(maximum : int)
+  +getValue() : int
+  +valueProperty() : IntegerProperty
+}
+@enduml
+
+@startuml edu_course_shop_ui_RevenueDraw
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.RevenueDraw
+class "RevenueDraw" as edu_course_shop_ui_RevenueDraw {
+  -chart : AreaChart<Number, Number>
+  -sweep : Timeline
+  -progress : DoubleProperty
+  -scrolls : List<ScrollPane>
+  -viewport : InvalidationListener
+  -content : Node
+  -previousClip : Node
+  -clip : Rectangle
+  -bounds : Bounds
+  -requested : boolean
+  -queued : boolean
+  ~RevenueDraw(chart : AreaChart<Number, Number>)
+  ~complete() : void
+  ~request() : void
+  -queue() : void
+  -followScrolls() : void
+  -viewable() : boolean
+  -begin() : void
+  -finish() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_RevenuePerformanceCard
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.RevenuePerformanceCard
+class "RevenuePerformanceCard" as edu_course_shop_ui_RevenuePerformanceCard {
+  {static} -SHORT : DateTimeFormatter
+  {static} -FULL : DateTimeFormatter
+  -clock : Clock
+  -loader : Supplier<List<OrderRow>>
+  -rows : List<OrderRow>
+  -report : RevenueAnalytics.Report
+  -start : LocalDate
+  -end : LocalDate
+  -metric : Metric
+  -hovered : int
+  -pinned : int
+  -dates : NumberAxis
+  -amounts : NumberAxis
+  -chart : AreaChart<Number, Number>
+  -drawing : RevenueDraw
+  -total : Label
+  -change : Label
+  -orderCount : Label
+  -average : Label
+  -periodText : Label
+  -note : Label
+  -updated : Label
+  -error : Label
+  -totalLabel : Label
+  -countLabel : Label
+  -compare : CheckBox
+  -from : DatePicker
+  -to : DatePicker
+  -presetGroup : ToggleGroup
+  -refresh : Button
+  -forward : Button
+  -details : VBox
+  -overlay : Pane
+  -guide : Line
+  -dot : Circle
+  -hoverDate : Label
+  -hoverAmount : Label
+  -hoverOrders : Label
+  -hoverPrevious : Label
+  -hoverCard : VBox
+  -pending : Task<List<OrderRow>>
+  +RevenuePerformanceCard(loader : Supplier<List<OrderRow>>)
+  +RevenuePerformanceCard(loader : Supplier<List<OrderRow>>, clock : Clock)
+  {static} -spacer() : Region
+  -configureChart() : void
+  +setOrders(orders : List<OrderRow>) : void
+  -syncDates() : void
+  -applyDates() : void
+  -shift(direction : int) : void
+  -render() : void
+  -insidePlot(sceneX : double, sceneY : double) : boolean
+  -inspect(index : int) : void
+  -hideHover() : void
+  -clearSelection() : void
+  -showDetails() : void
+  -reload() : void
+  {static} -money(cents : long) : String
+  {static} -currency(amount : BigDecimal) : String
+}
+@enduml
+
+@startuml edu_course_shop_ui_RobotAvatar
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.RobotAvatar
+class "RobotAvatar" as edu_course_shop_ui_RobotAvatar {
+  {static} -FRAME_W : int
+  {static} -FRAME_H : int
+  {static} -COLUMNS : int
+  {static} -FRAMES : int
+  {static} -BOX : int
+  {static} -PAD_X : int
+  {static} -PAD_Y : int
+  {static} -ATLASES : Map<State, Image>
+  {static} -STILLS : Map<State, Image>
+  -picture : ImageView
+  -previous : ImageView
+  -state : ObjectProperty<State>
+  -animated : BooleanProperty
+  -playback : Timeline
+  -blend : Timeline
+  -reaction : PauseTransition
+  -typing : PauseTransition
+  -rest : PauseTransition
+  -size : double
+  -frame : int
+  -attentive : boolean
+  -sleepAfter : Duration
+  -ancestors : List<Node>
+  -watchedImages : Set<State>
+  -lifecycle : InvalidationListener
+  -visibility : InvalidationListener
+  -windowListener : ChangeListener<Window>
+  -imageReady : ChangeListener<Number>
+  -window : Window
+  +RobotAvatar(size : double)
+  +getState() : State
+  +setState(value : State) : void
+  +stateProperty() : ReadOnlyObjectProperty<State>
+  +setAnimated(value : boolean) : void
+  +react(value : State) : void
+  +replyPresented() : void
+  -reactFor(value : State, duration : Duration) : void
+  +returnToRest() : void
+  +wake() : void
+  +setAttentive(value : boolean) : void
+  +setSleepAfter(delay : Duration) : void
+  +watchInput(input : TextInputControl, busy : BooleanSupplier) : void
+  -quiet() : boolean
+  -changeExpression(next : State) : void
+  -clearBlend() : void
+  {static} -still(state : State) : Image
+  -atlas(value : State) : Image
+  -configure() : void
+  -paint() : void
+  #layoutChildren() : void
+  -present() : boolean
+  -canAnimate() : boolean
+  -armRest() : void
+  -syncPlayback() : void
+  -observeVisibility() : void
+  -watchWindow(next : Window) : void
+  ~isAnimating() : boolean
+  ~frameIndex() : int
+  ~displayedImage() : Image
+  {static} ~cachedAtlasBytes() : long
+}
+@enduml
+
+@startuml edu_course_shop_ui_RobotAvatar_State
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.RobotAvatar.State
+enum "RobotAvatar.State" as edu_course_shop_ui_RobotAvatar_State {
+  IDLE
+  THINKING
+  SEARCHING
+  LISTENING
+  SPEAKING
+  WORKING
+  HAPPY
+  ERROR
+  SLEEPING
+}
+@enduml
+
+@startuml edu_course_shop_ui_RobotLauncher
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.RobotLauncher
+class "RobotLauncher" as edu_course_shop_ui_RobotLauncher {
+  -robot : RobotAvatar
+  -gesture : Timeline
+  -click : Timeline
+  -focusAttention : PauseTransition
+  -open : Runnable
+  -pointerInside : boolean
+  -opening : boolean
+  -window : Window
+  -lifecycle : InvalidationListener
+  -motion : InvalidationListener
+  -windowChanged : ChangeListener<Window>
+  +RobotLauncher(open : Runnable)
+  -attend() : void
+  -activate() : void
+  -move(scale : double, x : double, y : double, angle : double, millis : int) : void
+  {static} -clamp(value : double) : double
+  -available() : boolean
+  -neutral() : void
+  -reset() : void
+  -watchWindow(next : Window) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_SavedItems
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.SavedItems
+class "SavedItems" as edu_course_shop_ui_SavedItems {
+  -ids : ObservableSet<Long>
+  -accounts : AccountService
+  -pending : Map<Long, Task<Void>>
+  -user : User
+  +SavedItems(accounts : AccountService)
+  +snapshot() : Set<Long>
+  +reset() : void
+  +signedIn(customer : User, stored : Set<Long>) : void
+  +observe(owner : javafx.scene.Node, action : Runnable) : void
+  +heart(product : Product) : Button
+}
+@enduml
+
+@startuml edu_course_shop_ui_SavedItemsView
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.SavedItemsView
+class "SavedItemsView" as edu_course_shop_ui_SavedItemsView {
+  +SavedItemsView(user : User, cart : Cart, products : ProductService, saved : SavedItems, changed : Runnable, browse : Runnable, details : Consumer<Product>, toast : Consumer<String>)
+}
+@enduml
+
+@startuml edu_course_shop_ui_SearchSuggestions
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.SearchSuggestions
+class "SearchSuggestions" as edu_course_shop_ui_SearchSuggestions {
+  -headerSearch : TextField
+  -user : User
+  -products : ProductService
+  -details : Consumer<Product>
+  -results : Runnable
+  -debounce : PauseTransition
+  -pending : Task<List<Product>>
+  -generation : long
+  -closeOverlay : Runnable
+  -cleanup : Runnable
+  -activeIndex : int
+  +SearchSuggestions(search : TextField, user : User, products : ProductService, details : Consumer<Product>, results : Runnable)
+  +dismiss() : void
+  +close() : void
+  -open(query : String) : void
+  -query(value : String, rows : VBox, resultScroll : ScrollPane) : void
+  -render(rows : VBox, resultScroll : ScrollPane, matches : List<Product>) : void
+  -moveActive(delta : int, rows : VBox) : void
+  -showAll() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ShopOverlay
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ShopOverlay
+class "ShopOverlay" as edu_course_shop_ui_ShopOverlay {
+  {static} ~show(owner : Node, panel : Region, glass : boolean, drawer : boolean, dismissed : Runnable) : Runnable
+  {static} -collect(n : Node, nodes : List<Node>) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ShopWindow
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ShopWindow
+class "ShopWindow" as edu_course_shop_ui_ShopWindow {
+  -stage : Stage
+  -services : Services
+  -saved : SavedItems
+  -catalogState : CatalogState
+  -search : TextField
+  -user : User
+  -cart : Cart
+  -pendingGuestCart : Cart
+  -draft : CheckoutDraft
+  -shell : BorderPane
+  -window : StackPane
+  -overlay : StackPane
+  -cartButton : Button
+  -adminWorkspace : AdminWorkspace
+  -headerSearch : HBox
+  -headerNavigation : HBox
+  -previousFocus : Node
+  -navButtons : List<Button>
+  -lastCartCount : int
+  -toast : Label
+  -toastBar : HBox
+  -toastAnimation : SequentialTransition
+  -cartPulse : ScaleTransition
+  -drawerAnimation : ParallelTransition
+  -activeDrawer : CartDrawer
+  -drawerScrim : Region
+  -drawerClosing : boolean
+  -assistant : edu.course.shop.service.GeminiAssistant
+  -assistantPanel : AssistantPanel
+  -assistantLauncher : Button
+  -assistantProduct : Product
+  -darkStore : boolean
+  +ShopWindow(stage : Stage, services : Services)
+  +showStorefront() : void
+  +showLogin() : void
+  -signedIn(signedIn : User) : void
+  -completeSignIn(signedIn : User) : void
+  -signOut() : void
+  -link(text : String, action : Runnable) : Button
+  -buildShell() : void
+  -toggleAssistant() : void
+  -showInfo() : void
+  -category(index : int) : void
+  -show(page : Node) : void
+  -updateNav() : void
+  -updateCart() : void
+  -showToast(message : String) : void
+  -stopFeedbackAnimations() : void
+  +showCatalog() : void
+  -showDetails(product : Product) : void
+  +showCartDrawer() : void
+  {static} -drawerFocusNodes(node : Node, result : List<Node>) : void
+  -animateDrawer(x : double, opacity : double, finished : Runnable) : void
+  -dismissDrawer() : void
+  -closeDrawer() : void
+  {static} -canFocus(node : Node) : boolean
+  +showCart() : void
+  +showCheckout() : void
+  +showOrders() : void
+  +showAdmin() : void
+  -addAdminProduct() : void
+  -runAdminCommand(command : String) : void
+  -showAdminOverview() : void
+  -showAdminOrders() : void
+  -showAdminCustomers() : void
+  -showAiManager() : void
+  -markAdminTab(selected : String) : void
+  -showSaved() : void
+  -showAccount() : void
+  -repeatOrder(order : edu.course.shop.model.Order) : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_ShopWindow_CustomerSession
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.ShopWindow.CustomerSession
+class "ShopWindow.CustomerSession" as edu_course_shop_ui_ShopWindow_CustomerSession <<record>> {
+  -saved : java.util.Set<Long>
+  -restored : edu.course.shop.service.PersistentCartService.Restored
+}
+@enduml
+
+@startuml edu_course_shop_ui_SpecificationsEditor
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.SpecificationsEditor
+class "SpecificationsEditor" as edu_course_shop_ui_SpecificationsEditor {
+  -raw : TextArea
+  -rows : VBox
+  -schema : VBox
+  -fields : Map<String, TextField>
+  -units : Map<String, ComboBox<String>>
+  -errors : Map<String, Label>
+  -category : Category
+  -syncing : boolean
+  +SpecificationsEditor()
+  +setCategory(value : Category) : void
+  +getText() : String
+  +setText(value : String) : void
+  +clear() : void
+  +validatedText() : String
+  +clearErrors() : void
+  -showWarnings() : void
+  {static} -unitsFor(key : String) : List<String>
+  -render() : void
+  {static} -hint(key : String) : String
+  -addRow(key : String, value : String) : void
+  -sync() : void
+}
+@enduml
+
+@startuml edu_course_shop_ui_StoreIcon
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.StoreIcon
+class "StoreIcon" as edu_course_shop_ui_StoreIcon {
+  -StoreIcon()
+  {static} +of(name : String, size : double) : Group
+  {static} +of(name : String) : Group
+}
+@enduml
+
+@startuml edu_course_shop_ui_Ui
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE edu.course.shop.ui.Ui
+class "Ui" as edu_course_shop_ui_Ui {
+  -Ui()
+  {static} +main(args : String[]) : void
+  {static} +label(text : String, style : String) : Label
+  {static} +category(category : Category) : String
+  {static} +button(text : String, action : Runnable) : Button
+  {static} +primary(text : String, action : Runnable) : Button
+  {static} +link(text : String, action : Runnable) : Button
+  {static} +round(node : Node, arc : double) : void
+  {static} +focus(target : Node) : void
+  {static} +flag(control : Control, invalid : boolean) : void
+  {static} +row(left : String, right : String, leftStyle : String, rightStyle : String) : HBox
+  {static} +page(title : String, subtitle : String, content : Node[]) : VBox
+  {static} +feedback(id : String) : Label
+  {static} +field(title : String, input : Control, error : Label) : VBox
+  {static} +scroll(content : Node) : ScrollPane
+  {static} +responsiveColumns(first : javafx.scene.layout.Region, second : javafx.scene.layout.Region, breakpoint : double, gap : double) : VBox
+  {static} +skeleton() : VBox
+  {static} +skeletonProductGrid(count : int) : TilePane
+  {static} +skeletonRows(count : int) : VBox
+  {static} +skeletonProductDetail() : VBox
+  {static} -skeletonProductCard() : VBox
+  {static} -skeletonBlock(width : double, height : double) : javafx.scene.layout.Region
+  {static} +purchaseColumns(form : javafx.scene.layout.Region, summary : javafx.scene.layout.Region) : VBox
+  {static} -stickySummary(content : VBox, form : javafx.scene.layout.Region, summary : javafx.scene.layout.Region, stacked : boolean[]) : void
+  {static} +empty(title : String, detail : String, action : String, callback : Runnable) : VBox
+  {static} +column(name : String, value : Function<T, String>) : TableColumn<T, String>
+  {static} +table() : TableView<T>
+  {static} +integer(text : String) : int
+  {static} +selected(table : TableView<T>) : T
+  {static} +attempt(action : Runnable) : void
+  {static} +message(error : Throwable) : String
+  {static} +failure(label : Label, error : Throwable) : void
+  {static} +success(label : Label, text : String) : void
+  {static} +error(e : Throwable) : void
+  {static} +info(message : String) : void
+  {static} +async(owner : Node, work : Callable<T>, success : Consumer<T>) : void
+  {static} +readOnly(owner : Node, work : Callable<T>, success : Consumer<T>, failure : Consumer<Throwable>) : void
+  {static} +async(owner : Node, busyText : String, work : Callable<T>, success : Consumer<T>, failure : Consumer<Throwable>) : void
+}
+@enduml

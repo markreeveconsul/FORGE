@@ -6,7 +6,7 @@ FORGE AI uses one shared transport for chat, review summaries, visual search and
 
 - At most three attempts per generation request, with increasing waits and jitter.
 - Retry temporary HTTP 408/500/502/503/504 failures and transient I/O timeouts.
-- A 429 is retried only when the provider explicitly supplies a short delay (10 seconds or less) and the error is not a daily quota failure.
+- A 429 is retried only when structured quota metadata identifies a minute limit with a nonzero or unspecified allowance and the provider supplies a short delay (10 seconds or less). Daily, unknown-window and zero-allowance failures do not retry automatically.
 - Daily/unknown quotas, access errors, unsupported models, invalid requests, DNS and TLS failures do not automatically retry.
 - Retry-After and Google RetryInfo are honored. Quota cooldowns are shared across AI features.
 - The total transport budget is 90 seconds per request; later attempts receive only the remaining time. Chat has a 40-second attempt limit; image/admin generation has a 60-second attempt limit.
@@ -36,9 +36,19 @@ Admin > AI Manager > AI diagnostics shows the last 100 request events from the c
 
 Metadata is saved locally to data/ai-diagnostics.log, rotating to data/ai-diagnostics.previous.log at approximately 512 KB. Both paths are inside the already Git-ignored data directory.
 
-Events contain only timestamp, feature, model, outcome/error category, attempt number, HTTP status, duration and payload bytes. They never contain API keys, request/response text, uploaded images, customer details or identifiers. Provider error text is not written to the diagnostic log.
+Events contain only timestamp, feature, model, outcome/error category, attempt number, HTTP status, duration, payload bytes and sanitized provider quota metadata (quota ID/metric, model, resource, time window, reported allowance and suggested retry delay). They never contain API keys, request/response text, uploaded images, customer details or identifiers. Provider error text is not written to the diagnostic log.
 
 Error messages distinguish timeout, quota, access, model, request validation, service availability and transport failures. A fallback to local records does not mean the device lost internet access.
+
+## Quota explanations and help
+
+Customer assistant > AI limits and Admin > AI Manager > AI limits explain shared usage and display the latest restriction reported in this session. This is historical information, not live usage. FORGE does not invent used/remaining counters or a reset time.
+
+Only google.rpc.QuotaFailure violation quotaId/quotaMetric fields establish a minute or daily window. Generic error text, Help links, descriptions and subjects do not establish an exceeded daily quota. Conflicting or missing fields remain unknown. Only a safe model dimension is retained; project IDs, subjects and free-form descriptions are never logged.
+
+Reported quotaValue is an allowance, not remaining usage. Zero is shown as an access/configuration issue to check. Retry-After and typed google.rpc.RetryInfo hints are retained, taking the longer valid delay. A short hint does not confirm that a daily allowance will reset then. Multiple violations are preserved; any confirmed daily violation prevents automatic quota retries.
+
+Old log entries cannot be reconstructed because raw provider responses were never stored. New failed requests include the safe quota fields; diagnostics and the AI limits help do not make extra API requests.
 
 ## Verification and limits
 

@@ -29,7 +29,7 @@ class AiReliabilityTest {
   assertEquals(AiFailure.Kind.SERVICE,failure.kind());assertEquals(3,count.get());assertEquals(2,waits.size());
  }
  @Test void dailyQuotaNeverRetriesEvenWithShortRetryHint()throws Exception{
-  AtomicInteger count=new AtomicInteger();var transport=http(r->{count.incrementAndGet();return new GeminiAssistant.Reply(429,"{\"error\":{\"message\":\"Daily free request quota exceeded\"}}",Map.of("Retry-After","2"));});
+  AtomicInteger count=new AtomicInteger();var transport=http(r->{count.incrementAndGet();return AiQuotaTest.reply("RequestsPerDay","generativelanguage.googleapis.com/requests","20",2);});
   assertEquals(AiFailure.Kind.DAILY_QUOTA,assertThrows(AiFailure.class,()->transport.send(request(),"chat")).kind());
   assertEquals(AiFailure.Kind.COOLDOWN,assertThrows(AiFailure.class,()->transport.send(request(),"chat")).kind());assertEquals(1,count.get());assertTrue(waits.isEmpty());
  }
@@ -38,7 +38,7 @@ class AiReliabilityTest {
   assertEquals(AiFailure.Kind.RATE_LIMIT,assertThrows(AiFailure.class,()->transport.send(request(),"chat")).kind());assertEquals(1,count.get());assertTrue(waits.isEmpty());
  }
  @Test void explicitShortRateLimitHonorsProviderDelay()throws Exception{
-  AtomicInteger count=new AtomicInteger();var transport=http(r->count.incrementAndGet()==1?new GeminiAssistant.Reply(429,"{}",Map.of("Retry-After","2")):new GeminiAssistant.Reply(200,GOOD));
+  AtomicInteger count=new AtomicInteger();var transport=http(r->count.incrementAndGet()==1?AiQuotaTest.reply("RequestsPerMinute","generativelanguage.googleapis.com/requests","5",2):new GeminiAssistant.Reply(200,GOOD));
   assertEquals(200,transport.send(request(),"chat").status());assertEquals(List.of(2000L),waits);assertEquals(2,count.get());
  }
  @Test void accessModelAndInvalidRequestsNeverRetry()throws Exception{

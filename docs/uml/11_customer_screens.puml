@@ -1,0 +1,91 @@
+@startuml 11_customer_screens
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #F7F8FA
+skinparam classBorderColor #455568
+skinparam ArrowColor #697A8D
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 30
+hide empty members
+title FORGE Customer screens
+caption Declared API excerpts. Full signatures and nested types are in CLASS-REFERENCE.md.
+class "ShopWindow" as edu_course_shop_ui_ShopWindow {
+  -services : Services
+  -user : User
+  -cart : Cart
+  -pendingGuestCart : Cart
+  -assistant : edu.course.shop.service.GeminiAssistant
+  +ShopWindow(stage, services)
+  +showStorefront() : void
+  +showLogin() : void
+  +showCatalog() : void
+  +showCartDrawer() : void
+  +showCart() : void
+}
+class "LoginView" as edu_course_shop_ui_LoginView {
+  +LoginView(auth, signedIn)
+}
+class "CatalogView" as edu_course_shop_ui_CatalogView {
+  -gemini : GeminiAssistant
+  -details : Consumer<Product>
+  -user : User
+  -cart : Cart
+  -products : ProductService
+  +enableSavedItems(saved) : void
+  +stopSearchSuggestions() : void
+  +useHeaderNavigation(host) : void
+  +searchBar() : HBox
+  +CatalogView(...)
+}
+class "ProductDetailView" as edu_course_shop_ui_ProductDetailView {
+  +ProductDetailView(...)
+}
+class "CartView" as edu_course_shop_ui_CartView {
+  -user : User
+  -cart : Cart
+  -carts : CartService
+  +CartView(user, cart, carts, changed, checkout, browse)
+}
+class "CheckoutView" as edu_course_shop_ui_CheckoutView {
+  +CheckoutView(user, cart, checkout, draft, placed, back)
+}
+class "ConfirmationView" as edu_course_shop_ui_ConfirmationView {
+  +ConfirmationView(order, orders, browse)
+}
+class "OrdersView" as edu_course_shop_ui_OrdersView {
+  +OrdersView(user, orders, products, browse, repeat)
+}
+class "AccountView" as edu_course_shop_ui_AccountView {
+  +AccountView(user, accounts, savedItems, orders)
+}
+class "SavedItemsView" as edu_course_shop_ui_SavedItemsView {
+  +SavedItemsView(user, cart, products, saved, changed, browse, details, toast)
+}
+edu_course_shop_ui_CartView -[hidden]down-> edu_course_shop_ui_OrdersView
+edu_course_shop_ui_CartView -[hidden]right-> edu_course_shop_ui_CheckoutView
+edu_course_shop_ui_CatalogView -[hidden]down-> edu_course_shop_ui_CheckoutView
+edu_course_shop_ui_CheckoutView -[hidden]down-> edu_course_shop_ui_AccountView
+edu_course_shop_ui_ConfirmationView -[hidden]down-> edu_course_shop_ui_SavedItemsView
+edu_course_shop_ui_ConfirmationView -[hidden]right-> edu_course_shop_ui_OrdersView
+edu_course_shop_ui_LoginView -[hidden]down-> edu_course_shop_ui_CartView
+edu_course_shop_ui_LoginView -[hidden]right-> edu_course_shop_ui_CatalogView
+edu_course_shop_ui_OrdersView -[hidden]right-> edu_course_shop_ui_AccountView
+edu_course_shop_ui_ProductDetailView -[hidden]down-> edu_course_shop_ui_ConfirmationView
+edu_course_shop_ui_ProductDetailView -[hidden]right-> edu_course_shop_ui_CartView
+edu_course_shop_ui_ShopWindow -[hidden]down-> edu_course_shop_ui_ProductDetailView
+edu_course_shop_ui_ShopWindow -[hidden]right-> edu_course_shop_ui_LoginView
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_AccountView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_CartView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_CatalogView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_CheckoutView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_ConfirmationView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_LoginView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_OrdersView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_ProductDetailView : opens
+edu_course_shop_ui_ShopWindow ..> edu_course_shop_ui_SavedItemsView : opens
+@enduml

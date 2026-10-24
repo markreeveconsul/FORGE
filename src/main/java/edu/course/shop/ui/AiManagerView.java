@@ -18,7 +18,7 @@ import java.util.*;
 
 /** One full admin module. Background work never replaces or disables the entire window. */
 public final class AiManagerView extends BorderPane {
-    private final User actor;private final Services services;private final AiManagerService manager;
+    private final User actor;private final Services services;private final AiManagerService manager;private final GeminiAssistant gemini;
     private final TextField input=new TextField();
     private final RobotAvatar robot=new RobotAvatar(52);
     private final Label badge=Ui.label("AI Active","manager-status"),feedback=Ui.feedback("ai-manager-feedback");
@@ -35,7 +35,7 @@ public final class AiManagerView extends BorderPane {
 
     public AiManagerView(User actor,Services services,GeminiAssistant gemini){
         if(actor==null||!actor.canManageProducts())throw new ValidationException("Administrator access is required.");
-        this.actor=actor;this.services=services;this.manager=new AiManagerService(services,gemini);
+        this.actor=actor;this.services=services;this.gemini=gemini;this.manager=new AiManagerService(services,gemini);
         results.setId("ai-manager-results");setId("ai-manager-page");getStyleClass().add("ai-manager-page");setMinSize(0,0);
         robot.setId("ai-manager-robot");robot.setSleepAfter(Duration.seconds(45));robot.watchInput(input,()->busy);
         VBox title=new VBox(6,Ui.label("AI NEURAL MANAGER","manager-title"),Ui.label("Command your store with FORGE AI. Review every proposed change.","manager-subtitle"));title.setMinWidth(0);
@@ -50,7 +50,8 @@ public final class AiManagerView extends BorderPane {
         research.setId("ai-manager-research");research.getStyleClass().add("manager-research");
         Hyperlink privacy=new Hyperlink("How it works");privacy.setOnAction(e->showPrivacy());
         Hyperlink diagnostics=new Hyperlink("AI diagnostics");diagnostics.setId("ai-manager-diagnostics");diagnostics.setOnAction(e->showDiagnostics());
-        HBox options=new HBox(10,research,new Region(),diagnostics,privacy);HBox.setHgrow(options.getChildren().get(1),Priority.ALWAYS);options.setAlignment(Pos.CENTER_LEFT);
+        Hyperlink limits=new Hyperlink("AI limits");limits.setId("ai-manager-limits");limits.setOnAction(e->showLimits());
+        HBox options=new HBox(10,research,new Region(),limits,diagnostics,privacy);HBox.setHgrow(options.getChildren().get(1),Priority.ALWAYS);options.setAlignment(Pos.CENTER_LEFT);
         run.setText("Run Agent  ↗");
         VBox commandCard=new VBox(18,Ui.label("YOUR STORE. ONE COMMAND.","manager-command-eyebrow"),Ui.label("What action would you like FORGE AI to execute?","section-title"),composer,chips,options);commandCard.getStyleClass().add("manager-command-card");
         Region terminalGap=new Region();HBox.setHgrow(terminalGap,Priority.ALWAYS);
@@ -189,9 +190,13 @@ public final class AiManagerView extends BorderPane {
     }
     private void cancel(){if(applying)return;generation++;if(pending!=null)pending.cancel(true);finish();reviews.clear();empty();feedback.setText("Command cancelled. No changes were applied.");}
     public void dispose(){terminalDots.dispose();robot.setAnimated(false);disposed=true;generation++;metricsGeneration++;if(pending!=null&&!applying)pending.cancel(true);if(metricsTask!=null)metricsTask.cancel(true);if(shimmer!=null)shimmer.stop();}
+    private void showLimits(){
+        TextArea text=new TextArea(gemini.limitsSummary());text.setEditable(false);text.setWrapText(true);text.setPrefSize(650,390);text.setId("ai-manager-limits-info");
+        Dialog<Void> dialog=new Dialog<>();dialog.setTitle("FORGE AI usage limits");dialog.setHeaderText("Shared allowance · provider-reported limits");dialog.getDialogPane().setContent(text);dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);if(getScene()!=null)dialog.initOwner(getScene().getWindow());dialog.show();
+    }
     private void showDiagnostics(){
         TextArea history=new TextArea(AiDiagnostics.recent().stream().map(AiDiagnostics.Event::line).collect(java.util.stream.Collectors.joining("\n")));history.setEditable(false);history.setWrapText(true);history.setPrefSize(700,360);history.setId("ai-diagnostic-history");
-        Dialog<Void> dialog=new Dialog<>();dialog.setTitle("FORGE AI diagnostics");dialog.setHeaderText("Recent request outcomes · metadata only");dialog.getDialogPane().setContent(new VBox(12,Ui.label("Shows timing, payload size, retry attempts and error categories. Questions, images, customer details and API keys are never logged. Saved locally in data/ai-diagnostics.log.","muted"),history));dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);if(getScene()!=null)dialog.initOwner(getScene().getWindow());dialog.show();
+        Dialog<Void> dialog=new Dialog<>();dialog.setTitle("FORGE AI diagnostics");dialog.setHeaderText("Recent request outcomes · metadata only");dialog.getDialogPane().setContent(new VBox(12,Ui.label("Shows timing, payload size, retry attempts, error categories and provider-reported quota IDs, limits and retry hints. Questions, images, customer details and API keys are never logged. Saved locally in data/ai-diagnostics.log.","muted"),history));dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);if(getScene()!=null)dialog.initOwner(getScene().getWindow());dialog.show();
     }
     private void showPrivacy(){Alert info=new Alert(Alert.AlertType.INFORMATION,"FORGE AI uses Google Gemini to interpret your command and draft public product content. Online specification research sends product names and catalog text for web lookup. Customer names, addresses and order rows are not sent. Free-tier content may help improve Google's products. Queries and sales totals run locally. All edits require your review before saving.",ButtonType.OK);info.setTitle("About AI Manager");info.setHeaderText("Your store, your approval");if(getScene()!=null)info.initOwner(getScene().getWindow());info.showAndWait();}
     private void openSource(String source){try{java.awt.Desktop.getDesktop().browse(java.net.URI.create(source));}catch(Exception e){feedback.setText("Could not open the source: "+source);}}
